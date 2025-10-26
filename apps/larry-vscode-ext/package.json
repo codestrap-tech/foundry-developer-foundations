@@ -69,9 +69,10 @@
     "@vscode/webview-ui-toolkit": "^1.4.0",
     "dompurify": "^3.2.7",
     "highlight.js": "^11.11.1",
-    "marked": "^16.2.1",
+    "marked": "^15.0.12",
     "marked-highlight": "^2.2.2",
-    "react": "^18.0.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
     "sql.js": "^1.13.0"
   }
 }
