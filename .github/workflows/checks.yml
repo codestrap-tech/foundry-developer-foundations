@@ -46,11 +46,6 @@ jobs:
           echo "Manually initializing nx installation..."
           npx nx --version
         timeout-minutes: 5
-      - name: Setup environment variables
-        run: |
-          cp packages/agents/vickie-bennie/.env.sample packages/agents/vickie-bennie/.env
-          cp packages/foundry-tracing-foundations/.env.sample packages/foundry-tracing-foundations/.env
-        timeout-minutes: 5
 
       - name: Build Affected Projects
         run: |

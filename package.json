@@ -97,6 +97,10 @@
     "xstate": "4.37.2"
   },
   "devDependencies": {
+    "@types/sql.js": "^1.4.9",
+    "@types/vscode": "^1.93.0",
+    "preact": "^10.22.0",
+    "vsce": "^2.15.0",
     "@eslint/compat": "^1.2.9",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.26.0",
@@ -124,7 +128,6 @@
     "@types/ramda": "^0.30.2",
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
-    "@types/sql.js": "^1.4.9",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
     "babel-jest": "^30.0.2",
