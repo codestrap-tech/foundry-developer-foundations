@@ -6,10 +6,12 @@ import {
     ThreadsDao,
     TYPES,
     UserIntent,
+    VersionControlService,
 } from '@codestrap/developer-foundations-types';
 import * as path from 'path';
 import * as fs from 'fs';
 import { container } from '@codestrap/developer-foundations-di';
+import { saveFileToGithub, writeFileIfNotFoundLocally } from './delegates/github';
 
 export async function architectureReview(
     context: Context,
@@ -23,6 +25,9 @@ export async function architectureReview(
             .reverse()
             .find((item) => item.includes('architectImplementation')) || '';
     const { file } = context[architectImplementationId] as UserIntent || { approved: false };
+
+    await writeFileIfNotFoundLocally(file);
+
     // there must be a spec file generated in the previous architectureReview state
     if (!file || !fs.existsSync(file)) throw new Error(`File does not exist: ${file}`);
 
@@ -35,6 +40,9 @@ export async function architectureReview(
     const { approved, messages } = context[architectureReviewId] as AbstractReviewState || { approved: false }
 
     if (approved) {
+        // make sure to capture any changes to the spec file that resulted from direct user edits
+        await saveFileToGithub(file);
+
         return {
             approved,
             messages,

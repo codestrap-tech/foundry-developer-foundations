@@ -10,9 +10,11 @@ import {
     ThreadsDao,
     TYPES,
     UserIntent,
+    VersionControlService,
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 import { googleFileOpsGenerator } from './delegates';
+import { saveFileToGithub, writeFileIfNotFoundLocally } from './delegates/github';
 
 async function verifyFilePaths(ops: FileOp[]) {
     const root = process.cwd();
@@ -137,6 +139,9 @@ export async function specReview(
             .reverse()
             .find((item) => item.includes('confirmUserIntent')) || '';
     const { file } = context[confirmUserIntentId] as UserIntent || { approved: false };
+
+    await writeFileIfNotFoundLocally(file);
+
     // there must be a spec file generated in the previous confirmUserIntent state
     if (!file || !fs.existsSync(file)) throw new Error(`File does not exist: ${file}`);
 
@@ -160,8 +165,12 @@ ${JSON.stringify(files, null, 2)}
 # Software Design Specification
 ${updatedContents}
 `;
+
         // add the file block JSON for extraction downstream
         await fs.promises.writeFile(file, plan, 'utf8');
+
+        // make sure to capture any changes to the spec file that resulted from direct user edits
+        await saveFileToGithub(file, plan);
 
         return {
             approved,

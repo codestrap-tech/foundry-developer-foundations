@@ -9,9 +9,11 @@ import {
   ThreadsDao,
   TYPES,
   UserIntent,
+  VersionControlService,
 } from '@codestrap/developer-foundations-types';
 import { openAiEditOpsGenerator } from './delegates';
 import { parseCodeEdits } from '@codestrap/developer-foundations-utils';
+import { saveFileToGithub, writeFileIfNotFoundLocally } from './delegates/github';
 
 export async function generateEditMachine(
   context: Context,
@@ -34,8 +36,12 @@ export async function generateEditMachine(
       .find((item) => item.includes('architectImplementation')) || '';
 
   const { file } = (context[architectImplementationId] as UserIntent);
+
+  await writeFileIfNotFoundLocally(file);
+
   // there must be a spec file generated in the previous architectureReview state
   if (!file || !fs.existsSync(file)) throw new Error(`File does not exist: ${file}`);
+
   // reload the file to get the latest contents so we can capture user edits
   const plan = await fs.promises.readFile(file, 'utf8');
 
@@ -511,8 +517,13 @@ Return ONLY JSON.
     non_applicable,
   }
 
-  const abs = path.resolve(process.env.BASE_FILE_STORAGE || process.cwd(), `codeEdits-${context.machineExecutionId}.json`);
-  await fs.promises.writeFile(abs, JSON.stringify(completeOps, null, 2), 'utf8');
+  const fileName = `codeEdits-${context.machineExecutionId}.json`;
+  const abs = path.resolve(process.env.BASE_FILE_STORAGE || process.cwd(), fileName);
+  const content = JSON.stringify(completeOps, null, 2);
+
+  await fs.promises.writeFile(abs, content, 'utf8');
+
+  await saveFileToGithub(abs, content);
 
   parsedMessages.push({
     system: `Edits file produced: ${abs}`,

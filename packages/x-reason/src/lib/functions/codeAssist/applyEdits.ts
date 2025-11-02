@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as path from 'path';
 
 import { container } from '@codestrap/developer-foundations-di';
 import {
@@ -7,8 +8,10 @@ import {
   MachineEvent,
   ThreadsDao,
   TYPES,
+  VersionControlService,
 } from '@codestrap/developer-foundations-types';
 import { executeEditMachine } from './executeEditMachine';
+import { writeFileIfNotFoundLocally } from './delegates/github';
 
 export async function applyEdits(
   context: Context,
@@ -31,10 +34,10 @@ export async function applyEdits(
       .find((item) => item.includes('generateEditMachine')) || '';
 
   const { file } = context[generateEditMachineId] as { file: string };
-
   let updatedContents;
-  if (file && !fs.existsSync(file))
-    throw new Error(`File does not exist: ${file}`);
+
+  await writeFileIfNotFoundLocally(file);
+
   if (file) {
     // read the file that may contain updates from the user
     updatedContents = await fs.promises.readFile(file, 'utf8');
@@ -60,7 +63,7 @@ export async function applyEdits(
     write: true,
     format: true,
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onLog: () => {},
+    onLog: () => { },
   };
 
   const results = await executeEditMachine(edits.ops, options);

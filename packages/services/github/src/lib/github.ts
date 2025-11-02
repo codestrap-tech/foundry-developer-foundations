@@ -113,7 +113,7 @@ export async function getFile(params: {
     };
   }
 
-  throw new Error("Requested path is not a file or could not be retrieved.");
+  throw new Error(`Path ${path} not found in repo ${owner}/${repo} or is not a file.`);
 }
 
 /**

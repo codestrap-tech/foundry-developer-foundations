@@ -1,3 +1,6 @@
+import * as fs from 'fs';
+import * as path from 'path';
+
 import {
     AbstractReviewState,
     CodeReviewState,
@@ -6,9 +9,10 @@ import {
     ThreadsDao,
     TYPES,
     UserIntent,
+    VersionControlService,
 } from '@codestrap/developer-foundations-types';
-import * as fs from 'fs';
 import { container } from '@codestrap/developer-foundations-di';
+import { saveFileToGithub, writeFileIfNotFoundLocally } from './delegates/github';
 
 export async function codeReview(
     context: Context,
@@ -23,6 +27,9 @@ export async function codeReview(
             .find((item) => item.includes('generateEditMachine')) || '';
     const { file } = context[generateEditMachineId] as UserIntent || { approved: false };
     // there must be a spec file generated in the previous architectureReview state
+    await writeFileIfNotFoundLocally(file);
+
+    // there must be a spec file generated in the previous architectureReview state
     if (!file || !fs.existsSync(file)) throw new Error(`File does not exist: ${file}`);
 
     // get the state
@@ -34,6 +41,9 @@ export async function codeReview(
     const { approved, messages } = context[codeReviewId] as AbstractReviewState || { approved: false }
 
     if (approved) {
+        // make sure to capture any changes to the spec file that resulted from direct user edits
+        await saveFileToGithub(file);
+
         return {
             approved,
             messages,

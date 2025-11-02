@@ -8,12 +8,14 @@ import {
   MachineEvent,
   ThreadsDao,
   UserIntent,
+  VersionControlService,
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 import { TYPES } from '@codestrap/developer-foundations-types';
 import {
   openAiImplementationGenerator,
 } from './delegates';
+import { saveFileToGithub, writeFileIfNotFoundLocally } from './delegates/github';
 
 async function verifyFilePaths(ops: FileOp[]) {
   const root = process.cwd();
@@ -165,6 +167,9 @@ export async function architectImplementation(
   event?: MachineEvent,
   task?: string
 ): Promise<Completion> {
+  // TODO fix me. the parallel attibute is not appearing on the state but the transitions
+  // includes logic is being set to true by default. It should be false
+
   const threadsDao = container.get<ThreadsDao>(TYPES.ThreadsDao);
   // we use the thread because it should not only contain the design specification but user comments as well
   const { messages } = await threadsDao.read(context.machineExecutionId!);
@@ -182,6 +187,8 @@ export async function architectImplementation(
   const { userResponse, file } =
     (context[architectImplementationId] as UserIntent) || {};
 
+  await writeFileIfNotFoundLocally(file);
+
   let updatedContents;
   if (file) {
     // read the file that may contain updates from the user
@@ -198,6 +205,8 @@ export async function architectImplementation(
 
   const { file: designSpec } =
     (context[confirmUserIntentId] as UserIntent) || {};
+
+  await writeFileIfNotFoundLocally(designSpec);
 
   if (!designSpec || !fs.existsSync(designSpec))
     throw new Error(`File does not exist: ${designSpec}`);
@@ -340,11 +349,15 @@ ${answer}
 ${fileBlocks}
   `;
 
+  const fileName = `proposedCodeEdits-${context.machineExecutionId}.md`;
   const abs = path.resolve(
     process.env.BASE_FILE_STORAGE || process.cwd(),
-    `proposedCodeEdits-${context.machineExecutionId}.md`
+    fileName,
   );
+
   await fs.promises.writeFile(abs, msg, 'utf8');
+
+  await saveFileToGithub(abs, msg);
 
   return {
     confirmationPrompt: msg,

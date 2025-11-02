@@ -34,6 +34,13 @@ declare global {
             SLACK_BASE_URL: string;
             REDIRECT_URL: string;
             FOUNDRY_CLIENT_TYPE: SupportedFoundryClients;
+            GITHUB_PRIVATE_KEY: string;
+            GITHUB_APP_ID: string;
+            GITHUB_APP_CLIENT_ID: string;
+            GITHUB_APP_CLIENT_SECRET: string;
+            GITHUB_INSTALLATION_ID: string;
+            GITHUB_REPO_OWNER: string;
+            GITHUB_REPO_NAME: string;
         }
     }
 }
