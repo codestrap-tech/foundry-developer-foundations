@@ -50,6 +50,7 @@
     "@elevenlabs/react": "^0.1.7",
     "@google/generative-ai": "^0.24.1",
     "@mendable/firecrawl-js": "^1.29.3",
+    "@octokit/auth-app": "^8.1.1",
     "@octokit/rest": "^22.0.0",
     "@osdk/client": "^2.2.1",
     "@osdk/foundry.admin": "^2.22.0",

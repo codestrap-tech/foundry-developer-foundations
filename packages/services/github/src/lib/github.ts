@@ -1,5 +1,5 @@
 import { createAppAuth } from "@octokit/auth-app";
-import { AppAuthentication, AuthInterface } from "@octokit/auth-app/dist-types/types";
+import { AppAuthentication } from "@octokit/auth-app/dist-types/types";
 import { Octokit } from "@octokit/rest";
 
 let authInstance: AppAuthentication | undefined;
