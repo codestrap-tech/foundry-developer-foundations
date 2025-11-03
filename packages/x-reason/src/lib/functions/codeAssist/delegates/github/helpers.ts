@@ -26,8 +26,8 @@ export async function writeFileIfNotFoundLocally(file: string | undefined) {
         try {
           // this will throw "Path ${path} not found in repo ${owner}/${repo} or is not a file." if the file is not found
           result = await githubService.getFile({
-            owner: process.env.GITHUB_REPO_OWNER,
-            repo: process.env.GITHUB_REPO_NAME,
+            owner: process.env.GITHUB_REPO_OWNER || '',
+            repo: process.env.GITHUB_REPO_NAME || '',
             path: fileName,
           });
         } catch (e) {
@@ -58,8 +58,8 @@ export async function saveFileToGithub(file: string, content?: string) {
     try {
         // check if the file exists in github repo
         const result = await githubService.getFile({
-            owner: process.env.GITHUB_REPO_OWNER,
-            repo: process.env.GITHUB_REPO_NAME,
+            owner: process.env.GITHUB_REPO_OWNER || '',
+            repo: process.env.GITHUB_REPO_NAME || '',
             path: fileName,
         });
         sha = result.sha;
@@ -69,8 +69,8 @@ export async function saveFileToGithub(file: string, content?: string) {
     }
     // if sha is defined it will update, otherwise create
     await githubService.checkinFile({
-        owner: process.env.GITHUB_REPO_OWNER,
-        repo: process.env.GITHUB_REPO_NAME,
+        owner: process.env.GITHUB_REPO_OWNER || '',
+        repo: process.env.GITHUB_REPO_NAME || '',
         path: fileName,
         message: '[specReview] write proposed spec design.',
         content,

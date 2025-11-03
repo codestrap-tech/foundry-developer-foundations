@@ -1,6 +1,6 @@
-import { createAppAuth } from "@octokit/auth-app";
-import { AppAuthentication } from "@octokit/auth-app/dist-types/types";
-import { Octokit } from "@octokit/rest";
+import { createAppAuth } from '@octokit/auth-app';
+import type { AppAuthentication } from '@octokit/auth-app';
+import { Octokit } from '@octokit/rest';
 
 let authInstance: AppAuthentication | undefined;
 // Global caches (module-scoped)
@@ -13,7 +13,10 @@ const installationTokenCache = new Map<
 export async function getGithubAuth() {
   if (!authInstance) {
     // Decode the base64 key once at startup
-    const privateKey = Buffer.from(process.env.GITHUB_PRIVATE_KEY!, "base64").toString("utf8");
+    const privateKey = Buffer.from(
+      process.env.GITHUB_PRIVATE_KEY!,
+      'base64'
+    ).toString('utf8');
 
     const auth = createAppAuth({
       appId: parseInt(process.env.GITHUB_APP_ID!, 10),
@@ -21,13 +24,16 @@ export async function getGithubAuth() {
       clientId: process.env.GITHUB_APP_CLIENT_ID!,
       clientSecret: process.env.GITHUB_APP_CLIENT_SECRET!,
     });
-    authInstance = await auth({ type: "app" });
+    authInstance = await auth({ type: 'app' });
   }
-  
+
   return authInstance as AppAuthentication;
 }
 
-function needsRefresh(expiresAtISO: string | undefined, skewSeconds: number): boolean {
+function needsRefresh(
+  expiresAtISO: string | undefined,
+  skewSeconds: number
+): boolean {
   if (!expiresAtISO) return true;
   const now = Date.now();
   const expiryMs = Date.parse(expiresAtISO);
@@ -57,7 +63,10 @@ export async function getInstallationOctokit(params: {
   const cacheKey = `${owner}/${repo}`;
   let installationId = installationIdCache.get(cacheKey);
   if (!installationId) {
-    const { data: installation } = await appOctokit.apps.getRepoInstallation({ owner, repo });
+    const { data: installation } = await appOctokit.apps.getRepoInstallation({
+      owner,
+      repo,
+    });
     installationId = installation.id;
     installationIdCache.set(cacheKey, installationId);
   }
@@ -68,7 +77,10 @@ export async function getInstallationOctokit(params: {
     const { data: iat } = await appOctokit.apps.createInstallationAccessToken({
       installation_id: installationId,
     });
-    installationTokenCache.set(installationId, { token: iat.token, expiresAt: iat.expires_at });
+    installationTokenCache.set(installationId, {
+      token: iat.token,
+      expiresAt: iat.expires_at,
+    });
   }
 
   const current = installationTokenCache.get(installationId)!;
@@ -97,12 +109,16 @@ export async function getFile(params: {
 
   const res = await octokit.repos.getContent({ owner, repo, path, ref });
 
-  if (!Array.isArray(res.data) && res.data.type === "file" && "content" in res.data) {
-    const raw = res.data.content ?? "";
+  if (
+    !Array.isArray(res.data) &&
+    res.data.type === 'file' &&
+    'content' in res.data
+  ) {
+    const raw = res.data.content ?? '';
     const buffer =
-      res.data.encoding === "base64"
-        ? Buffer.from(raw, "base64")
-        : Buffer.from(raw, (res.data.encoding as BufferEncoding) ?? "utf8");
+      res.data.encoding === 'base64'
+        ? Buffer.from(raw, 'base64')
+        : Buffer.from(raw, (res.data.encoding as BufferEncoding) ?? 'utf8');
 
     return {
       sha: res.data.sha,
@@ -113,7 +129,9 @@ export async function getFile(params: {
     };
   }
 
-  throw new Error(`Path ${path} not found in repo ${owner}/${repo} or is not a file.`);
+  throw new Error(
+    `Path ${path} not found in repo ${owner}/${repo} or is not a file.`
+  );
 }
 
 /**
@@ -126,9 +144,9 @@ export async function checkinFile(params: {
   repo: string;
   path: string;
   message: string;
-  content: string | Buffer;   // raw content, will be base64-encoded
+  content: string | Buffer; // raw content, will be base64-encoded
   branch?: string;
-  sha?: string;               // required for updates
+  sha?: string; // required for updates
   committer?: { name: string; email: string };
   author?: { name: string; email: string };
 }) {
@@ -147,9 +165,9 @@ export async function checkinFile(params: {
   const { octokit } = await getInstallationOctokit({ owner, repo });
 
   const base64Content =
-    typeof content === "string"
-      ? Buffer.from(content, "utf8").toString("base64")
-      : Buffer.from(content).toString("base64");
+    typeof content === 'string'
+      ? Buffer.from(content, 'utf8').toString('base64')
+      : Buffer.from(content).toString('base64');
 
   const res = await octokit.repos.createOrUpdateFileContents({
     owner,
