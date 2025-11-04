@@ -41,7 +41,7 @@ export type ExtensionAction =
     }
   | {
       type: 'SET_WORKTREE_READY';
-      payload: { threadId?: string; worktreeName?: string };
+      payload: { currentThreadId?: string; worktreeName?: string };
     }
   | { type: 'SET_WORKTREE_SETUP_ERROR' }
   | { type: 'SET_THREAD_STATE'; payload: ExtensionState['currentThreadState'] }
@@ -93,7 +93,8 @@ function extensionReducer(
       return {
         ...state,
         currentThreadState: 'ready',
-        currentThreadId: action.payload.threadId || state.currentThreadId,
+        currentThreadId:
+          action.payload.currentThreadId || state.currentThreadId,
         currentWorktreeName:
           action.payload.worktreeName || state.currentWorktreeName,
       };

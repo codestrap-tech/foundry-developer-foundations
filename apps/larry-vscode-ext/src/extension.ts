@@ -231,21 +231,25 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
   // Thread ID file management
   private async readCurrentThreadId(
     worktreeName: string
-  ): Promise<string | undefined> {
+  ): Promise<string[] | undefined> {
     try {
       const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
       if (!workspaceFolder) {
         return undefined;
       }
 
-      const threadIdFilePath = vscode.Uri.joinPath(
+      const threadIdsFilePath = vscode.Uri.joinPath(
         workspaceFolder.uri,
+        '.larry',
+        'worktrees',
+        worktreeName,
         'tmp',
-        'currentThreadId.txt'
+        'worktreeLocalThreads.json'
       );
 
-      const fileContent = await vscode.workspace.fs.readFile(threadIdFilePath);
-      return fileContent.toString().trim();
+      const fileContent = await vscode.workspace.fs.readFile(threadIdsFilePath);
+      const threadIds = JSON.parse(fileContent.toString());
+      return Array.isArray(threadIds) ? threadIds : [];
     } catch (error) {
       // File doesn't exist or can't be read
       return undefined;
@@ -273,13 +277,32 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       // Create tmp directory if it doesn't exist
       await vscode.workspace.fs.createDirectory(tmpDir);
 
-      const threadIdFilePath = vscode.Uri.joinPath(
+      const threadIdsFilePath = vscode.Uri.joinPath(
         tmpDir,
-        'currentThreadId.txt'
+        'worktreeLocalThreads.json'
       );
+
+      // Read existing thread IDs or initialize empty array
+      let existingThreadIds: string[] = [];
+      try {
+        const fileContent = await vscode.workspace.fs.readFile(
+          threadIdsFilePath
+        );
+        existingThreadIds = JSON.parse(fileContent.toString());
+      } catch (error) {
+        // File doesn't exist or can't be parsed, start with empty array
+        existingThreadIds = [];
+      }
+
+      // Add new thread ID if it doesn't already exist
+      if (!existingThreadIds.includes(threadId)) {
+        existingThreadIds.push(threadId);
+      }
+
+      // Write updated thread IDs back to file
       await vscode.workspace.fs.writeFile(
-        threadIdFilePath,
-        Buffer.from(threadId, 'utf8')
+        threadIdsFilePath,
+        Buffer.from(JSON.stringify(existingThreadIds, null, 2), 'utf8')
       );
     } catch (error) {
       console.error('Error writing thread ID file:', error);
@@ -454,9 +477,40 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
     // If in worktree, try to read thread ID from file
     if (isInWorktree && worktreeId) {
       try {
-        currentThreadId = await this.readCurrentThreadId(worktreeId);
+        const threadIds = await this.readCurrentThreadId(worktreeId);
+        // Use the most recent thread ID (last in the array) if available
+        currentThreadId =
+          threadIds && threadIds.length > 0
+            ? threadIds[threadIds.length - 1]
+            : undefined;
       } catch (error) {
         console.error('Error reading thread ID for worktree:', error);
+      }
+
+      const containerName = `larry-worktree-${worktreeId}`;
+      try {
+        const { stdout: inspectOutput } = await execAsync(
+          `docker inspect ${containerName}`
+        );
+        const containerInfo = JSON.parse(inspectOutput);
+
+        console.log('Container info:', containerInfo);
+
+        if (containerInfo.length > 0) {
+          const container = containerInfo[0];
+          const isRunning = container.State.Running;
+          const containerId = container.Id;
+
+          if (!isRunning) {
+            await execAsync(`docker start ${containerId}`);
+            this.runningContainers.set(worktreeId, containerId);
+          } else {
+            this.runningContainers.set(worktreeId, containerId);
+          }
+        }
+      } catch (inspectError) {
+        console.error('Error inspecting container:', inspectError);
+        await this.startWorktreeDockerContainer(worktreeId, undefined, true);
       }
     }
 
@@ -790,7 +844,8 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
   async startWorktreeDockerContainer(
     worktreeName: string,
-    threadId: string | undefined
+    threadId: string | undefined,
+    isInWorktree?: boolean
   ): Promise<string> {
     try {
       // Ensure Docker image exists before running
@@ -810,13 +865,15 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         // Container doesn't exist, which is fine
       }
 
-      const worktreePath = vscode.Uri.joinPath(
-        workspaceFolder.uri,
-        '.larry',
-        'worktrees',
-        worktreeName
-      ).fsPath;
-
+      const worktreePath = !isInWorktree
+        ? vscode.Uri.joinPath(
+            workspaceFolder.uri,
+            '.larry',
+            'worktrees',
+            worktreeName
+          ).fsPath
+        : vscode.Uri.joinPath(workspaceFolder.uri, '').fsPath;
+      console.log(worktreePath);
       // Start worktree container on port 4220
       const threadIdEnv = threadId ? `-e THREAD_ID=${threadId}` : '';
       const { stdout } = await execAsync(
@@ -1017,6 +1074,12 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
     view.webview.onDidReceiveMessage(async (msg) => {
       // New flow message handlers
+      if (msg?.type === 'reload_extension') {
+        console.log('🔄 Reloading extension...');
+        await vscode.commands.executeCommand('workbench.action.reloadWindow');
+        return;
+      }
+
       if (msg?.type === 'open_worktree') {
         await this.handleOpenWorktree(
           msg.worktreeName || '',
@@ -1034,6 +1097,33 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
       if (msg?.type === 'openFile') {
         await this.openFile(msg.file);
+        return;
+      }
+
+      if (msg?.type === 'saveThreadId') {
+        await this.writeCurrentThreadId(msg.worktreeName, msg.threadId);
+        const threadIds = await this.readCurrentThreadId(msg.worktreeName);
+
+        view.webview.postMessage({
+          type: 'threadIds',
+          worktreeName: msg.worktreeName,
+          threadIds: threadIds,
+        });
+        view.webview.postMessage({
+          type: 'threadIdSaved',
+          worktreeName: msg.worktreeName,
+          threadId: msg.threadId,
+        });
+        return;
+      }
+
+      if (msg?.type === 'readThreadIds') {
+        const threadIds = await this.readCurrentThreadId(msg.worktreeName);
+        view.webview.postMessage({
+          type: 'threadIds',
+          worktreeName: msg.worktreeName,
+          threadIds: threadIds,
+        });
         return;
       }
 

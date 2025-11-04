@@ -26,10 +26,7 @@ export function machinesRoutes(idem: IdempotencyStore, sse: SSEService) {
 
         const context = JSON.parse(machine.state!).context;
         const currentStateContext = context[context.stateId];
-        const humanReview =
-          machine.currentState === 'pause' &&
-          (!!currentStateContext?.confirmationPrompt ||
-            !!currentStateContext?.reviewRequired);
+        const humanReview = currentStateContext?.reviewRequired;
 
         const running = !humanReview && !currentStateContext?.approved;
         const status: MachineStatus = humanReview

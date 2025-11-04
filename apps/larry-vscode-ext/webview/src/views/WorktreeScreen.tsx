@@ -1,15 +1,20 @@
-import React from 'react';
+/* JSX */
+/* @jsxImportSource preact */
 import { useState, useEffect } from 'preact/hooks';
-import { useExtensionStore } from '../store/store';
+import { useExtensionDispatch, useExtensionStore } from '../store/store';
 import { createThread } from '../lib/http';
 import { AnimatedEllipsis } from './components/AnimatedEllipsis';
 import { useThreadsQuery } from '../hooks/useThreadsQuery';
 import { useMachineQuery } from '../hooks/useMachineQuery';
 import { StateVisualization } from './components/StateVisualization';
+import { useWorktreeThreads } from '../hooks/useWorktreeThreads';
+import { PlusIcon } from 'lucide-preact';
 
 export function WorktreeScreen() {
   const [firstMessage, setFirstMessage] = useState('');
   const [provisioning, setProvisioning] = useState(false);
+  const [previousThreadId, setPreviousThreadId] = useState<string | undefined>(undefined);
+  const dispatch = useExtensionDispatch();
   const { apiUrl, clientRequestId, currentThreadId, currentWorktreeName } = useExtensionStore();
   console.log('CURRENT THREAD ID::', currentThreadId);
   
@@ -25,13 +30,13 @@ export function WorktreeScreen() {
 
   // Read threads data to get the session label
   const { data: threadsData } = useThreadsQuery(apiUrl);
+
+  const { threads: localThreads } = useWorktreeThreads(currentWorktreeName);
   
   useEffect(() => {
     // This effect is only for debug purposes, not doing anything more
     console.log('MACHINE DATA::')
     console.log(machineData)
-    console.log('THREADS DATA::')
-    console.log(threadsData)
   }, [machineData, threadsData]);
   
   // Find current thread label from threads list
@@ -61,14 +66,52 @@ export function WorktreeScreen() {
     
   }
 
+  const handleAddThread = () => {
+    setPreviousThreadId(currentThreadId);
+    dispatch({
+      type: 'SET_CURRENT_THREAD_ID',
+      payload: undefined,
+    });
+  }
+
+  const handleBackToPreviousThread = () => {
+    dispatch({
+      type: 'SET_CURRENT_THREAD_ID',
+      payload: previousThreadId,
+    });
+    setPreviousThreadId(undefined);
+  }
+
+  const handleThreadClick = (threadId: string) => {
+    dispatch({
+      type: 'SET_CURRENT_THREAD_ID',
+      payload: threadId,
+    });
+  }
+
+  if (currentThreadId && !machineData) {
+    return <div>Loading thread...</div>
+  }
+
   if (currentThreadId && machineData) {
     return (
       <div className="min-h-screen">
-        <div className="d-flex flex-justify-between flex-items-center mb-2">
-          <h4 className="h3 m-0">{sessionLabel}</h4>
+        <div className="threadsTabsList">
+          <div className="threadsTabsList__items">
+            {localThreads?.map((threadId, index) => (
+              <div className={`threadsTabsList__item ${threadId === currentThreadId ? 'active' : ''}`} onClick={() => handleThreadClick(threadId)}>Thread {index + 1}</div>
+            ))}
+          </div>
+          <div className="threadsTabsList__add" onClick={handleAddThread}>
+            <PlusIcon className="threadsTabsList__addIcon" />
+          </div>
+        </div>
+        <div className="mb-2">
+          <h4 className="h4 m-0">{sessionLabel}</h4>
+          <small>{currentThreadId}</small>
         </div>
         {isLoading ? (
-          <div className="color-fg-muted">Loading history…</div>
+          <div className="color-fg-muted">Loading thread...</div>
         ) : (
           <StateVisualization data={machineData} onSubmit={handleSubmit} />
         )}
@@ -79,7 +122,14 @@ export function WorktreeScreen() {
 
   return (
     <div className="Box p-3 d-flex flex-column gap-2">
-      <h2 className="h3 m-0">New Session</h2>
+      <div className="d-flex flex-justify-between flex-items-center">
+        <h2 className="h4 m-0">New thread</h2>
+        {!provisioning && previousThreadId && (
+          <button className="btn btn-primary" onClick={handleBackToPreviousThread}>
+            Back
+          </button>
+        )}
+      </div>
       <textarea
         className="form-control"
         rows={6}

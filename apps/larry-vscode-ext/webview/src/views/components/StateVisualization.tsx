@@ -24,18 +24,18 @@ const stateComponentMap: Record<string, any> = {
   architectureReview: ArchitectureReview,
   searchDocumentation: SearchDocumentation,
   generateEditMachine: GenerateEditMachine,
-  applyEdits: <div>Applying approved code changes...</div>,
+  applyEdits: () => <div>Applied code changes...</div>,
   codeReview: CodeReview,
 };
 
 export function StateVisualization({data, onSubmit}: {data: MachineResponse, onSubmit: (input: string) => void}) {
   const { apiUrl } = useExtensionStore();
-  const [optimisticState, setOptimisticState] = useState<'running' | 'editsApplied' | undefined>();
   const { fetch: fetchGetNextState } = useNextMachineState(apiUrl);
   const [specReviewRejected, setSpecReviewRejected] = useState(false);
   const [architectureReviewRejected, setArchitectureReviewRejected] = useState(false);
   const [architectureReviewPayload, setArchitectureReviewPayload] = useState<any>(null);
   const [input, setInput] = useState<{placeholder: string, value}>({placeholder: 'Tell me more...', value: ''});
+
   const showInput = useMemo(() => {
     // state computation for confirmUserIntent state
     if (data?.currentState?.startsWith('confirmUserIntent') && data.status === 'awaiting_human') {
@@ -140,12 +140,6 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
     }
   }, [data.context?.currentState, data.context?.stateId]);
 
-  useEffect(() => {
-    if (data.status !== 'running' ) {
-      setOptimisticState(prev => prev === 'editsApplied' ? prev : undefined);
-    }
-  }, [data.status]);
-
   const toggleCollapse = (stateKey: string) => {
     const newCollapsed = new Set(collapsedStates);
     if (newCollapsed.has(stateKey)) {
@@ -195,7 +189,6 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
 
   const continueToNextState = () => {
     fetchGetNextState({ machineId: data.id, contextUpdate: {} });
-    setOptimisticState('running');
   }
 
   const handleSubmit = (e) => {
@@ -261,13 +254,6 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
       lastMessage.user = 'Looks good, approved.';
 
       fetchGetNextState({ machineId: data.id, contextUpdate: { [data.currentState]: { approved: true,  messages} } });
-
-      if (action === 'approveCodeReview') {
-        setTimeout(() => {
-          setOptimisticState('editsApplied');
-        }, 15000);
-        return;
-      }
     } else if (action === 'rejectSpec') {
 
       setInput(curr => ({...curr, placeholder: 'Please provide feedback on what you would like changed'}));
@@ -300,6 +286,8 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
       fetchGetNextState({ machineId: data.id, contextUpdate: { [data.currentState]: { approved: false,  messages} } });
     }
   }
+
+  const finished = data.currentState === 'applyEdits' || data.currentState === 'success' || getDeduplicatedStack().includes('success');
 
 return (
 <div className="flex flex-col h-screen max-w-4xl mx-auto">
@@ -354,17 +342,17 @@ return (
             );
           })}
         </div>
-        {(data.status === 'running' || optimisticState === 'running') && (
+        {(data.status === 'running' && !finished) && (
     <div>
       <span className="shimmer-loading">Working</span><AnimatedEllipsis />
     </div>
   )}
-  {optimisticState === 'editsApplied' && (
+  {finished && (
     <div>
       <span>Code changes applied, review them and commit.</span>
     </div>
   )}
-  {(data.status === 'pending' && !optimisticState) && (
+  {(data.status === 'pending' && !finished) && (
     <div>
       <div className="mb-2">
       Cannot automatically proceed to next state. Click "Continue" button to proceed.

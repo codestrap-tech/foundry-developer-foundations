@@ -2,11 +2,12 @@ import { useEffect } from 'preact/hooks';
 import { onMessage, postMessage } from '../lib/vscode';
 import { useExtensionDispatch, useExtensionStore } from '../store/store';
 import { handleForwardedSSE } from '../lib/extension-sse-bridge';
+import { useSaveThreadId } from '../hooks/useSaveThreadId';
 
 export function BootChannel() {
   const dispatch = useExtensionDispatch();
   const { clientRequestId } = useExtensionStore();
-
+  const { fetch: saveThreadId } = useSaveThreadId();
   useEffect(() => {
     const handleMessage = (msg: any) => {
       if (!msg || typeof msg !== 'object') return;
@@ -26,7 +27,7 @@ export function BootChannel() {
         dispatch({
           type: 'SET_WORKTREE_READY',
           payload: {
-            threadId: msg.threadId,
+            currentThreadId: msg.threadId,
             worktreeName: msg.worktreeName,
           },
         });
@@ -46,7 +47,7 @@ export function BootChannel() {
         console.log('📨 Webview received SSE event:', msg);
         handleForwardedSSE(
           { baseUrl: msg.baseUrl, event: msg.event, data: msg.data },
-          { clientRequestId, dispatch }
+          { clientRequestId, dispatch, saveThreadId }
         );
       }
 

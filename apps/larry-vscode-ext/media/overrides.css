@@ -372,3 +372,65 @@ label {
 	padding-right: 28px !important;
 	width: 100% !important;
 }
+
+
+.threadsTabsList {
+	display: flex;
+	font-size: 12px;
+	gap: 4px;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.threadsTabsList__items {
+	display: flex;
+	gap: 4px;
+	overflow-x: auto;
+	padding-right: 10px;
+}
+
+.threadsTabsList__item {
+	padding: 4px 8px;
+	border-radius: 4px;
+	cursor: pointer;
+	opacity: 0.6;
+	white-space: nowrap;
+	width: 75px;
+	min-width: 70px;
+	text-overflow: ellipsis;
+	overflow: hidden;
+	text-align: center;
+}
+
+.threadsTabsList__item:hover, .threadsTabsList__item.active {
+	background: rgba(255, 255, 255, 0.1);
+	opacity: 1;
+}
+
+
+.threadsTabsList__add {
+	border-radius: 4px;
+	padding: 4px;
+	cursor: pointer;
+	opacity: 0.6;
+}
+
+.threadsTabsList__add:hover {
+	opacity: 1;
+}
+
+.threadsTabsList__addIcon {
+	width: 16px;
+	height: 16px;
+}
+
+.refresh-extension {
+	width: 12px;
+	height: 12px;
+	cursor: pointer;
+	opacity: 0.6;
+}
+
+.refresh-extension:hover {
+	opacity: 1;
+}
