@@ -40,7 +40,7 @@ type Status = 'Active' | 'Suspended';
 enum Color { Red = 'RED' }
 
 // object literal (for upsert)
-const cfg = { version: 'v0' }
+const cfg = { version: 'v1' }
 
 // functions: decl + arrow (for replace body + update return type)
 export function add(a: number, b: number): number { return a + b; }
@@ -62,7 +62,7 @@ const VFS: Record<string, string> = {
     [fileRel]: seed,
 };
 
-describe('executeEditMachine (mocked FS, in-memory ts-morph) — full v0 coverage', () => {
+describe('executeEditMachine (mocked FS, in-memory ts-morph) — full v1 coverage', () => {
     let existsSpy: jest.SpyInstance;
     let readSpy: jest.SpyInstance;
     let writeSpy: jest.SpyInstance;
@@ -134,7 +134,7 @@ describe('executeEditMachine (mocked FS, in-memory ts-morph) — full v0 coverag
         delete VFS[fileAbs];
     });
 
-    it('applies a full v0 plan in-memory, persists edits, and is idempotent on run #2 (excluding one-shot ops)', async () => {
+    it('applies a full v1 plan in-memory, persists edits, and is idempotent on run #2 (excluding one-shot ops)', async () => {
         const ops: EditOp[] = [
             // IMPORTS
             { kind: 'ensureImport', file: fileRel, from: 'zod', names: ['z'] },
@@ -268,8 +268,8 @@ describe('executeEditMachine (mocked FS, in-memory ts-morph) — full v0 coverag
         // interface replaced
         expect(diff1).toMatch(/export\s+interface\s+Settings\s*\{\s*b:\s*string\s*\}/);
         // object upsert
-        // In the unified diff, the added cfg line (note: leading '+', and 'v0' can be ' or ")
-        expect(diff1).toMatch(/^\+\s*const\s+cfg\s*=\s*\{\s*version:\s*['"]v0['"]\s*,?\s*$/m);
+        // In the unified diff, the added cfg line (note: leading '+', and 'v1' can be ' or ")
+        expect(diff1).toMatch(/^\+\s*const\s+cfg\s*=\s*\{\s*version:\s*['"]v1['"]\s*,?\s*$/m);
         // And the added enabled line (with optional trailing comma)
         expect(diff1).toMatch(/^\+\s*enabled:\s*true,?\s*$/m);
         // function body replaced

@@ -4,12 +4,14 @@ import {
   MachineEvent,
   ThreadsDao,
   UserIntent,
+  VersionControlService,
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 import { TYPES } from '@codestrap/developer-foundations-types';
 import * as path from 'path';
 import * as fs from 'fs';
 import { googleSpecGenerator, openAiSpecGenerator } from './delegates';
+import { saveFileToGithub, writeFileIfNotFoundLocally } from './delegates/github';
 
 export async function confirmUserIntent(
   context: Context,
@@ -19,6 +21,7 @@ export async function confirmUserIntent(
   let messages;
 
   const threadsDao = container.get<ThreadsDao>(TYPES.ThreadsDao);
+
   // we use the thread because it should not aonly contain the design specification but user comments as well
   try {
     messages = await threadsDao.read(context.machineExecutionId!);
@@ -41,7 +44,9 @@ export async function confirmUserIntent(
   }[];
 
   let updatedContents;
-  if (file && !fs.existsSync(file)) throw new Error(`File does not exist: ${file}`);
+
+  await writeFileIfNotFoundLocally(file);
+
   if (file) {
     // read the file that may contain updates from the user
     updatedContents = await fs.promises.readFile(file, 'utf8');
@@ -367,8 +372,11 @@ ie - [ ] Option.
     context.machineExecutionId!
   );
 
-  const abs = path.resolve(process.env.BASE_FILE_STORAGE || process.cwd(), `spec-${context.machineExecutionId}.md`);
+  const fileName = `spec-${context.machineExecutionId}.md`;
+  const abs = path.resolve(process.env.BASE_FILE_STORAGE || process.cwd(), fileName);
   await fs.promises.writeFile(abs, answer, 'utf8');
+
+  await saveFileToGithub(abs, answer);
 
   return {
     confirmationPrompt: answer,

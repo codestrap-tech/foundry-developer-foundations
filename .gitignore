@@ -14,7 +14,7 @@ testGitWorklows.sh
 .idea/
 
 project-graph.json
-
+**/*-key.pem
 **/*-spec-output.md
 **/*-ops.json
 **/*-spec.md

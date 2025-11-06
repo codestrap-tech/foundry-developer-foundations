@@ -40,7 +40,7 @@ import { makeTicketsDao } from '@codestrap/developer-foundations-services-palant
 import { makeSlackClient } from '@codestrap/developer-foundations-services-slack';
 import { createLoggingService } from '@codestrap/developer-foundations-utils';
 import { eiaService } from '@codestrap/developer-foundations-services-eia';
-import { makeSqlLiteThreadsDao } from '@codestrap/sql-lite';
+import { makeGithubClient } from '@codestrap/github';
 
 const container = new Container();
 
@@ -111,6 +111,10 @@ container.bind(TYPES.ResearchAssistant).toConstantValue(researchAssistant);
 container
   .bind(TYPES.OfficeService)
   .toConstantValue(makeGSuiteClientV2(process.env.OFFICE_SERVICE_ACCOUNT));
+
+  container
+  .bind(TYPES.VersionControlService)
+  .toConstantValue(makeGithubClient());
 
 container
   .bind(TYPES.MessageService)

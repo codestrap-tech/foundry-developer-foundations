@@ -49,9 +49,9 @@ Generate a design specification that solves for the user input by searching the 
 # Hard Rules for Answer Synthesis
 Be sure you have captured changes that are required for the existing public API such as new parameters, methods, etc
 Be sure you prevent developer foot gunning by designing the solution to handle errors, retries, and backoff policies
-Do not over engineer the solution, engineer for a v0
+Do not over engineer the solution, engineer for an MVP that meets the user requirements
 Organize your code such that you don't nest function declarations or type definitions inside functions
-Include optional suggested enhancements over the v0 solution
+Include optional suggested enhancements over the MVP solution
 
 # User Input
 ${userInput}

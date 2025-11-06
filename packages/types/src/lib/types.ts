@@ -29,6 +29,7 @@ export const TYPES = {
   Gpt4oService: Symbol.for('Gpt4oService'),
   GeminiSearchStockMarket: Symbol.for('GeminiSearchStockMarket'),
   OfficeService: Symbol.for('OfficeService'),
+  VersionControlService: Symbol.for('VersionControlService'),
   MessageService: Symbol.for('MessageService'),
   EmbeddingsService: Symbol.for('EmbeddingsService'),
   TrainingDataDao: Symbol.for('TrainingDataDao'),
@@ -288,10 +289,10 @@ export type MeetingRequest = {
   participants: Array<string>;
   subject: string;
   timeframe_context:
-    | 'user defined exact date/time'
-    | 'as soon as possible'
-    | 'this week'
-    | 'next week';
+  | 'user defined exact date/time'
+  | 'as soon as possible'
+  | 'this week'
+  | 'next week';
   localDateString?: string;
   duration_minutes: number;
   working_hours: {
@@ -330,13 +331,13 @@ type GptSpecificToolChoice = {
 
 type GptTool = {
   function?:
-    | {
-        name: string;
-        description?: string | undefined;
-        strict?: boolean | undefined;
-        parameters: Map<string, string>;
-      }
-    | undefined;
+  | {
+    name: string;
+    description?: string | undefined;
+    strict?: boolean | undefined;
+    parameters: Map<string, string>;
+  }
+  | undefined;
 };
 
 type GptToolChoice = {
@@ -739,6 +740,43 @@ export type CalendarSummary = {
 export type Summaries = {
   message: string;
   calendars: CalendarSummary[];
+};
+
+export type VersionControlService = {
+  getFile: (params: {
+    owner: string;
+    repo: string;
+    path: string;
+    ref?: string; // branch/tag/SHA
+  }) => Promise<{
+    sha: string;
+    size: number;
+    encoding: string;
+    content: Buffer<ArrayBuffer>;
+    path: string;
+  }>;
+  checkinFile: (params: {
+    owner: string;
+    repo: string;
+    path: string;
+    message: string;
+    content: string | Buffer;   // raw content, will be base64-encoded
+    branch?: string;
+    sha?: string;               // required for updates
+    committer?: { name: string; email: string };
+    author?: { name: string; email: string };
+  }) => Promise<{
+    content: {
+      path: string | undefined;
+      sha: string | undefined;
+      size: number | undefined;
+      url: string | undefined;
+    };
+    commit: {
+      sha: string | undefined;
+      url: string | undefined;
+    };
+  }>;
 };
 
 export type OfficeService = {
