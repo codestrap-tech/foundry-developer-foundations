@@ -121,3 +121,9 @@ jobs:
           EIA_BASE_URL: https://api.eia.gov/v2/petroleum/pri/gnd/data/
           CA_SERIES_ID: ${{ secrets.CA_SERIES_ID }}
           FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          GITHUB_PRIVATE_KEY: ${{ secrets.ENV_GITHUB_PRIVATE_KEY }}
+          GITHUB_APP_ID: ${{ secrets.ENV_GITHUB_APP_ID }}
+          GITHUB_APP_CLIENT_ID: ${{ secrets.ENV_GITHUB_APP_CLIENT_ID }}
+          GITHUB_APP_CLIENT_SECRET: ${{ secrets.ENV_GITHUB_APP_CLIENT_SECRET }}
+          GITHUB_REPO_OWNER: doriansmiley
+          GITHUB_REPO_NAME: code-artifacts
