@@ -16,7 +16,6 @@ export default {
   ],
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/packages/x-reason',
-  transformIgnorePatterns: ['/node_modules/(?!(?:@osdk|@codestrap)/)'],
   extensionsToTreatAsEsm: ['.ts'],
   testPathIgnorePatterns: ['<rootDir>/dist/'],
   moduleNameMapper: {
