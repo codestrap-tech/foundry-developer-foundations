@@ -1,0 +1,184 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    "workarounds:all",
+    "npm:unpublishSafe",
+    "github-actions:pinDigests",
+    "docker:pinDigests",
+    ":pinAllExceptPeerDependencies"
+  ],
+  "enabledManagers": ["npm", "github-actions", "dockerfile", "regex"],
+  "timezone": "Europe/Warsaw",
+  "schedule": ["every weekend"],
+  "dependencyDashboard": true,
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "rebaseWhen": "behind-base-branch",
+  "rangeStrategy": "pin",
+  "stabilityDays": 3,
+  "constraints": {
+    "node": "22.13.0",
+    "npm": "10.9.0"
+  },
+  "ignorePaths": [
+    "dist/**",
+    "**/dist/**",
+    "tmp/**",
+    "**/tmp/**",
+    "**/node_modules/**"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["every weekend"]
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
+  "packageRules": [
+    {
+      "description": "Automerge minor/patch across ecosystems after required checks",
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "requiredStatusChecks": ["checks"],
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Keep all major updates hidden until approved on the dashboard",
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true,
+      "prCreation": "approval",
+      "automerge": false
+    },
+    {
+      "description": "Group: Tooling (ESLint/TS/Jest/Nx/SWC/Prettier)",
+      "matchManagers": ["npm"],
+      "matchPackagePatterns": [
+        "^eslint",
+        "^@typescript-eslint/",
+        "^typescript$",
+        "^ts-node$",
+        "^ts-jest$",
+        "^tsup$",
+        "^swc",
+        "^@swc",
+        "^jest",
+        "^@jest",
+        "^@testing-library/",
+        "^prettier$",
+        "^nx$",
+        "^@nx/"
+      ],
+      "groupName": "tooling"
+    },
+    {
+      "description": "Group: UI stack (React/Next/Tailwind/Radix/etc.)",
+      "matchManagers": ["npm"],
+      "matchPackagePatterns": [
+        "^react($|-)",
+        "^react-dom$",
+        "^next$",
+        "^preact$",
+        "^@radix-ui/",
+        "^lucide-",
+        "^class-variance-authority$",
+        "^clsx$",
+        "^@tanstack/react-query$",
+        "^tailwind",
+        "^vega-embed$",
+        "^highlight\\.js$",
+        "^marked($|-)",
+        "^marked-highlight$",
+        "^marked-terminal$",
+        "^react-textarea-autosize$"
+      ],
+      "groupName": "ui-stack"
+    },
+    {
+      "description": "Group: SDKs and APIs (OSDK/Palantir/Google/OpenAI/etc.)",
+      "matchManagers": ["npm"],
+      "matchPackagePatterns": [
+        "^@osdk/",
+        "^@palantir/",
+        "^googleapis$",
+        "^@google/",
+        "^openai$",
+        "^@slack/"
+      ],
+      "groupName": "sdks-and-apis"
+    },
+    {
+      "description": "Group: Runtime utilities (server/libs)",
+      "matchManagers": ["npm"],
+      "matchPackagePatterns": [
+        "^express$",
+        "^cors$",
+        "^helmet$",
+        "^node-fetch$",
+        "^ramda$",
+        "^sql\\.js$",
+        "^inversify$",
+        "^inquirer$",
+        "^fast-glob$",
+        "^ts-morph$",
+        "^dompurify$",
+        "^xstate$"
+      ],
+      "groupName": "runtime-utils"
+    },
+    {
+      "description": "Group: Types packages",
+      "matchManagers": ["npm"],
+      "matchPackagePatterns": ["^@types/"],
+      "groupName": "types"
+    },
+    {
+      "description": "Group: GitHub Actions (minor/patch)",
+      "matchManagers": ["github-actions"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "github-actions",
+      "automerge": true,
+      "automergeType": "pr",
+      "platformAutomerge": true,
+      "requiredStatusChecks": ["checks"]
+    },
+    {
+      "description": "Group: Docker base images (no automerge)",
+      "matchManagers": ["dockerfile"],
+      "matchUpdateTypes": ["minor", "patch"],
+      "groupName": "docker-images",
+      "automerge": false
+    },
+    {
+      "description": "Security alerts: open PRs immediately, outside schedule, high priority",
+      "matchManagers": ["vulnerabilityAlerts"],
+      "labels": ["security"],
+      "schedule": ["at any time"],
+      "prPriority": 1000,
+      "dependencyDashboardApproval": false,
+      "automerge": false
+    },
+    {
+      "description": "Node version in workflows: dashboard-only until approved",
+      "matchManagers": ["regex"],
+      "matchDepNames": ["node"],
+      "dependencyDashboardApproval": true,
+      "prCreation": "approval",
+      "automerge": false
+    }
+  ],
+  "regexManagers": [
+    {
+      "description": "Track Node version in CI workflows (dashboard-only rule above controls PR creation)",
+      "fileMatch": ["^\\.github/workflows/[^/]+\\.ya?ml$"],
+      "matchStrings": [
+        "node-version:\\s*'?(?<currentValue>\\d+\\.\\d+\\.\\d+)'?"
+      ],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "node",
+      "versioningTemplate": "node"
+    }
+  ]
+}
