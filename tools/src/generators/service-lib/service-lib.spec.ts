@@ -1,8 +1,5 @@
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
-import {
-  Tree,
-  readProjectConfiguration,
-} from '@nx/devkit';
+import { Tree, readProjectConfiguration } from '@nx/devkit';
 
 import { serviceLibGenerator } from './service-lib';
 import { ServiceLibGeneratorSchema } from './schema';
@@ -18,9 +15,11 @@ describe('service-lib generator', () => {
     tree = createTreeWithEmptyWorkspace();
   });
 
-  it('should register project configuration', async () => {
+  it('should configure targets correctly', async () => {
     await serviceLibGenerator(tree, options);
     const config = readProjectConfiguration(tree, expectedFileName);
+
+    // check project configuration
     expect(config).toBeDefined();
     expect(config.name).toBe(expectedFileName);
     expect(config.root).toBe(root);
@@ -35,28 +34,33 @@ describe('service-lib generator', () => {
     expect(rel.version.manifestRootsToUpdate).toEqual(['dist/{projectRoot}']);
     expect(rel.version.currentVersionResolver).toBe('git-tag');
     expect(rel.version.fallbackCurrentVersionResolver).toBe('disk');
-  });
-
-  it('should configure targets correctly', async () => {
-    await serviceLibGenerator(tree, options);
-    const config = readProjectConfiguration(tree, expectedFileName);
 
     // build target
     expect(config.targets?.build?.executor).toBe('@nx/js:tsc');
     expect(config.targets?.build?.outputs).toEqual(['{options.outputPath}']);
     expect(config.targets?.build?.options?.outputPath).toBe(`dist/${root}`);
     expect(config.targets?.build?.options?.main).toBe(`${root}/src/index.ts`);
-    expect(config.targets?.build?.options?.tsConfig).toBe(`${root}/tsconfig.lib.json`);
+    expect(config.targets?.build?.options?.tsConfig).toBe(
+      `${root}/tsconfig.lib.json`
+    );
     expect(config.targets?.build?.options?.assets).toEqual([`${root}/*.md`]);
-    expect(config.targets?.build?.options?.packageJson).toBe(`${root}/package.json`);
+    expect(config.targets?.build?.options?.packageJson).toBe(
+      `${root}/package.json`
+    );
 
     // nx-release-publish
-    expect(config.targets?.['nx-release-publish']?.options?.packageRoot).toBe('dist/{projectRoot}');
+    expect(config.targets?.['nx-release-publish']?.options?.packageRoot).toBe(
+      'dist/{projectRoot}'
+    );
 
     // test target
     expect(config.targets?.test?.executor).toBe('@nx/jest:jest');
-    expect(config.targets?.test?.options?.jestConfig).toBe(`${root}/jest.config.ts`);
-    expect(config.targets?.test?.outputs).toEqual(['{workspaceRoot}/coverage/{projectRoot}']);
+    expect(config.targets?.test?.options?.jestConfig).toBe(
+      `${root}/jest.config.ts`
+    );
+    expect(config.targets?.test?.outputs).toEqual([
+      '{workspaceRoot}/coverage/{projectRoot}',
+    ]);
   });
 
   it('should scaffold required files', async () => {
@@ -69,7 +73,6 @@ describe('service-lib generator', () => {
     expect(tree.exists(`${root}/tsconfig.spec.json`)).toBe(true);
     expect(tree.exists(`${root}/src/index.ts`)).toBe(true);
 
-
     // content checks: jest loads dotenv
     const jestCfg = tree.read(`${root}/jest.config.ts`, 'utf-8')!;
     expect(jestCfg).toContain("import * as dotenv from 'dotenv'");
@@ -79,7 +82,8 @@ describe('service-lib generator', () => {
 
     // content checks: eslint uses JSONC parser
     const eslintCfg = tree.read(`${root}/eslint.config.mjs`, 'utf-8')!;
-    expect(eslintCfg.trim()).toBe(`import baseConfig from '../../../eslint.config.mjs';
+    expect(eslintCfg.trim())
+      .toBe(`import baseConfig from '../../../eslint.config.mjs';
 
 export default [
   ...baseConfig,

@@ -11,9 +11,11 @@ export default {
       },
     ],
   },
+  transformIgnorePatterns: [
+    '/node_modules/(?!(@octokit|universal-user-agent|universal-github-app-jwt|before-after-hook|@osdk|@codestrap)/)',
+  ],
   moduleFileExtensions: ['ts', 'js', 'html'],
   coverageDirectory: '../../coverage/packages/x-reason',
-  transformIgnorePatterns: ['/node_modules/(?!(?:@osdk|@codestrap)/)'],
   extensionsToTreatAsEsm: ['.ts'],
   testPathIgnorePatterns: ['<rootDir>/dist/'],
   moduleNameMapper: {
