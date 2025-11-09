@@ -20,6 +20,7 @@ import {
     sendSlackMessage,
     writeSlackMessage,
 } from '../../../functions';
+import { findMeetingDetails } from '../../../functions/comsFunctions/FindMeetingDetails';
 
 
 function getPayload(context: Context, result: Record<string, any>) {
@@ -315,6 +316,23 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
                     console.log('sendSlackMessage function catalog implementation called');
                     const result = await sendSlackMessage(context, event, task);
                     const payload = getPayload(context, result);
+                    dispatch({
+                        type: 'CONTINUE',
+                        payload,
+                    });
+                },
+            },
+        ],
+        [
+            "findMeetingDetails",
+            {
+                description:
+                    "Finds meeting details with specific attendees. Can tell you when your next or previous meeting is with a specific person, including time, date, and summarized transcript.",
+                implementation: async (context: Context, event?: MachineEvent, task?: string) => {
+                    console.log('findMeetingDetails implementation in function catalog called');
+                    const result = await findMeetingDetails(context, event, task);
+                    const payload = getPayload(context, result);
+                    console.log(`findMeetingDetails returned: ${JSON.stringify(result)}`);
                     dispatch({
                         type: 'CONTINUE',
                         payload,
