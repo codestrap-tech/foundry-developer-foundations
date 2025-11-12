@@ -1,4 +1,5 @@
 import { Larry } from '../Larry';
+import { SupportedCodingAgents } from '../LarryAgents';
 
 if (!process.env.E2E) {
     test.skip('e2e test skipped in default run', () => {
@@ -11,7 +12,7 @@ if (!process.env.E2E) {
         });
 
         it('It should retrieve my calendar events for tomorrow', async () => {
-            const larry = new Larry();
+            const larry = new Larry(SupportedCodingAgents.GOOGLE);
 
             const result = await larry.askLarry(`I need to create a search google drive function for the office service`,
                 process.env.FOUNDRY_TEST_USER

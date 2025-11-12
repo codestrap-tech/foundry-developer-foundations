@@ -4,6 +4,7 @@ import * as path from 'path';
 import {
   Larry,
   LarryResponse,
+  SupportedCodingAgents,
 } from '@codestrap/developer-foundations-agents-vickie-bennie';
 import { container } from '@codestrap/developer-foundations-di';
 import {
@@ -22,7 +23,7 @@ export async function googleCodingAgent(
   task?: string
 ): Promise<{ executionId: string; error?: string }> {
   try {
-    const larry = new Larry();
+    const larry = new Larry(SupportedCodingAgents.GOOGLE);
     let result: LarryResponse | undefined;
     let answer;
 

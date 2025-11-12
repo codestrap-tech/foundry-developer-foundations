@@ -12,6 +12,7 @@ import {
 } from '@codestrap/developer-foundations-types';
 import type { User } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
+import { LarryAgentConfig, larryAgents, SupportedCodingAgents } from './LarryAgents';
 
 export interface LarryResponse {
   status: number;
@@ -24,6 +25,12 @@ export interface LarryResponse {
 
 // use classes to take advantage of trace decorator
 export class Larry extends Text2Action {
+  agent: LarryAgentConfig[SupportedCodingAgents];
+
+  constructor(agent: SupportedCodingAgents) {
+    super();
+    this.agent = larryAgents[agent];
+  }
   @Trace({
     resource: {
       service_name: 'larry',
@@ -96,7 +103,7 @@ export class Larry extends Text2Action {
 
     const readmePath = path.resolve(
       process.cwd(),
-      '../../packages/services/google/src/lib/README.LLM.md'
+      this.agent.readmePath
     );
     if (readmePath && !fs.existsSync(readmePath)) throw new Error(`README file does not exist: ${readmePath}`);
     const readme = await fs.readFileSync(readmePath, 'utf8');
@@ -112,7 +119,7 @@ export class Larry extends Text2Action {
       true,
       threadId,
       JSON.stringify({ initialUserPrompt: query }),
-      SupportedEngines.GOOGLE_SERVICES_CODE_ASSIST,
+      this.agent.xreason,
       true
     );
 
@@ -180,7 +187,7 @@ export class Larry extends Text2Action {
     // if there is an existing thread messages are appended to the existing history
     await threadsDao.upsert(
       JSON.stringify(parsedMessages),
-      'cli-tool',
+      this.agent.name,
       threadId
     );
 
