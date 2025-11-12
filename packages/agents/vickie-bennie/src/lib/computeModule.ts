@@ -13,6 +13,7 @@ import {
 import { Bennie } from './Bennie';
 import { uuidv4 } from '@codestrap/developer-foundations-utils';
 import { Larry } from './Larry';
+import { SupportedCodingAgents } from './LarryAgents';
 
 dotenv.config();
 
@@ -186,7 +187,7 @@ function createComputeModule(): ComputeModuleType {
 
   const vickie = new Vickie();
   const bennie = new Bennie();
-  const larry = new Larry();
+  const larry = new Larry(SupportedCodingAgents.GOOGLE);
 
   // IMPORTANT: wrap all execution in try catch so you do not crash the container!
   // node exists on unhandled exceptions
