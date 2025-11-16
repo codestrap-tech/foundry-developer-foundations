@@ -6,7 +6,6 @@ import * as fs from 'fs';
 import {
   Larry,
   LarryResponse,
-  SupportedCodingAgents,
 } from '@codestrap/developer-foundations-agents-vickie-bennie';
 import { container } from '@codestrap/developer-foundations-di';
 import {
@@ -21,7 +20,7 @@ import { uuidv4 } from '@codestrap/developer-foundations-utils';
 import { applyEdits } from './assets/applyEdits';
 
 export async function googleCodingAgent(executionId?: string, contextUpdateInput?: string, task?: string) {
-  const larry = new Larry(SupportedCodingAgents.GOOGLE);
+  const larry = new Larry();
   let result: LarryResponse | undefined;
 
   if (!executionId) {

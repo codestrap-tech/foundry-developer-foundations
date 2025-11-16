@@ -41,6 +41,7 @@ import { makeSlackClient } from '@codestrap/developer-foundations-services-slack
 import { createLoggingService } from '@codestrap/developer-foundations-utils';
 import { eiaService } from '@codestrap/developer-foundations-services-eia';
 import { makeGithubClient } from '@codestrap/github';
+import { LarryAgentFactory, SupportedCodingAgents } from '@codestrap/developer-foundations-x-reason';
 
 const container = new Container();
 
@@ -121,5 +122,7 @@ container
   .toConstantValue(
     makeSlackClient(process.env.SLACK_BASE_URL, process.env.SLACK_BOT_TOKEN)
   );
+
+container.bind(TYPES.LarryCodingAgentFactory).toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
 
 export { container };

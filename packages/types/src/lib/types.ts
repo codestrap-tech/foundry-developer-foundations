@@ -34,6 +34,7 @@ export const TYPES = {
   EmbeddingsService: Symbol.for('EmbeddingsService'),
   TrainingDataDao: Symbol.for('TrainingDataDao'),
   LoggingService: Symbol.for('LoggingService'),
+  LarryCodingAgentFactory: Symbol.for('LarryCodingAgentFactory'),
 };
 
 export type ResearchAssistant = (

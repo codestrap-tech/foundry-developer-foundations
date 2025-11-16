@@ -12,7 +12,7 @@ if (!process.env.E2E) {
         });
 
         it('It should retrieve my calendar events for tomorrow', async () => {
-            const larry = new Larry(SupportedCodingAgents.GOOGLE);
+            const larry = new Larry();
 
             const result = await larry.askLarry(`I need to create a search google drive function for the office service`,
                 process.env.FOUNDRY_TEST_USER
