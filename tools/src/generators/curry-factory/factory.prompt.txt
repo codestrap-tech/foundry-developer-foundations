@@ -1,5 +1,3 @@
-Below is a sample prompt for creating a new factory based on factory.template.ts
-
 Create a new factory using the template below that will:
 Manage retrieval of templates based on file paths in the moduleRegistry. 
 The factory should: 

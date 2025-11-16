@@ -4,6 +4,11 @@
       "factory": "./src/generators/service-lib/service-lib",
       "schema": "./src/generators/service-lib/schema.json",
       "description": "service-lib generator"
+    },
+    "curry-factory": {
+      "factory": "./src/generators/curry-factory/curry-factory",
+      "schema": "./src/generators/curry-factory/schema.json",
+      "description": "curry-factory generator"
     }
   }
 }
