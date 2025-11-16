@@ -1,5 +1,4 @@
 import { Larry } from '../Larry';
-import { SupportedCodingAgents } from '../LarryAgents';
 
 if (!process.env.E2E) {
     test.skip('e2e test skipped in default run', () => {
