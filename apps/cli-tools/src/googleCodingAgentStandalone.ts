@@ -12,7 +12,7 @@ import {
   ThreadsDao,
   TYPES,
 } from '@codestrap/developer-foundations-types';
-import { SupportedEngines } from '@codestrap/developer-foundations-x-reason';
+import { LarryAgentFactory, SupportedCodingAgents, SupportedEngines } from '@codestrap/developer-foundations-x-reason';
 import 'dotenv/config';
 import { uuidv4 } from '@codestrap/developer-foundations-utils';
 
@@ -22,6 +22,8 @@ export async function googleCodingAgent(
   task?: string
 ): Promise<{ executionId: string; error?: string }> {
   try {
+    container.bind(TYPES.LarryCodingAgentFactory).toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
+
     const larry = new Larry();
     let result: LarryResponse | undefined;
     let answer;

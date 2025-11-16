@@ -11,7 +11,7 @@ type LarryAgent = {
     xreason: SupportedEngines;
 }
 
-export type LarryAgentFactory = (config: Record<string, any>) => LarryAgent;
+export type LarryAgentFactoryType = (config: Record<string, any>) => LarryAgent;
 
 
 const factory = curry((map, key, config) => {
@@ -28,7 +28,7 @@ const factory = curry((map, key, config) => {
     return map[key](config);
 });
 
-const clients: Record<SupportedCodingAgents, LarryAgentFactory> = {
+const clients: Record<SupportedCodingAgents, LarryAgentFactoryType> = {
     [SupportedCodingAgents.GOOGLE]: (config: Record<string, any>) => {
         return {
             name: 'cli-tool',
