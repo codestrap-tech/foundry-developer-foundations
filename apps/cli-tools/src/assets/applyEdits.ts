@@ -14,7 +14,7 @@ import { executeEditMachine } from 'packages/x-reason/src/lib/functions/codeAssi
 export async function applyEdits(
     file: string,
 ) {
-
+    const repoRoot = process.env.REPO_ROOT as string;
     let updatedContents;
     if (file && !fs.existsSync(file)) throw new Error(`File does not exist: ${file}`);
     if (file) {
@@ -27,10 +27,10 @@ export async function applyEdits(
     const edits = JSON.parse(updatedContents) as { ops: EditOp[] };
 
     const root = process.cwd();
-    const baseDir = root.split('foundry-developer-foundations')[0];
+    const baseDir = root.split(repoRoot)[0];
     const options = {
-        baseDir: `${baseDir}foundry-developer-foundations`,
-        tsconfigPath: `${baseDir}foundry-developer-foundations/tsconfig.base.json`,
+        baseDir: `${baseDir}${repoRoot}`,
+        tsconfigPath: `${baseDir}${repoRoot}/tsconfig.base.json`,
         dryRun: false,
         write: true,
         format: true,

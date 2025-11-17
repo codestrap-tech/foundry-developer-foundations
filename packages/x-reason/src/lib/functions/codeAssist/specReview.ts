@@ -17,11 +17,12 @@ import { googleFileOpsGenerator } from './delegates';
 import { saveFileToGithub, writeFileIfNotFoundLocally } from './delegates/github';
 
 async function verifyFilePaths(ops: FileOp[]) {
+    const repoRootFolder = process.env.REPO_ROOT as string;
     const root = process.cwd();
-    const inInLocalDev = root.includes('foundry-developer-foundations');
-    // TODO support an ENV var and fallback to hard coded values
+    const inInLocalDev = root.includes(repoRootFolder);
+
     const repoRoot = inInLocalDev
-        ? root.split('foundry-developer-foundations')[0]
+        ? root.split(repoRootFolder)[0]
         : root.split('workspace')[0];
 
     // TODO we need to check each file and confirm the path exists. If not retry. If still unresolved error out.

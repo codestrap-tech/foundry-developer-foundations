@@ -18,11 +18,12 @@ import {
 import { saveFileToGithub, writeFileIfNotFoundLocally } from './delegates/github';
 
 async function verifyFilePaths(ops: FileOp[]) {
+  const repoRootFolder = process.env.REPO_ROOT as string;
   const root = process.cwd();
-  const inInLocalDev = root.includes('foundry-developer-foundations');
+  const inInLocalDev = root.includes(repoRootFolder);
   // TODO support an ENV var and fallback to hard coded values
   const repoRoot = inInLocalDev
-    ? root.split('foundry-developer-foundations')[0]
+    ? root.split(repoRootFolder)[0]
     : root.split('workspace')[0];
 
   // TODO we need to check each file and confirm the path exists. If not retry. If still unresolved error out.
@@ -87,6 +88,7 @@ async function getEffectedFileList(plan: string) {
 }
 
 async function getEffectedFileBlocks(ops: FileOp[]) {
+  const repoRootFolder = process.env.REPO_ROOT as string;
   // TODO: for each file block classify the edits to be performed based on file type. 
   // Note you need a factory to get the delegate to handle the edits based on the path.
   // the factory can parse known paths like packages/google
@@ -103,9 +105,9 @@ async function getEffectedFileBlocks(ops: FileOp[]) {
   // we overwrite every time to take into account that changes may have been introduced that effect the fil list
   // load the contents of the listed file where modified is true and await Promise.all
   const root = process.cwd();
-  const inInLocalDev = root.includes('foundry-developer-foundations');
+  const inInLocalDev = root.includes(repoRootFolder);
   const repoRoot = inInLocalDev
-    ? root.split('foundry-developer-foundations')[0]
+    ? root.split(repoRootFolder)[0]
     : root.split('workspace')[0];
   const promises = ops
     .filter((f) => f.type === 'modified' || f.type === 'required')
@@ -114,7 +116,7 @@ async function getEffectedFileBlocks(ops: FileOp[]) {
         new Promise((resolve, reject) => {
           const filePath = path.join(
             inInLocalDev
-              ? `${repoRoot}/foundry-developer-foundations`
+              ? `${repoRoot}/${repoRootFolder}`
               : `${repoRoot}/workspace`,
             f.file
           );
