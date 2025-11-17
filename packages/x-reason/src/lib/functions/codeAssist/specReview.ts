@@ -33,7 +33,7 @@ async function verifyFilePaths(ops: FileOp[]) {
                 new Promise((resolve, reject) => {
                     const filePath = path.join(
                         inInLocalDev
-                            ? `${repoRoot}/foundry-developer-foundations`
+                            ? `${repoRoot}/${repoRootFolder}`
                             : `${repoRoot}/workspace`,
                         f.file
                     );

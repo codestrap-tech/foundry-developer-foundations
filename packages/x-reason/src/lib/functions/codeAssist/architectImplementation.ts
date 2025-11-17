@@ -21,7 +21,7 @@ async function verifyFilePaths(ops: FileOp[]) {
   const repoRootFolder = process.env.REPO_ROOT as string;
   const root = process.cwd();
   const inInLocalDev = root.includes(repoRootFolder);
-  // TODO support an ENV var and fallback to hard coded values
+
   const repoRoot = inInLocalDev
     ? root.split(repoRootFolder)[0]
     : root.split('workspace')[0];
@@ -34,7 +34,7 @@ async function verifyFilePaths(ops: FileOp[]) {
         new Promise((resolve, reject) => {
           const filePath = path.join(
             inInLocalDev
-              ? `${repoRoot}/foundry-developer-foundations`
+              ? `${repoRoot}/${repoRootFolder}`
               : `${repoRoot}/workspace`,
             f.file
           );
