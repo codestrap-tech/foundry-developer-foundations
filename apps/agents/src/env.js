@@ -3,18 +3,14 @@ import { z } from 'zod';
 
 export const env = createEnv({
   /*
-   * Server-side Environment variables, not available on the client.
-   * Will throw if you access these variables on the client.
+   * Server-only Environment variables
    */
   server: {
-    FOUNDRY_STACK_URL: z.url(),
     FOUNDRY_TOKEN: z.jwt({ alg: 'ES256' }),
     FOUNDRY_TEST_USER: z.uuid(),
     OSDK_CLIENT_SECRET: z.string(),
-    OSDK_CLIENT_ID: z.string(),
     OPEN_WEATHER_API_KEY: z.string(),
     LOG_PREFIX: z.string(),
-    ONTOLOGY_RID: z.string(),
     ONTOLOGY_ID: z.string(),
     GOOGLE_SEARCH_API_KEY: z.string(),
     GOOGLE_SEARCH_ENGINE_ID: z.string(),
@@ -45,6 +41,11 @@ export const env = createEnv({
     GITHUB_APP_CLIENT_SECRET: z.string(),
     GITHUB_REPO_OWNER: z.string(),
     GITHUB_REPO_NAME: z.string(),
+
+    FOUNDRY_STACK_URL: z.url(),
+    OSDK_CLIENT_ID: z.string(),
+    REDIRECT_URL: z.url(),
+    ONTOLOGY_RID: z.string(),
   },
 
   /*
@@ -52,12 +53,65 @@ export const env = createEnv({
    *
    * 💡 You'll get type errors if these are not prefixed with NEXT_PUBLIC_.
    */
-  client: {},
+  client: {
+    NEXT_PUBLIC_FOUNDRY_STACK_URL: z.url(),
+    NEXT_PUBLIC_OSDK_CLIENT_ID: z.string(),
+    NEXT_PUBLIC_REDIRECT_URL: z.url(),
+    NEXT_PUBLIC_ONTOLOGY_RID: z.string(),
+  },
 
   /*
-   * Specify client-side variables
+   * Specify client and server side variables
    */
-  experimental__runtimeEnv: {},
+  runtimeEnv: {
+    // server side variables
+    FOUNDRY_TOKEN: process.env.FOUNDRY_TOKEN,
+    FOUNDRY_TEST_USER: process.env.FOUNDRY_TEST_USER,
+    OSDK_CLIENT_SECRET: process.env.OSDK_CLIENT_SECRET,
+    OPEN_WEATHER_API_KEY: process.env.OPEN_WEATHER_API_KEY,
+    LOG_PREFIX: process.env.LOG_PREFIX,
+    ONTOLOGY_ID: process.env.ONTOLOGY_ID,
+    GOOGLE_SEARCH_API_KEY: process.env.GOOGLE_SEARCH_API_KEY,
+    GOOGLE_SEARCH_ENGINE_ID: process.env.GOOGLE_SEARCH_ENGINE_ID,
+    GOOGLE_SEARCH_ENGINE_MARKETS: process.env.GOOGLE_SEARCH_ENGINE_MARKETS,
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+    BROWSERFY_KEY: process.env.BROWSERFY_KEY,
+    BROWSERFY_BROWSER_URL: process.env.BROWSERFY_BROWSER_URL,
+    RANGR_OSDK_CLIENT_ID: process.env.RANGR_OSDK_CLIENT_ID,
+    RANGR_OSDK_CLIENT_SECRET: process.env.RANGR_OSDK_CLIENT_SECRET,
+    RANGR_FOUNDRY_STACK_URL: process.env.RANGR_FOUNDRY_STACK_URL,
+    RANGR_ONTOLOGY_RID: process.env.RANGR_ONTOLOGY_RID,
+    OFFICE_SERVICE_ACCOUNT: process.env.OFFICE_SERVICE_ACCOUNT,
+    OPEN_AI_KEY: process.env.OPEN_AI_KEY,
+    SLACK_CLIENT_ID: process.env.SLACK_CLIENT_ID,
+    SLACK_CLIENT_SECRET: process.env.SLACK_CLIENT_SECRET,
+    SLACK_SIGNING_SECRET: process.env.SLACK_SIGNING_SECRET,
+    SLACK_BOT_TOKEN: process.env.SLACK_BOT_TOKEN,
+    SLACK_APP_TOKEN: process.env.SLACK_APP_TOKEN,
+    SLACK_BASE_URL: process.env.SLACK_BASE_URL,
+    GSUITE_SERVICE_ACCOUNT: process.env.GSUITE_SERVICE_ACCOUNT,
+    EIA_API_KEY: process.env.EIA_API_KEY,
+    EIA_BASE_URL: process.env.EIA_BASE_URL,
+    CA_SERIES_ID: process.env.CA_SERIES_ID,
+    FIRECRAWL_API_KEY: process.env.FIRECRAWL_API_KEY,
+    GITHUB_PRIVATE_KEY: process.env.GITHUB_PRIVATE_KEY,
+    GITHUB_APP_ID: process.env.GITHUB_APP_ID,
+    GITHUB_APP_CLIENT_ID: process.env.GITHUB_APP_CLIENT_ID,
+    GITHUB_APP_CLIENT_SECRET: process.env.GITHUB_APP_CLIENT_SECRET,
+    GITHUB_REPO_OWNER: process.env.GITHUB_REPO_OWNER,
+    GITHUB_REPO_NAME: process.env.GITHUB_REPO_NAME,
+
+    FOUNDRY_STACK_URL: process.env.FOUNDRY_STACK_URL,
+    OSDK_CLIENT_ID: process.env.OSDK_CLIENT_ID,
+    REDIRECT_URL: process.env.REDIRECT_URL,
+    ONTOLOGY_RID: process.env.ONTOLOGY_RID,
+
+    // client side variables
+    NEXT_PUBLIC_FOUNDRY_STACK_URL: process.env.NEXT_PUBLIC_FOUNDRY_STACK_URL,
+    NEXT_PUBLIC_OSDK_CLIENT_ID: process.env.NEXT_PUBLIC_OSDK_CLIENT_ID,
+    NEXT_PUBLIC_REDIRECT_URL: process.env.NEXT_PUBLIC_REDIRECT_URL,
+    NEXT_PUBLIC_ONTOLOGY_RID: process.env.NEXT_PUBLIC_ONTOLOGY_RID,
+  },
 
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation.

@@ -2,6 +2,7 @@ import { createClient } from '@osdk/client';
 import { User, Users } from '@osdk/foundry.admin';
 import { createPublicOauthClient } from '@osdk/oauth';
 import { FoundryClient, Token } from '@codestrap/developer-foundations-types';
+import { env } from '../../../env';
 
 // this is a utility method to manage usage of the Foundry Client and ensure we only get a singleton
 // files in the palantir services package can't use the container to get the foundry client, nor should they really
@@ -17,22 +18,11 @@ export function getFoundryClient(): FoundryClient {
 }
 
 function createFoundryClient(): FoundryClient {
-
-  if (!process.env['NEXT_PUBLIC_OSDK_CLIENT_ID']
-    || !process.env['NEXT_PUBLIC_REDIRECT_URL']
-    || !process.env['NEXT_PUBLIC_FOUNDRY_STACK_URL']
-    || !process.env['NEXT_PUBLIC_ONTOLOGY_RID']
-  ) {
-    throw new Error(
-      'missing required env vars: NEXT_PUBLIC_OSDK_CLIENT_ID, NEXT_PUBLIC_REDIRECT_URL, NEXT_PUBLIC_FOUNDRY_STACK_URL, NEXT_PUBLIC_ONTOLOGY_RID'
-    );
-  }
-
   // setup the OSDK
-  const clientId: string = process.env['NEXT_PUBLIC_OSDK_CLIENT_ID'];
-  const url: string = process.env['NEXT_PUBLIC_FOUNDRY_STACK_URL'];
-  const ontologyRid: string = process.env['NEXT_PUBLIC_ONTOLOGY_RID'];
-  const redirectUrl: string = window.location.href.split('?')[0];
+  const clientId = env.NEXT_PUBLIC_OSDK_CLIENT_ID;
+  const url = env.NEXT_PUBLIC_FOUNDRY_STACK_URL;
+  const ontologyRid = env.NEXT_PUBLIC_ONTOLOGY_RID;
+  const redirectUrl = env.NEXT_PUBLIC_REDIRECT_URL;
   const scopes: string[] = [
     'api:use-ontologies-read',
     'api:use-ontologies-write',
@@ -41,10 +31,18 @@ function createFoundryClient(): FoundryClient {
     'api:use-connectivity-execute',
     'api:use-orchestration-read',
     'api:use-mediasets-read',
-    'api:use-mediasets-write'
+    'api:use-mediasets-write',
   ];
   //                                   client_id, url,redirectUrl, useHistory, loginPage, postLoginPage, scopes
-  const auth = createPublicOauthClient(clientId, url, redirectUrl, true, redirectUrl, redirectUrl, scopes);
+  const auth = createPublicOauthClient(
+    clientId,
+    url,
+    redirectUrl,
+    true,
+    redirectUrl,
+    redirectUrl,
+    scopes
+  );
   const client = createClient(url, ontologyRid, auth);
 
   const getUser = async () => {
@@ -93,12 +91,11 @@ function createFoundryClient(): FoundryClient {
     } catch (e) {
       console.log(e);
 
-      throw (e);
+      throw e;
     } finally {
       pendingRequest = undefined;
     }
-
-  }
+  };
 
   return { auth, ontologyRid, url, client, getUser, getToken };
 }
