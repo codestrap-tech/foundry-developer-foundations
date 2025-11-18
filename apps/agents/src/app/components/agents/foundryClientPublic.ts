@@ -22,7 +22,8 @@ function createFoundryClient(): FoundryClient {
   const clientId = env.NEXT_PUBLIC_OSDK_CLIENT_ID;
   const url = env.NEXT_PUBLIC_FOUNDRY_STACK_URL;
   const ontologyRid = env.NEXT_PUBLIC_ONTOLOGY_RID;
-  const redirectUrl = env.NEXT_PUBLIC_REDIRECT_URL;
+  const redirectUrl: string = window.location.href.split('?')[0]; // TODO: WHY???, should go from env
+  console.log('🚀 ~ createFoundryClient ~ redirectUrl:', redirectUrl)
   const scopes: string[] = [
     'api:use-ontologies-read',
     'api:use-ontologies-write',
@@ -44,6 +45,7 @@ function createFoundryClient(): FoundryClient {
     scopes
   );
   const client = createClient(url, ontologyRid, auth);
+  console.log('🚀 ~ createFoundryClient ~ client:', client)
 
   const getUser = async () => {
     const user: User = await Users.getCurrent(client);
