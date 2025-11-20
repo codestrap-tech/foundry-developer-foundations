@@ -22,13 +22,9 @@ function removeDockerContainer(containerName) {
 }
 
 function getAvailableWorktrees() {
-  const worktreePath = path.join(process.cwd(), '.larry', 'worktrees');
-
-  if (!fs.existsSync(worktreePath)) {
-    return [];
-  }
-
   try {
+    const worktreePath = path.join(process.cwd(), '.larry', 'worktrees');
+
     return fs.readdirSync(worktreePath).filter((dir) => {
       const fullPath = path.join(worktreePath, dir);
       return fs.statSync(fullPath).isDirectory();
@@ -40,14 +36,9 @@ function getAvailableWorktrees() {
 }
 
 function removeWorktrees(worktreeNames) {
-  const worktreePath = path.join(process.cwd(), '.larry', 'worktrees');
-
-  if (!fs.existsSync(worktreePath)) {
-    console.error('Worktrees directory does not exist.');
-    return;
-  }
-
   try {
+    const worktreePath = path.join(process.cwd(), '.larry', 'worktrees');
+
     if (worktreeNames.includes('--all')) {
       // Remove all worktrees
       fs.readdirSync(worktreePath).forEach((dir) => {
@@ -78,74 +69,82 @@ function removeWorktrees(worktreeNames) {
 }
 
 function promptForWorktreeSelection() {
-  return new Promise((resolve) => {
-    const availableWorktrees = getAvailableWorktrees();
+  return new Promise((resolve, reject) => {
+    try {
+      const availableWorktrees = getAvailableWorktrees();
 
-    if (availableWorktrees.length === 0) {
-      console.log('No worktrees found.');
-      resolve([]);
-      return;
-    }
-
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
-
-    console.log('\nAvailable worktrees:');
-    availableWorktrees.forEach((worktree, index) => {
-      console.log(`  ${index + 1}. ${worktree}`);
-    });
-    console.log(`  ${availableWorktrees.length + 1}. All`);
-    console.log('  0. Cancel\n');
-
-    rl.question(
-      'Select worktree(s) to remove (comma-separated numbers, e.g., 1,3 or ' +
-        (availableWorktrees.length + 1) +
-        ' for all): ',
-      (answer) => {
-        rl.close();
-
-        const selections = answer
-          .split(',')
-          .map((s) => s.trim())
-          .filter((s) => s);
-
-        if (selections.length === 0 || selections.includes('0')) {
-          console.log('Cancelled.');
-          resolve([]);
-          return;
-        }
-
-        const selectedWorktrees = [];
-        const allSelected = selections.includes(
-          String(availableWorktrees.length + 1)
-        );
-
-        if (allSelected) {
-          resolve(availableWorktrees);
-          return;
-        }
-
-        selections.forEach((selection) => {
-          const index = parseInt(selection, 10);
-          if (index >= 1 && index <= availableWorktrees.length) {
-            const worktree = availableWorktrees[index - 1];
-            if (!selectedWorktrees.includes(worktree)) {
-              selectedWorktrees.push(worktree);
-            }
-          }
-        });
-
-        if (selectedWorktrees.length === 0) {
-          console.log('No valid selections made.');
-          resolve([]);
-          return;
-        }
-
-        resolve(selectedWorktrees);
+      if (availableWorktrees.length === 0) {
+        console.log('No worktrees found.');
+        resolve([]);
+        return;
       }
-    );
+
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+
+      console.log('\nAvailable worktrees:');
+      availableWorktrees.forEach((worktree, index) => {
+        console.log(`  ${index + 1}. ${worktree}`);
+      });
+      console.log(`  ${availableWorktrees.length + 1}. All`);
+      console.log('  0. Cancel\n');
+
+      rl.question(
+        'Select worktree(s) to remove (comma-separated numbers, e.g., 1,3 or ' +
+          (availableWorktrees.length + 1) +
+          ' for all): ',
+        (answer) => {
+          try {
+            rl.close();
+
+            const selections = answer
+              .split(',')
+              .map((s) => s.trim())
+              .filter((s) => s);
+
+            if (selections.length === 0 || selections.includes('0')) {
+              console.log('Cancelled.');
+              resolve([]);
+              return;
+            }
+
+            const selectedWorktrees = [];
+            const allSelected = selections.includes(
+              String(availableWorktrees.length + 1)
+            );
+
+            if (allSelected) {
+              resolve(availableWorktrees);
+              return;
+            }
+
+            selections.forEach((selection) => {
+              const index = parseInt(selection, 10);
+              if (index >= 1 && index <= availableWorktrees.length) {
+                const worktree = availableWorktrees[index - 1];
+                if (!selectedWorktrees.includes(worktree)) {
+                  selectedWorktrees.push(worktree);
+                }
+              }
+            });
+
+            if (selectedWorktrees.length === 0) {
+              console.log('No valid selections made.');
+              resolve([]);
+              return;
+            }
+
+            resolve(selectedWorktrees);
+          } catch (error) {
+            reject(error);
+          }
+        }
+      );
+    } catch (error) {
+      reject(error);
+    }
   });
 }
 
