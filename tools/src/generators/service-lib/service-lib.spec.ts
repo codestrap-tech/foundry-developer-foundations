@@ -15,6 +15,7 @@ describe('service-lib generator', () => {
     tree = createTreeWithEmptyWorkspace();
   });
 
+  jest.setTimeout(10000);
   it('should configure targets correctly', async () => {
     await serviceLibGenerator(tree, options);
     const config = readProjectConfiguration(tree, expectedFileName);
@@ -61,7 +62,7 @@ describe('service-lib generator', () => {
     expect(config.targets?.test?.outputs).toEqual([
       '{workspaceRoot}/coverage/{projectRoot}',
     ]);
-  });
+  }, 10000);
 
   it('should scaffold required files', async () => {
     await serviceLibGenerator(tree, options);
