@@ -106,7 +106,13 @@ export class Larry extends Text2Action {
     // save the readme for later so we can retrieve it when creating the design specification
     // we do those so functions like confirmUserIntent are reusable across various coding agents
     const abs = path.resolve(process.env.BASE_FILE_STORAGE || process.cwd(), `readme-${threadId}.md`);
-    await fs.promises.writeFile(abs, readme, 'utf8');
+    try {
+      const dir = abs.substring(0, abs.lastIndexOf('/'));
+      await fs.promises.mkdir(dir, { recursive: true });
+      await fs.promises.writeFile(abs, readme, 'utf8');
+    } catch (error) {
+      console.error('error writing readme:: ', error);
+    }
 
     // if task list is defined and there's no machine where machineExecutionId === threadId, a new solution will be generated
     // else the exiting machine will be rehydrated and the next state sent back
