@@ -10,6 +10,12 @@ import { curry } from 'ramda';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
+import { curryFactoryGenerator, CurryFactoryGeneratorSchema } from '@codestrap/tools';
+
+import {
+  Tree,
+} from '@nx/devkit';
+
 /**
  * Enumeration of supported templates.
  * Each key corresponds to a Grok-style regex expression used
@@ -22,14 +28,16 @@ import * as path from 'path';
  */
 export enum SupportedTemplates {
   GSUITE_CLIENT = '.*gsuite.*client.*',
+  FACTORY = '*factory.*',
 }
 
 /**
  * Defines the structure of a single template definition.
  * Each template maps to a file path that can be loaded dynamically.
  */
-export interface TemplateDefinition {
-  template: string; // Absolute or relative path to the template file
+export interface TemplateDefinition<TOptions = unknown> {
+  template: string;
+  generator?: (tree: Tree, options: TOptions) => Promise<void>;
 }
 
 /**
@@ -37,14 +45,29 @@ export interface TemplateDefinition {
  */
 export type TemplateFactory<T> = (filePath: string) => Promise<T>;
 
+// Registry type that pins per-entry option types
+type TemplateRegistry = {
+  [SupportedTemplates.GSUITE_CLIENT]: TemplateDefinition; // no generator/options
+  [SupportedTemplates.FACTORY]: TemplateDefinition<CurryFactoryGeneratorSchema>;
+};
+
 /**
  * Registry of supported templates.
  * Each entry corresponds to a Grok-style match expression associated with a specific template file.
  */
-export const templateRegistry: Record<SupportedTemplates, TemplateDefinition> = {
+export const templateRegistry: TemplateRegistry = {
   [SupportedTemplates.GSUITE_CLIENT]: {
     template:
       'packages/services/google/src/lib/gsuiteClient.v2.ts',
+  },
+  [SupportedTemplates.FACTORY]: {
+    template:
+      'tools/src/generators/curry-factory/factory.template.ts',
+    generator: async (tree: Tree, options) => {
+      // the caller in the code gen tool can derive the package name and function/fileName from the path in the added block.
+      // the prompt will bee supplied by the developer for now as an additional property in the added block
+      await curryFactoryGenerator(tree, options);
+    },
   },
 };
 

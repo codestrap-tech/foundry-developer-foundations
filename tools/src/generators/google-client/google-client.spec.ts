@@ -5,13 +5,13 @@ import {
   addProjectConfiguration,
   joinPathFragments,
 } from '@nx/devkit';
-import { curryFactoryGenerator } from './curry-factory';
-import { CurryFactoryGeneratorSchema } from './schema';
+import { googleClientGenerator } from './google-client';
+import { GoogleClientGeneratorSchema } from './schema';
 
 // --- Mock filesystem and Gemini API ---
 jest.mock('fs', () => ({
   promises: {
-    readFile: jest.fn().mockResolvedValue('// mock factory template'),
+    readFile: jest.fn().mockResolvedValue('// mock client template'),
   },
   mkdirSync: jest.fn(),
 }));
@@ -20,7 +20,7 @@ jest.mock('@google/genai', () => ({
     models: {
       generateContent: jest.fn().mockResolvedValue({
         text: JSON.stringify({
-          code: '// generated factory code',
+          code: '// generated client code',
           exampleUsage: 'example usage',
           summary: 'summary',
         }),
@@ -29,10 +29,10 @@ jest.mock('@google/genai', () => ({
   })),
 }));
 
-describe('curry-factory generator', () => {
+describe('google-client generator', () => {
   let tree: Tree;
 
-  const options: CurryFactoryGeneratorSchema = {
+  const options: GoogleClientGeneratorSchema = {
     name: 'utils',
     fileName: 'testFactory',
     promptFile: 'create a new test factory',
@@ -41,19 +41,19 @@ describe('curry-factory generator', () => {
   beforeEach(() => {
     tree = createTreeWithEmptyWorkspace();
 
-    // Register a dummy Nx project named 'test-factory'
-    addProjectConfiguration(tree, 'test-factory', {
-      root: 'libs/test-factory',
+    // Register a dummy Nx project named 'test-google-client'
+    addProjectConfiguration(tree, 'test-google-client', {
+      root: 'libs/test-google-client',
       projectType: 'library',
       targets: {},
     });
   });
 
   it('should generate a factory file using AI code', async () => {
-    await curryFactoryGenerator(tree, options);
+    await googleClientGenerator(tree, options);
 
     // --- Verify project configuration exists ---
-    const config = readProjectConfiguration(tree, 'test-factory');
+    const config = readProjectConfiguration(tree, 'test-google-client');
     expect(config).toBeDefined();
 
     // --- Verify factory file was written ---
@@ -62,22 +62,22 @@ describe('curry-factory generator', () => {
       options.name,
       'src',
       'lib',
-      'test-factory.factory.ts'
+      'test-google-client.factory.ts'
     );
 
     expect(tree.exists(expectedPath)).toBe(true);
-    expect(tree.read(expectedPath, 'utf8')).toContain('// generated factory code');
+    expect(tree.read(expectedPath, 'utf8')).toContain('// generated client code');
   });
 
-  it('should read the factory template file and call Gemini once', async () => {
+  it('should read the client template file and call Gemini once', async () => {
     const { promises } = require('fs');
     const { GoogleGenAI } = require('@google/genai');
 
-    await curryFactoryGenerator(tree, options);
+    await googleClientGenerator(tree, options);
 
     // Verify the template was read
     expect(promises.readFile).toHaveBeenCalledWith(
-      expect.stringContaining('factory.template.ts'),
+      expect.stringContaining('client.template.ts'),
       'utf8'
     );
 
