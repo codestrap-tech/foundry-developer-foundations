@@ -17,17 +17,11 @@
  */
 
 import {
-  MeetingRequest,
   OfficeServiceV2,
-  Summaries,
-  DriveSearchParams,
-  DriveSearchOutput,
 } from '@codestrap/developer-foundations-types';
 
-import { makeGSuiteClient as makeGSuiteClientV1 } from '@codestrap/developer-foundations-services-google';
 import { makeGSuiteClientV2 } from '@codestrap/developer-foundations-services-google';
 
-import { wallClockToUTC, workingHoursUTCForDate } from '@codestrap/developer-foundations-utils';
 import { google } from 'googleapis';
 import { loadServiceAccountFromEnv, makeGoogleAuth } from '@codestrap/developer-foundations-services-google/src/lib/helpers/googleAuth';
 

@@ -10,7 +10,7 @@ import { curry } from 'ramda';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
-import { curryFactoryGenerator, CurryFactoryGeneratorSchema } from '@codestrap/tools';
+import { curryFactoryGenerator, CurryFactoryGeneratorSchema, googleClientGenerator, GoogleClientGeneratorSchema } from '@codestrap/tools';
 
 import {
   Tree,
@@ -36,8 +36,8 @@ export enum SupportedTemplates {
  * Each template maps to a file path that can be loaded dynamically.
  */
 export interface TemplateDefinition<TOptions = unknown> {
-  template: string;
-  generator?: (tree: Tree, options: TOptions) => Promise<void>;
+  generator: (tree: Tree, options: TOptions) => Promise<void>;
+  samplePrompts: string[];
 }
 
 /**
@@ -47,7 +47,7 @@ export type TemplateFactory<T> = (filePath: string) => Promise<T>;
 
 // Registry type that pins per-entry option types
 type TemplateRegistry = {
-  [SupportedTemplates.GSUITE_CLIENT]: TemplateDefinition; // no generator/options
+  [SupportedTemplates.GSUITE_CLIENT]: TemplateDefinition<GoogleClientGeneratorSchema>;; // no generator/options
   [SupportedTemplates.FACTORY]: TemplateDefinition<CurryFactoryGeneratorSchema>;
 };
 
@@ -57,17 +57,34 @@ type TemplateRegistry = {
  */
 export const templateRegistry: TemplateRegistry = {
   [SupportedTemplates.GSUITE_CLIENT]: {
-    template:
-      'packages/services/google/src/lib/gsuiteClient.v2.ts',
+      generator: async (tree: Tree, options) => {
+      // the caller in the code gen tool can derive the package name and function/fileName from the path in the added block.
+      // the prompt will bee supplied by the developer for now as an additional property in the added block
+      await googleClientGenerator(tree, options);
+    },
+    samplePrompts: [
+      `Generate a new google service client using the provided template to learn the CodeStrap pattern.
+The new client should be able to write files to drive. The new client number should be v3.
+The only method to add is writeFileToDrive. This should take an array of files to write. The file content will be a file Buffer.`
+    ],
   },
   [SupportedTemplates.FACTORY]: {
-    template:
-      'tools/src/generators/curry-factory/factory.template.ts',
     generator: async (tree: Tree, options) => {
       // the caller in the code gen tool can derive the package name and function/fileName from the path in the added block.
       // the prompt will bee supplied by the developer for now as an additional property in the added block
       await curryFactoryGenerator(tree, options);
     },
+    samplePrompts: [
+      `Create a new factory using the template below that will:
+Manage retrieval of templates based on file paths in the moduleRegistry. 
+The factory should: 
+1. First check for an exact match based on file path in moduleRegistry 
+2. Then check if the path to the folder is in the moduleRegistry 
+3. Load the file for the associated template using fs.promises as a string and return it 
+Rename all the placeholder variables for moduleRegistry, SupportedModules, etc to something contextually relevant for a template factory. 
+The ModuleInterface should also be renamed and have the property: template: string (path to the template to use)
+ `
+    ],
   },
 };
 
