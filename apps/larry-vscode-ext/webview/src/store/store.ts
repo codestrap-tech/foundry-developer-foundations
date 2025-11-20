@@ -74,11 +74,11 @@ const initialState: ExtensionState = {
   currentWorktreeName: undefined,
   currentThreadId: undefined,
   isInWorktree: false,
-  apiUrl: 'http://localhost:4210/larry/agents/google/v1', // Default to main repo URL
-  agents: { google: '/larry/agents/google/v1' }, // Default agent
-  selectedAgent: 'google', // Default selected agent
-  workspaceSetupCommand: ['npm install'],
-  larryEnvPath: 'apps/cli-tools/.env',
+  apiUrl: '', // Will be set when config is loaded
+  agents: {}, // Will be loaded from config
+  selectedAgent: '', // Will be set when config is loaded
+  workspaceSetupCommand: [],
+  larryEnvPath: '',
   currentThreadArtifacts: {},
   isLoadingWorktreeInfo: true,
   isLoadingApp: true,

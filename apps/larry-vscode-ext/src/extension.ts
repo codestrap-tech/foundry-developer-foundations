@@ -5,7 +5,7 @@ import { findProjectRoot } from './findProjectRoot';
 import path from 'path';
 import * as http from 'http';
 import * as https from 'https';
-import { pathToFileURL } from 'url';
+import * as fs from 'fs';
 
 const execAsync = promisify(exec);
 
@@ -15,32 +15,32 @@ interface LarryConfig {
   larryEnvPath: string;
 }
 
-const defaultConfig: LarryConfig = {
-  agents: {
-    google: '/larry/agents/google/v1',
-  },
-  workspaceSetupCommand: ['npm install'],
-  larryEnvPath: 'apps/cli-tools/.env',
-};
-
 async function loadLarryConfig(): Promise<LarryConfig> {
-  try {
-    const projectRoot = await findProjectRoot();
-    if (!projectRoot) {
-      return defaultConfig;
-    }
+  const projectRoot = await findProjectRoot();
+  if (!projectRoot) {
+    throw new Error('Project root not found. Cannot load larry.config.json');
+  }
 
-    const configPath = path.join(projectRoot, 'larry.config.js');
-    const configUrl = pathToFileURL(configPath).href;
+  const configPath = path.join(projectRoot, 'larry.config.json');
+  
+  if (!fs.existsSync(configPath)) {
+    throw new Error(`larry.config.json not found at: ${configPath}`);
+  }
+  
+  try {
+    const configContent = fs.readFileSync(configPath, 'utf-8');
+    const config = JSON.parse(configContent) as LarryConfig;
     
-    // Add cache busting to ensure fresh config load
-    const module = await import(`${configUrl}?t=${Date.now()}`);
-    const config = module.default as LarryConfig;
+    if (!config || !config.agents || Object.keys(config.agents).length === 0) {
+      throw new Error('Invalid larry.config.json: agents configuration is required');
+    }
     
     return config;
   } catch (error) {
-    console.log('Failed to load larry.config.js, using default config:', error);
-    return defaultConfig;
+    if (error instanceof Error && error.message.includes('larry.config.json')) {
+      throw error;
+    }
+    throw new Error(`Failed to parse larry.config.json: ${error instanceof Error ? error.message : error}`);
   }
 }
 
@@ -219,14 +219,21 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
   private sseWorktree?: SSEProxy;
 
-  private config: LarryConfig = defaultConfig;
+  private config?: LarryConfig;
   private configLoaded: Promise<void>;
 
   constructor(private readonly context: vscode.ExtensionContext) {
-    this.configLoaded = loadLarryConfig().then((config) => {
-      this.config = config;
-      console.log('Larry config initialized:', this.config);
-    });
+    this.configLoaded = loadLarryConfig()
+      .then((config) => {
+        this.config = config;
+        console.log('Larry config initialized:', this.config);
+      })
+      .catch((error) => {
+        vscode.window.showErrorMessage(
+          `Larry Extension: ${error.message}. Please create a larry.config.json file in your project root.`
+        );
+        throw error;
+      });
   }
 
   private startMainSSE() {
@@ -235,6 +242,11 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
   }
 
   private startWorktreeSSE(agentKey?: string) {
+    if (!this.config) {
+      console.error('❌ Config not loaded, cannot start SSE');
+      return;
+    }
+    
     const agent = agentKey || Object.keys(this.config.agents)[0];
     const agentRoute = this.config.agents[agent];
     
@@ -844,6 +856,10 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
   async setupWorktreeEnvironment(worktreeName: string, threadId?: string) {
     try {
+      if (!this.config) {
+        throw new Error('Config not loaded');
+      }
+
       this.view?.webview.postMessage({
         type: 'update_thread_state',
         state: 'setting_up_environment',
@@ -861,7 +877,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         worktreeName
       ).fsPath;
 
-
+ 
       if (this.config.larryEnvPath) {
         console.log(`Copying env file from ${this.config.larryEnvPath}...`);
         const sourceEnvPath = vscode.Uri.joinPath(
@@ -1172,6 +1188,14 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         return;
       }
 
+      if (msg?.type === 'getConfig') {
+        view.webview.postMessage({
+          type: 'config_loaded',
+          config: this.config,
+        });
+        return;
+      }
+
       if (msg?.type === 'readFile') {
         const content = await this.readFileContent(msg.filePath);
         view.webview.postMessage({
@@ -1183,21 +1207,18 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       }
     });
 
-    // Initialize worktree detection and Docker when webview is opened
-    console.log('🚀 Starting initial worktree detection and Docker setup...');
+    // Initialize config and worktree detection when webview is opened
+    console.log('🚀 Starting initial config loading and worktree detection...');
 
     // Add a small delay to ensure webview is ready to receive messages
     setTimeout(async () => {
-      await this.configLoaded;
-      
-      view.webview.postMessage({
-        type: 'config_loaded',
-        config: this.config,
-      });
-      
-      this.notifyWorktreeChange().catch((error) => {
-        console.error('❌ Error in initial worktree detection:', error);
-      });
+      try {
+        this.notifyWorktreeChange().catch((error) => {
+          console.error('❌ Error in initial worktree detection:', error);
+        });
+      } catch (error) {
+        console.error('❌ Failed to initialize extension:', error);
+      }
     }, 100);
   }
 }

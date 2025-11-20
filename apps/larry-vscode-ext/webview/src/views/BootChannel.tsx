@@ -70,6 +70,9 @@ export function BootChannel() {
     // Request initial worktree status from extension
     postMessage({ type: 'getCurrentWorktree' });
 
+    // Request initial config from extension
+    postMessage({ type: 'getConfig' });
+
     // Cleanup function
     return () => {
       if (typeof cleanupListener === 'function') {
