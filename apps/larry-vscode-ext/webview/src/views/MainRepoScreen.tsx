@@ -1,23 +1,48 @@
 import React from 'react';
 import { useMemo, useState, useEffect } from 'preact/hooks';
 import { useThreadsQuery } from '../hooks/useThreadsQuery';
-import { useExtensionStore } from '../store/store';
+import { useExtensionStore, useExtensionDispatch } from '../store/store';
 import { postMessage } from '../lib/vscode';
 import type { ThreadListItem } from '../lib/backend-types';
 import { CustomSelect } from './components/CustomSelect';
 import { AnimatedEllipsis } from './components/AnimatedEllipsis';
 
+function capitalizeAgentName(agentKey: string): string {
+  return agentKey
+    .split(/[-_]/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
 export function MainRepoScreen() {
-  const { apiUrl, currentThreadState } = useExtensionStore();
+  const { apiUrl, currentThreadState, agents, selectedAgent } = useExtensionStore();
+  const dispatch = useExtensionDispatch();
   const { data, isLoading } = useThreadsQuery(apiUrl);
   const [newLabel, setNewLabel] = useState('');
   const [selectedThreadId, setSelectedThreadId] = useState<string | undefined>(undefined);
+  const [localSelectedAgent, setLocalSelectedAgent] = useState(selectedAgent);
   const [setupPhase, setSetupPhase] = useState<'idle'
   | 'creating_worktree'
   | 'creating_container'
   | 'setting_up_environment'
   | 'ready'
   | 'error'>('idle');
+
+
+  useEffect(() => {
+    setLocalSelectedAgent(selectedAgent);
+  }, [selectedAgent]);
+
+
+  const agentItems = useMemo(() => {
+    return Object.keys(agents).map(agentKey => ({
+      id: agentKey,
+      label: capitalizeAgentName(agentKey),
+      worktreeName: '',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }));
+  }, [agents]);
 
   useEffect(() => {
     if (currentThreadState === 'ready') {
@@ -62,8 +87,19 @@ export function MainRepoScreen() {
   function openWorktreeNew() {
     setSelectedThreadId(undefined);
     if (!newLabel.trim()) return;
-    postMessage({ type: 'open_worktree', worktreeName: '', threadId: '', label: newLabel.trim() });
+    postMessage({ 
+      type: 'open_worktree', 
+      worktreeName: '', 
+      threadId: '', 
+      label: newLabel.trim(),
+      agentKey: localSelectedAgent,
+    });
     setSetupPhase('creating_worktree');
+  }
+
+  function handleAgentSelect(agentKey: string) {
+    setLocalSelectedAgent(agentKey);
+    dispatch({ type: 'SET_SELECTED_AGENT', payload: agentKey });
   }
 
   return (
@@ -112,28 +148,10 @@ export function MainRepoScreen() {
           </div>
           <div className="width-full mb-2">
           <CustomSelect
-          items={[{
-            id: '1',
-            label: 'Google',
-            worktreeName: '',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },{
-            id: '4',
-            label: 'MS 365',
-            worktreeName: '',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },{
-            id: '3',
-            label: 'React Components',
-            worktreeName: '',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }]}
-          selectedId={'1'}
+          items={agentItems}
+          selectedId={localSelectedAgent}
           size="small"
-          onSelect={() => undefined}
+          onSelect={handleAgentSelect}
           placeholder="Select agent..."
           searchPlaceholder="Select agent..."
           emptyMessage="No agents found"

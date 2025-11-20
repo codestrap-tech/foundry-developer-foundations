@@ -16,6 +16,11 @@ export interface ExtensionState {
   isInWorktree: boolean;
   apiUrl: string;
 
+  agents: Record<string, string>;
+  selectedAgent: string;
+  workspaceSetupCommand: string[];
+  larryEnvPath: string;
+
   // Artifacts (future expansion)
   currentThreadArtifacts: {
     architectureProposeChangesFileContent?: string;
@@ -52,6 +57,15 @@ export type ExtensionAction =
       type: 'SET_ARTIFACTS';
       payload: Partial<ExtensionState['currentThreadArtifacts']>;
     }
+  | {
+      type: 'SET_CONFIG';
+      payload: {
+        agents: Record<string, string>;
+        workspaceSetupCommand: string[];
+        larryEnvPath: string;
+      };
+    }
+  | { type: 'SET_SELECTED_AGENT'; payload: string }
   | { type: 'RESET_STATE' };
 
 // Initial state
@@ -61,6 +75,10 @@ const initialState: ExtensionState = {
   currentThreadId: undefined,
   isInWorktree: false,
   apiUrl: 'http://localhost:4210/larry/agents/google/v1', // Default to main repo URL
+  agents: { google: '/larry/agents/google/v1' }, // Default agent
+  selectedAgent: 'google', // Default selected agent
+  workspaceSetupCommand: ['npm install'],
+  larryEnvPath: 'apps/cli-tools/.env',
   currentThreadArtifacts: {},
   isLoadingWorktreeInfo: true,
   isLoadingApp: true,
@@ -77,14 +95,15 @@ function extensionReducer(
 ): ExtensionState {
   switch (action.type) {
     case 'SET_WORKTREE_DETECTION':
+      const selectedAgentRoute = state.agents[state.selectedAgent] || Object.values(state.agents)[0];
       return {
         ...state,
         isInWorktree: action.payload.isInWorktree,
         currentThreadId: action.payload.currentThreadId,
         currentWorktreeName: action.payload.worktreeName,
         apiUrl: action.payload.isInWorktree
-          ? 'http://localhost:4220/larry/agents/google/v1'
-          : 'http://localhost:4210/larry/agents/google/v1',
+          ? `http://localhost:4220${selectedAgentRoute}`
+          : `http://localhost:4210${selectedAgentRoute}`,
         isLoadingWorktreeInfo: false,
         isLoadingApp: false, // App is ready when worktree detection is complete
       };
@@ -138,10 +157,42 @@ function extensionReducer(
         },
       };
 
+    case 'SET_CONFIG':
+      const firstAgentKey = Object.keys(action.payload.agents)[0] || 'google';
+      const firstAgentRoute = action.payload.agents[firstAgentKey];
+      return {
+        ...state,
+        agents: action.payload.agents,
+        selectedAgent: firstAgentKey,
+        workspaceSetupCommand: action.payload.workspaceSetupCommand,
+        larryEnvPath: action.payload.larryEnvPath,
+        apiUrl: state.isInWorktree
+          ? `http://localhost:4220${firstAgentRoute}`
+          : `http://localhost:4210${firstAgentRoute}`,
+      };
+
+    case 'SET_SELECTED_AGENT':
+      const agentRoute = state.agents[action.payload];
+      if (!agentRoute) {
+        console.warn(`Agent ${action.payload} not found in config`);
+        return state;
+      }
+      return {
+        ...state,
+        selectedAgent: action.payload,
+        apiUrl: state.isInWorktree
+          ? `http://localhost:4220${agentRoute}`
+          : `http://localhost:4210${agentRoute}`,
+      };
+
     case 'RESET_STATE':
       return {
         ...initialState,
         clientRequestId: state.clientRequestId, // Keep the same client request ID
+        agents: state.agents,
+        selectedAgent: state.selectedAgent,
+        workspaceSetupCommand: state.workspaceSetupCommand,
+        larryEnvPath: state.larryEnvPath,
       };
 
     default:

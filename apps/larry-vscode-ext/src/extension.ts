@@ -5,8 +5,44 @@ import { findProjectRoot } from './findProjectRoot';
 import path from 'path';
 import * as http from 'http';
 import * as https from 'https';
+import { pathToFileURL } from 'url';
 
 const execAsync = promisify(exec);
+
+interface LarryConfig {
+  agents: Record<string, string>;
+  workspaceSetupCommand: string[];
+  larryEnvPath: string;
+}
+
+const defaultConfig: LarryConfig = {
+  agents: {
+    google: '/larry/agents/google/v1',
+  },
+  workspaceSetupCommand: ['npm install'],
+  larryEnvPath: 'apps/cli-tools/.env',
+};
+
+async function loadLarryConfig(): Promise<LarryConfig> {
+  try {
+    const projectRoot = await findProjectRoot();
+    if (!projectRoot) {
+      return defaultConfig;
+    }
+
+    const configPath = path.join(projectRoot, 'larry.config.js');
+    const configUrl = pathToFileURL(configPath).href;
+    
+    // Add cache busting to ensure fresh config load
+    const module = await import(`${configUrl}?t=${Date.now()}`);
+    const config = module.default as LarryConfig;
+    
+    return config;
+  } catch (error) {
+    console.log('Failed to load larry.config.js, using default config:', error);
+    return defaultConfig;
+  }
+}
 
 // --- SSE relay (extension host) ---
 class SSEProxy {
@@ -181,12 +217,16 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
   private runningContainers: Map<string, string> = new Map(); // threadId -> containerId
   private mainDockerContainer: string | undefined; // Main docker container for port 4210
 
-  // NEW: SSE relays
-  private sseMain?: SSEProxy;
   private sseWorktree?: SSEProxy;
 
+  private config: LarryConfig = defaultConfig;
+  private configLoaded: Promise<void>;
+
   constructor(private readonly context: vscode.ExtensionContext) {
-    // No initialization needed for new flow
+    this.configLoaded = loadLarryConfig().then((config) => {
+      this.config = config;
+      console.log('Larry config initialized:', this.config);
+    });
   }
 
   private startMainSSE() {
@@ -194,9 +234,11 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
     console.log('Main SSE not needed for now...');
   }
 
-  private startWorktreeSSE() {
-    const url =
-      'http://localhost:4220/larry/agents/google/v1/events?topics=thread.created,machine.updated';
+  private startWorktreeSSE(agentKey?: string) {
+    const agent = agentKey || Object.keys(this.config.agents)[0];
+    const agentRoute = this.config.agents[agent];
+    
+    const url = `http://localhost:4220${agentRoute}/events?topics=thread.created,machine.updated`;
     console.log('🚀 Starting worktree SSE connection to:', url);
     this.sseWorktree?.stop();
     this.sseWorktree = new SSEProxy();
@@ -206,7 +248,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         console.log('📤 Forwarding worktree SSE event to webview:', ev);
         this.view?.webview.postMessage({
           type: 'sse_event',
-          baseUrl: 'http://localhost:4220/larry/agents/google/v1',
+          baseUrl: `http://localhost:4220${agentRoute}`,
           event: ev.event || 'message',
           data: ev.data,
         });
@@ -574,7 +616,8 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
   async handleOpenWorktree(
     worktreeName: string,
     threadId: string | undefined,
-    label: string
+    label: string,
+    agentKey?: string
   ) {
     try {
       // Create or ensure worktree exists
@@ -620,7 +663,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       });
 
       setTimeout(() => {
-        this.startWorktreeSSE(); // <— start SSE for worktree events
+        this.startWorktreeSSE(agentKey); // <— start SSE for worktree events with selected agent
         this.openWorktree(finalWorktreeName);
         this.view?.webview.postMessage({
           type: 'update_thread_state',
@@ -818,22 +861,23 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         worktreeName
       ).fsPath;
 
-      // Run npm install in worktree
-      console.log('Running npm install in worktree...');
 
-      // TODO this is temporary until we will find a better way to manage .env files
-      // copy apps/cli-tools/.env to worktree apps/cli-tools/.env
-      await execAsync(
-        `cp ${
-          vscode.Uri.joinPath(workspaceFolder.uri, 'apps', 'cli-tools', '.env')
-            .fsPath
-        } ${worktreePath}/apps/cli-tools/.env`
-      );
-      // run custom safe script to run npm install
-      await execAsync('npm install', { cwd: worktreePath });
+      if (this.config.larryEnvPath) {
+        console.log(`Copying env file from ${this.config.larryEnvPath}...`);
+        const sourceEnvPath = vscode.Uri.joinPath(
+          workspaceFolder.uri,
+          this.config.larryEnvPath
+        ).fsPath;
+        const targetEnvPath = path.join(worktreePath, this.config.larryEnvPath);
+        
+        await execAsync(`cp ${sourceEnvPath} ${targetEnvPath}`);
+      }
 
-      // Set environment variables (if needed)
-      // This could be extended to set specific env vars for the worktree
+      // Run workspace setup commands sequentially
+      for (const command of this.config.workspaceSetupCommand) {
+        console.log(`Running workspace setup command: ${command}`);
+        await execAsync(command, { cwd: worktreePath });
+      }
 
       console.log('Worktree environment setup completed');
     } catch (error) {
@@ -1084,7 +1128,8 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         await this.handleOpenWorktree(
           msg.worktreeName || '',
           msg.threadId || undefined,
-          msg.label
+          msg.label,
+          msg.agentKey || undefined
         );
         return;
       }
@@ -1142,7 +1187,14 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
     console.log('🚀 Starting initial worktree detection and Docker setup...');
 
     // Add a small delay to ensure webview is ready to receive messages
-    setTimeout(() => {
+    setTimeout(async () => {
+      await this.configLoaded;
+      
+      view.webview.postMessage({
+        type: 'config_loaded',
+        config: this.config,
+      });
+      
       this.notifyWorktreeChange().catch((error) => {
         console.error('❌ Error in initial worktree detection:', error);
       });
