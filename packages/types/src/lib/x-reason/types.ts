@@ -414,3 +414,22 @@ export type CodeEdits = {
   type: 'CREATE' | 'MODIFY' | 'DELETE';
   proposedChange: string;
 };
+
+export enum SupportedEngines {
+  COMS = 'coms',
+  CONTEXT = 'context',
+  SALES = 'sales',
+  GOOGLE_SERVICES_CODE_ASSIST = 'googleServicesCodeAssist',
+}
+
+export enum SupportedCodingAgents {
+  GOOGLE = 'google',
+}
+
+export type LarryAgent = {
+  name: string;
+  readmePath: string;
+  xreason: SupportedEngines;
+}
+
+export type LarryAgentFactoryType = (config: Record<string, any>) => LarryAgent;

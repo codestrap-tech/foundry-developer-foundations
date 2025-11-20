@@ -1,2 +1,1 @@
-export * from './lib/inversify.config';
 export { default as LarryAgentFactory } from './lib/LarryAgentFactory';

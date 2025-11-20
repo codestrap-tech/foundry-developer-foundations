@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { Trace } from '@codestrap/developer-foundations.foundry-tracing-foundations';
-import { SupportedEngines } from '@codestrap/developer-foundations-x-reason';
+import { SupportedEngines, LarryAgentFactoryType } from '@codestrap/developer-foundations-types';
 import { Text2Action } from './Text2Action';
 import {
   GeminiService,
@@ -12,7 +12,6 @@ import {
 } from '@codestrap/developer-foundations-types';
 import type { User } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
-import { LarryAgentFactoryType } from '@codestrap/developer-foundations-x-reason';
 
 export interface LarryResponse {
   status: number;

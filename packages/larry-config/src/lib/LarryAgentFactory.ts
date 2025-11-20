@@ -1,18 +1,5 @@
 import { curry } from "ramda";
-import { SupportedEngines } from "./XreasonFactory";
-
-export enum SupportedCodingAgents {
-    GOOGLE = 'google',
-}
-
-type LarryAgent = {
-    name: string;
-    readmePath: string;
-    xreason: SupportedEngines;
-}
-
-export type LarryAgentFactoryType = (config: Record<string, any>) => LarryAgent;
-
+import { SupportedCodingAgents, LarryAgentFactoryType, SupportedEngines, LarryAgent } from "@codestrap/developer-foundations-types";
 
 const factory = curry((map, key, config) => {
     const supportedKeys = Object.keys(SupportedCodingAgents).map((item) =>

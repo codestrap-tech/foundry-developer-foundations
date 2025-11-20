@@ -5,14 +5,14 @@ import {
   Larry,
   LarryResponse,
 } from '@codestrap/developer-foundations-agents-vickie-bennie';
-import { container } from '@codestrap/developer-foundations-di';
+import { container, LarryAgentFactory } from '@codestrap/developer-foundations-di';
 import {
   Context,
   MachineDao,
   ThreadsDao,
   TYPES,
 } from '@codestrap/developer-foundations-types';
-import { LarryAgentFactory, SupportedCodingAgents, SupportedEngines } from '@codestrap/developer-foundations-x-reason';
+import { SupportedCodingAgents, SupportedEngines } from '@codestrap/developer-foundations-types';
 import 'dotenv/config';
 import { uuidv4 } from '@codestrap/developer-foundations-utils';
 
@@ -22,7 +22,11 @@ export async function googleCodingAgent(
   task?: string
 ): Promise<{ executionId: string; error?: string }> {
   try {
-    container.bind(TYPES.LarryCodingAgentFactory).toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
+    // make sure correct LarryCodingAgentFactory is bound
+    if (container.isBound(TYPES.LarryCodingAgentFactory)) {
+      container.unbind(TYPES.LarryCodingAgentFactory);
+      container.bind(TYPES.LarryCodingAgentFactory).toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
+    }
 
     const larry = new Larry();
     let result: LarryResponse | undefined;

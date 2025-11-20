@@ -1,5 +1,4 @@
 import {
-  SupportedEngines,
   xReasonFactory,
   SupportTrainingDataTypes,
 } from '../../../../factory';
@@ -8,6 +7,7 @@ import {
   Context,
   TrainingDataDao,
   TYPES,
+  SupportedEngines,
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 
