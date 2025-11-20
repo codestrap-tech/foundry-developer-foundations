@@ -25,10 +25,11 @@ import {
  *   - `.*gsuite.*client.*`  matches any path containing "gsuite" and "client"
  *   - `.*report.*summary.*` matches any path with "report" and "summary"
  * https://regex101.com/r/Mwtdtw/1
+ * https://regex101.com/r/k7aMCv/1
  */
 export enum SupportedTemplates {
   GSUITE_CLIENT = '.*gsuite.*client.*',
-  FACTORY = '*factory.*',
+  FACTORY = '.*factory.*', // matches any path containing "factory"
 }
 
 /**
@@ -47,7 +48,7 @@ export type TemplateFactory<T> = (filePath: string) => Promise<T>;
 
 // Registry type that pins per-entry option types
 type TemplateRegistry = {
-  [SupportedTemplates.GSUITE_CLIENT]: TemplateDefinition<GoogleClientGeneratorSchema>;; // no generator/options
+  [SupportedTemplates.GSUITE_CLIENT]: TemplateDefinition<GoogleClientGeneratorSchema>; // no generator/options
   [SupportedTemplates.FACTORY]: TemplateDefinition<CurryFactoryGeneratorSchema>;
 };
 
@@ -100,23 +101,22 @@ The ModuleInterface should also be renamed and have the property: template: stri
  *  2. Load template file via fs.promises
  *  3. Throw if no match found
  */
-export const templateFactory = curry(
+export const buildTemplateFactory = curry(
   async (
-    registry: Record<string, TemplateDefinition>,
+    registry: TemplateRegistry,
     filePath: string
-  ): Promise<string> => {
+  ): Promise<(tree: Tree, options: unknown) => Promise<void>> => {
     const normalizedPath = path.normalize(filePath);
     const entries = Object.entries(registry) as Array<[string, TemplateDefinition]>;
 
     // Step 1: Evaluate each Grok expression (treated as regex)
     for (const [patternKey, definition] of entries) {
       // patternKey is already the Grok-style expression string
-      const grokExpression = patternKey;
-      const regex = new RegExp(grokExpression, 'i');
+      const regex = new RegExp(patternKey, 'i');
 
       if (regex.test(normalizedPath)) {
         // Match found
-        return fs.readFile(definition.template, 'utf8');
+        return definition.generator;
       }
     }
 
@@ -132,14 +132,14 @@ export const templateFactory = curry(
  *   const getTemplate = buildTemplateFactory();
  *   const content = await getTemplate('/path/to/gsuite/clientConfig.ts');
  */
-export const buildTemplateFactory = () =>
-  templateFactory(templateRegistry) as (filePath: string) => Promise<string>;
+export const templateFactory = () =>
+  buildTemplateFactory(templateRegistry) as (filePath: string) => Promise<(tree: Tree, options: unknown) => Promise<void>>;
 
 /**
  * Example Usage
  * -------------
 (async () => {
-  const getTemplate = buildTemplateFactory();
+  const getTemplate = templateFactory();
 
   try {
     const result = await getTemplate(

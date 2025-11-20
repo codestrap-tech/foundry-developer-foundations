@@ -1,66 +1,124 @@
-import { promises as fs } from 'fs';
-import { buildTemplateFactory, templateFactory, templateRegistry, SupportedTemplates } from './templateFactory';
+// templateFactory.spec.ts
+import { buildTemplateFactory, templateFactory } from './templateFactory';
+import type { TemplateDefinition } from './templateFactory';
+import { SupportedTemplates } from './templateFactory';
+import type { Tree } from '@nx/devkit';
 
-// Mock fs.promises
-jest.mock('fs', () => ({
-  promises: {
-    readFile: jest.fn(),
-  },
+// --- Mock the external generators used by the registry ---
+jest.mock('@codestrap/tools', () => ({
+  // types are irrelevant for tests; we just need callables
+  googleClientGenerator: jest.fn().mockResolvedValue(undefined),
+  curryFactoryGenerator: jest.fn().mockResolvedValue(undefined),
 }));
 
-const mockedFs = fs as jest.Mocked<typeof fs>;
+import { googleClientGenerator, curryFactoryGenerator } from '@codestrap/tools';
 
-describe('templateFactory', () => {
-  const mockTemplatePath = templateRegistry[SupportedTemplates.GSUITE_CLIENT].template;
-  const mockTemplateContent = 'mocked template content';
+describe('templateFactory (bound to default registry)', () => {
+  const dummyTree = {} as unknown as Tree;
 
-  beforeAll(() => {
-    // Set a default mock return for all tests
-    mockedFs.readFile.mockResolvedValue(mockTemplateContent);
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  afterAll(() => {
-    jest.restoreAllMocks();
+  it('returns the google client generator for a matching GSuite path (case-insensitive)', async () => {
+    const getGenerator = templateFactory();
+    const gen = await getGenerator('/Users/test/workspace/google/src/lib/GSuiteClient.v2.ts');
+
+    expect(typeof gen).toBe('function');
+
+    // call the returned generator function
+    const opts = { name: 'proj', destination: 'src/lib', userPrompt: 'prompt' } as any;
+    await gen(dummyTree, opts);
+
+    expect(googleClientGenerator).toHaveBeenCalledTimes(1);
+    expect(googleClientGenerator).toHaveBeenCalledWith(dummyTree, opts);
+    expect(curryFactoryGenerator).not.toHaveBeenCalled();
   });
 
-  it('should return file content for a matching Grok expression (case-insensitive)', async () => {
-    const inputPath = '/Users/test/workspace/google/src/lib/GSuiteClient.v2.ts';
-    const result = await templateFactory(templateRegistry, inputPath);
+  it('resolves the curry-factory generator when filename contains "factory"', async () => {
+    const getGenerator = templateFactory();
+    const gen = await getGenerator('/path/to/my/new-factory.file.ts');
 
-    expect(result).toBe(mockTemplateContent);
-    expect(mockedFs.readFile).toHaveBeenCalledWith(mockTemplatePath, 'utf8');
+    expect(typeof gen).toBe('function');
+    const dummyTree = {} as any;
+    await gen(dummyTree, { name: 'factory-proj' } as any);
+
+    expect(require('@codestrap/tools').curryFactoryGenerator).toHaveBeenCalledTimes(1);
   });
 
-  it('should normalize file paths before matching', async () => {
-    const inputPath = 'C:\\workspace\\services\\google\\lib\\gsuiteCLIENT.ts';
-    const result = await templateFactory(templateRegistry, inputPath);
+  it('normalizes Windows-style paths and still matches', async () => {
+    const getGenerator = templateFactory();
+    const gen = await getGenerator('C:\\workspace\\services\\google\\lib\\gsuiteCLIENT.ts');
 
-    expect(result).toBe(mockTemplateContent);
-    expect(mockedFs.readFile).toHaveBeenCalledTimes(2); // second read from this test
+    expect(typeof gen).toBe('function');
+
+    const opts = { name: 'proj2' } as any;
+    await gen(dummyTree, opts);
+
+    expect(googleClientGenerator).toHaveBeenCalledTimes(1);
   });
 
-  it('should throw an error if no Grok expression matches', async () => {
-    const inputPath = '/Users/test/workspace/some/other/module.ts';
-    await expect(templateFactory(templateRegistry, inputPath)).rejects.toThrow(
-      /No matching template found/
+  it('throws a friendly error when no regex matches (using a safe custom registry)', async () => {
+    // Create a safe custom registry without the problematic FACTORY pattern
+    const customRegistry: Record<SupportedTemplates, TemplateDefinition<any>> =
+    {
+      [SupportedTemplates.GSUITE_CLIENT]: {
+        generator: async (tree, options) => {
+          await googleClientGenerator(tree, options);
+        },
+        samplePrompts: [],
+      },
+      // We still need to satisfy the index signature, but we won't use FACTORY here.
+      [SupportedTemplates.FACTORY]: {
+        // Provide a valid regex in a custom scenario only if used.
+        generator: async (tree, options) => {
+          await curryFactoryGenerator(tree, options);
+        },
+        samplePrompts: [],
+      },
+    };
+
+    const getGenerator = await buildTemplateFactory(customRegistry);
+    await expect(
+      getGenerator('/Users/test/workspace/some/other/module.ts')
+    ).rejects.toThrow(/No matching template found/);
+
+    expect(googleClientGenerator).not.toHaveBeenCalled();
+    expect(curryFactoryGenerator).not.toHaveBeenCalled();
+  });
+
+  it('can resolve a different entry when provided in a custom registry (valid factory regex)', async () => {
+    // Custom registry with a *valid* factory pattern to test alternate matching
+    const VALID_FACTORY_REGEX = '.*factory.*';
+
+    const customRegistry = {
+      // swap in a valid pattern for testing
+      [SupportedTemplates.FACTORY]: {
+        generator: async (tree: Tree, options: any) => {
+          await curryFactoryGenerator(tree, options);
+        },
+        samplePrompts: [],
+      },
+      [SupportedTemplates.GSUITE_CLIENT]: {
+        generator: async (tree: Tree, options: any) => {
+          await googleClientGenerator(tree, options);
+        },
+        samplePrompts: [],
+      },
+    } as unknown as Record<string, TemplateDefinition<any>>;
+
+    // Build a resolver bound to the custom registry
+    const resolveGen = await buildTemplateFactory(
+      customRegistry as any // cast to satisfy the function signature
     );
-    expect(mockedFs.readFile).toHaveBeenCalledTimes(2); // no new reads since this one failed early
-  });
-});
 
-describe('buildTemplateFactory', () => {
-  afterAll(() => {
-    jest.restoreAllMocks();
-  });
+    const gen = await resolveGen('/path/to/my/new-factory.file.ts');
+    expect(typeof gen).toBe('function');
 
-  it('should create a bound factory function that resolves a template', async () => {
-    const getTemplate = buildTemplateFactory();
-    const result = await getTemplate('/Users/test/gsuite/clientHandler.ts');
+    const opts = { name: 'factory-proj' } as any;
+    await gen({} as Tree, opts);
 
-    expect(result).toBe('mocked template content');
-    expect(mockedFs.readFile).toHaveBeenCalledWith(
-      templateRegistry[SupportedTemplates.GSUITE_CLIENT].template,
-      'utf8'
-    );
+    expect(curryFactoryGenerator).toHaveBeenCalledTimes(1);
+    expect(googleClientGenerator).not.toHaveBeenCalled();
   });
 });
