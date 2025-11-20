@@ -15,7 +15,7 @@ describe('service-lib generator', () => {
     tree = createTreeWithEmptyWorkspace();
   });
 
-  xit('should configure targets correctly', async () => {
+  it('should configure targets correctly', async () => {
     await serviceLibGenerator(tree, options);
     const config = readProjectConfiguration(tree, expectedFileName);
 
@@ -63,7 +63,7 @@ describe('service-lib generator', () => {
     ]);
   }, 10000);
 
-  xit('should scaffold required files', async () => {
+  it('should scaffold required files', async () => {
     await serviceLibGenerator(tree, options);
 
     expect(tree.exists(`${root}/eslint.config.mjs`)).toBe(true);
