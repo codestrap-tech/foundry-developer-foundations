@@ -1,0 +1,3 @@
+Generate a new google service client using the provided template to learn the CodeStrap pattern.
+The new client should be able to write files to drive. The new client number should be v3.
+The only method to add is writeFileToDrive. This should take an array of files to write. The file content will be a file Buffer.

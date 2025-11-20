@@ -4,6 +4,16 @@
       "factory": "./src/generators/service-lib/service-lib",
       "schema": "./src/generators/service-lib/schema.json",
       "description": "service-lib generator"
+    },
+    "curry-factory": {
+      "factory": "./src/generators/curry-factory/curry-factory",
+      "schema": "./src/generators/curry-factory/schema.json",
+      "description": "curry-factory generator"
+    },
+    "google-client": {
+      "factory": "./src/generators/google-client/google-client",
+      "schema": "./src/generators/google-client/schema.json",
+      "description": "google-client generator"
     }
   }
 }
