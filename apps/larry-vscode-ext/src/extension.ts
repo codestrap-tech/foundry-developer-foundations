@@ -6,16 +6,53 @@ import path from 'path';
 import * as http from 'http';
 import * as https from 'https';
 import * as fs from 'fs';
+import * as net from 'net';
 
 const execAsync = promisify(exec);
 
 interface LarryConfig {
+  name: string;
   agents: Record<string, string>;
   workspaceSetupCommand: string[];
   larryEnvPath: string;
 }
 
-const dockerImageName = `${process.env.REPO_ROOT}-larry-server`; 
+let dockerImageName = process.env.REPO_ROOT ? `${process.env.REPO_ROOT}-larry-server` : 'larry-server'; 
+
+let projectName: string | undefined;
+
+let defaultMainPort = 4210;
+let defaultWorktreePort = 4220;
+
+loadLarryConfig().then(async (config) => {
+  projectName = config.name;
+  dockerImageName = projectName ? `${projectName}-larry-server` : 'larry-server'; 
+}).catch((error) => {
+  console.error('Error loading larry config:', error);
+});
+
+function isPortAvailable(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.once('error', () => {
+      resolve(false);
+    });
+    server.once('listening', () => {
+      server.close();
+      resolve(true);
+    });
+    server.listen(port);
+  });
+}
+
+async function findAvailablePort(startPort: number): Promise<number> {
+  let port = startPort;
+  while (!(await isPortAvailable(port))) {
+    console.log(`Port ${port} is taken, trying next port...`);
+    port++;
+  }
+  return port;
+}
 
 async function loadLarryConfig(): Promise<LarryConfig> {
   const projectRoot = await findProjectRoot();
@@ -252,7 +289,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
     const agent = agentKey || Object.keys(this.config.agents)[0];
     const agentRoute = this.config.agents[agent];
     
-    const url = `http://localhost:4220${agentRoute}/events?topics=thread.created,machine.updated`;
+    const url = `http://localhost:${defaultWorktreePort}${agentRoute}/events?topics=thread.created,machine.updated`;
     console.log('🚀 Starting worktree SSE connection to:', url);
     this.sseWorktree?.stop();
     this.sseWorktree = new SSEProxy();
@@ -262,7 +299,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         console.log('📤 Forwarding worktree SSE event to webview:', ev);
         this.view?.webview.postMessage({
           type: 'sse_event',
-          baseUrl: `http://localhost:4220${agentRoute}`,
+          baseUrl: `http://localhost:${defaultWorktreePort}${agentRoute}`,
           event: ev.event || 'message',
           data: ev.data,
         });
@@ -399,7 +436,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         throw new Error('Project root not found.');
       }
 
-      const containerName = 'larry-main-server';
+      const containerName = `${projectName || 'larry'}-main-server`;
 
       // Clean up existing container if any
       try {
@@ -409,11 +446,15 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         // Container doesn't exist, which is fine
       }
 
-      // Start main container on port 4210
+      // Find available port starting from default
+      const port = await findAvailablePort(defaultMainPort);
+      console.log(`Starting main container on port ${port}`);
+
+      // Start main container
       const { stdout } = await execAsync(
         `docker run -d --name ${containerName} \
-   -p 4210:4210 \
-   -e PORT=4210 \
+   -p ${port}:${port} \
+   -e PORT=${port} \
    -v "${foundryProjectRoot}:/workspace:ro" \
    --user 1001:1001 \
    ${dockerImageName}`
@@ -435,7 +476,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         return;
       }
 
-      const containerName = 'larry-main-server';
+      const containerName = `${projectName || 'larry'}-main-server`;
 
       // Stop and remove container
       await execAsync(`docker stop ${containerName}`);
@@ -543,7 +584,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         console.error('Error reading thread ID for worktree:', error);
       }
 
-      const containerName = `larry-worktree-${worktreeId}`;
+      const containerName = `${projectName || 'larry'}-worktree-${worktreeId}`;
       try {
         const { stdout: inspectOutput } = await execAsync(
           `docker inspect ${containerName}`
@@ -918,7 +959,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         throw new Error('No workspace folder found');
       }
 
-      const containerName = `larry-worktree-${worktreeName}`;
+      const containerName = `${projectName || 'larry'}-worktree-${worktreeName}`;
 
       try {
         await execAsync(`docker rm -f ${containerName}`);
@@ -936,12 +977,17 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
           ).fsPath
         : vscode.Uri.joinPath(workspaceFolder.uri, '').fsPath;
       console.log(worktreePath);
-      // Start worktree container on port 4220
+
+      // Find available port starting from default
+      const port = await findAvailablePort(defaultWorktreePort);
+      console.log(`Starting worktree container on port ${port}`);
+
+      // Start worktree container
       const threadIdEnv = threadId ? `-e THREAD_ID=${threadId}` : '';
       const { stdout } = await execAsync(
         `docker run -d --name ${containerName} \
-   -p 4220:4220 \
-   -e PORT=4220 \
+   -p ${port}:${port} \
+   -e PORT=${port} \
    ${threadIdEnv} \
    -e WORKTREE_NAME=${worktreeName} \
    -v "${worktreePath}:/workspace:rw" \
@@ -1075,6 +1121,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
   private async ensureLarryDockerImage(): Promise<void> {
     try {
+      console.log(`Checking if Docker image ${dockerImageName} exists...`);
       await execAsync(`docker image inspect ${dockerImageName}`);
     } catch (error) {
       // Image doesn't exist, build it
@@ -1117,7 +1164,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       `style-src ${view.webview.cspSource} 'unsafe-inline'`,
       `font-src ${view.webview.cspSource} https:`,
       `script-src 'nonce-${nonce}' ${view.webview.cspSource}`,
-      `connect-src 'self' ${view.webview.cspSource} http://localhost:4220 http://localhost:4210`,
+      `connect-src 'self' ${view.webview.cspSource} http://localhost:${defaultWorktreePort} http://localhost:${defaultMainPort}`,
     ].join('; ');
 
     view.webview.html = `<!DOCTYPE html>
