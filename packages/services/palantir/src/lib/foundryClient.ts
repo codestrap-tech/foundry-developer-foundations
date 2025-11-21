@@ -18,7 +18,6 @@ export function getFoundryClient(): FoundryClient {
 }
 
 function createFoundryClient(): FoundryClient {
-
   if (!process.env['OSDK_CLIENT_ID'] || !process.env['OSDK_CLIENT_SECRET']) {
     throw new Error(
       'missing required env vars: OSDK_CLIENT_ID, OSDK_CLIENT_SECRET'
@@ -78,7 +77,6 @@ function createFoundryClient(): FoundryClient {
   });
 
   const getToken = async function () {
-
     if (token && tokenExpire) {
       // add 60 seconds to account for processing time
       const skew = tokenExpire.getTime() + 60000;
@@ -99,12 +97,11 @@ function createFoundryClient(): FoundryClient {
     } catch (e) {
       console.log(e);
 
-      throw (e);
+      throw e;
     } finally {
       pendingRequest = undefined;
     }
-
-  }
+  };
 
   return { auth, ontologyRid, url, client, getUser, getToken };
 }
