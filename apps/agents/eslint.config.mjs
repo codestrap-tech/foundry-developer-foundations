@@ -1,3 +1,4 @@
+// @ts-check
 import { FlatCompat } from '@eslint/eslintrc';
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -10,11 +11,14 @@ const compat = new FlatCompat({
   recommendedConfig: js.configs.recommended,
 });
 
+/** @type {import('eslint').Linter.Config[]} */
 export default [
   ...fixupConfigRules(compat.extends('next')),
   ...fixupConfigRules(compat.extends('next/core-web-vitals')),
   ...baseConfig,
-  ...nx.configs['flat/react-typescript'],
+  .../** @type {import('eslint').Linter.Config[]} */ (
+    nx.configs['flat/react-typescript']
+  ),
   {
     ignores: ['.next/**/*'],
   },
