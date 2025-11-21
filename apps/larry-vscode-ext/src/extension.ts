@@ -15,6 +15,8 @@ interface LarryConfig {
   larryEnvPath: string;
 }
 
+const dockerImageName = `${process.env.REPO_ROOT}-larry-server`; 
+
 async function loadLarryConfig(): Promise<LarryConfig> {
   const projectRoot = await findProjectRoot();
   if (!projectRoot) {
@@ -414,7 +416,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
    -e PORT=4210 \
    -v "${foundryProjectRoot}:/workspace:ro" \
    --user 1001:1001 \
-   larry-server`
+   ${dockerImageName}`
       );
 
       const containerId = stdout.trim();
@@ -944,7 +946,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
    -e WORKTREE_NAME=${worktreeName} \
    -v "${worktreePath}:/workspace:rw" \
    --user 1001:1001 \
-   larry-server`
+   ${dockerImageName}`
       );
 
       const containerId = stdout.trim();
@@ -1073,19 +1075,19 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
   private async ensureLarryDockerImage(): Promise<void> {
     try {
-      await execAsync('docker image inspect larry-server');
+      await execAsync(`docker image inspect ${dockerImageName}`);
     } catch (error) {
       // Image doesn't exist, build it
-      console.log('Docker image larry-server not found, building...');
+      console.log(`Docker image ${dockerImageName} not found, building...`);
       const foundryProjectRoot = await findProjectRoot();
       if (!foundryProjectRoot) {
         throw new Error('Project root not found for Docker build.');
       }
 
-      await execAsync('docker build -f Larry.Dockerfile -t larry-server .', {
+      await execAsync(`docker build -f Larry.Dockerfile -t ${dockerImageName} .`, {
         cwd: foundryProjectRoot,
       });
-      console.log('Docker image larry-server built successfully');
+      console.log(`Docker image ${dockerImageName} built successfully`);
     }
   }
 
