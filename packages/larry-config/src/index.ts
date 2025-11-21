@@ -1,0 +1,1 @@
+export { default as LarryAgentFactory } from './lib/LarryAgentFactory';

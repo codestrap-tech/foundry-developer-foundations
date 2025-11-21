@@ -1,4 +1,5 @@
-import { default as factory, SupportedEngines } from './XreasonFactory';
+import { default as factory } from './XreasonFactory';
+import { SupportedEngines } from '@codestrap/developer-foundations-types';
 import {
   comsProgrammer,
   comsAiTrasition,
