@@ -41,6 +41,17 @@ export function BootChannel() {
         dispatch({ type: 'SET_THREAD_STATE', payload: msg.state });
       }
 
+      if (msg.type === 'config_loaded') {
+        dispatch({
+          type: 'SET_CONFIG',
+          payload: {
+            agents: msg.config.agents,
+            workspaceSetupCommand: msg.config.workspaceSetupCommand,
+            larryEnvPath: msg.config.larryEnvPath,
+          },
+        });
+      }
+
       console.log('📨 Webview received message:', msg);
       // NEW: forwarded SSE
       if (msg.type === 'sse_event' && msg.baseUrl && msg.event && typeof msg.data === 'string') {
@@ -58,6 +69,9 @@ export function BootChannel() {
 
     // Request initial worktree status from extension
     postMessage({ type: 'getCurrentWorktree' });
+
+    // Request initial config from extension
+    postMessage({ type: 'getConfig' });
 
     // Cleanup function
     return () => {
