@@ -15,6 +15,9 @@ import {
 import { container } from '@codestrap/developer-foundations-di';
 import { googleFileOpsGenerator } from './delegates';
 import { saveFileToGithub, writeFileIfNotFoundLocally } from './delegates/github';
+import { templateFactory } from '@codestrap/developer-foundations-utils';
+import { addProjectConfiguration, type Tree, workspaceRoot, names } from '@nx/devkit';
+import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 
 async function verifyFilePaths(ops: FileOp[]) {
     const root = process.cwd();
@@ -127,6 +130,147 @@ Try again and make sure paths match exactly the paths in the supplied plan
     return ops;
 }
 
+function loadProjectConfigFromDisk(projectJsonAbs: string) {
+    const raw = fs.readFileSync(projectJsonAbs, 'utf8');
+    const json = JSON.parse(raw) as {
+        name?: string;
+        root?: string;
+        sourceRoot?: string;
+        projectType?: 'application' | 'library';
+        targets?: Record<string, any>;
+        tags?: string[];
+    };
+
+    // Absolute directory that contains project.json
+    const projectRootAbs = path.dirname(projectJsonAbs);
+
+    // MUST be relative to the workspace root for addProjectConfiguration
+    const rootRel = path.relative(workspaceRoot, projectRootAbs) || '.';
+
+    // Prefer explicit name; else use folder name
+    const name =
+        json.name && json.name.trim().length > 0
+            ? json.name
+            : path.basename(projectRootAbs);
+
+    // Minimal, valid ProjectConfiguration shape
+    const config = {
+        root: rootRel,                               // <- relative
+        sourceRoot: json.sourceRoot,                 // keep if present
+        projectType: json.projectType ?? 'library',  // sensible default
+        targets: json.targets ?? {},                 // preserve targets
+        tags: json.tags ?? [],
+    };
+
+    return { name, config };
+}
+
+function findClosestProjectJson(startFileAbs: string): string | null {
+    let dir = path.dirname(startFileAbs);
+    const stopAt = path.parse(dir).root;
+
+    while (true) {
+        const candidate = path.join(dir, 'project.json');
+        if (fs.existsSync(candidate)) {
+            return candidate;
+        }
+        if (dir === stopAt) break;
+        dir = path.dirname(dir);
+    }
+    return null;
+}
+
+
+async function generateFile(files: FileOp[]): Promise<FileOp[]> {
+    const addedFiles = files.filter((f) => f.type === 'added');
+    const getTemplate = templateFactory();
+
+    // 1) Resolve generators WITH context
+    const matchSettled = await Promise.allSettled(
+        addedFiles.map(async (file) => {
+            const gen = await getTemplate(file.file);
+            return { file, gen }; // attach file context
+        })
+    );
+
+    // 2) For each successful match, kick off the generator and keep context
+    const runTasks: Array<{ file: FileOp; promise: Promise<{ 
+        name: string; 
+        promptFile: string; 
+        fileName: string; 
+        root: string;
+        sourceRoot: string | undefined;
+        projectType: "application" | "library";
+        targets: Record<string, any>;
+        tags: string[];
+    } | undefined
+        > }> = [];
+
+    for (const r of matchSettled) {
+        if (r.status !== 'fulfilled' || !r.value?.gen) {
+            const file = r.status === 'fulfilled' ? r.value.file : undefined;
+            console.error(`failed to find a generator for file: ${file?.file ?? '(unknown)'}`);
+            continue;
+        }
+
+        const { file, gen } = r.value;
+
+        const promise = (async () => {
+            const tree: Tree = createTreeWithEmptyWorkspace();
+
+            const absFilePath = path.isAbsolute(file.file)
+                ? file.file
+                : path.resolve(workspaceRoot, file.file);
+
+            const found = findClosestProjectJson(absFilePath);
+            if (!found) {
+                console.error(`could not find project.json for file: ${file.file}`);
+                return;
+            }
+
+            const { name: projectName, config } = loadProjectConfigFromDisk(found);
+            try {
+                addProjectConfiguration(tree, projectName, config);
+            } catch {
+                // already added — ignore
+            }
+
+            const options = {
+                name: projectName,
+                promptFile: 'TODO, generate the prompt file based on the supplied file block',
+                fileName: path.basename(file.file, path.extname(file.file)),
+            };
+
+            await gen(tree, options);
+            console.log(`calling generator for file: ${file.file}`);
+            return {...options, ...config};
+        })();
+
+        runTasks.push({ file, promise });
+    }
+
+    // 3) Await all generator runs and report using attached context (no indexes)
+    const results = await Promise.allSettled(runTasks.map((t) => t.promise));
+    results.forEach((res, i) => {
+        const { file } = runTasks[i];
+        if (res.status === 'fulfilled') {
+            console.log(`successfully generated file for: ${file.file}`);
+            // TODO: load the generated file contents and push into the return value
+            const { name, promptFile, fileName, sourceRoot, root } = res.value || {};
+            // the generators are hard coded to generate at src/lib
+            const normalizedFileName = names(fileName!);
+            const pathToGeneratedFile = path.resolve(workspaceRoot, sourceRoot!, 'lib' , normalizedFileName.fileName);
+            const generatedContent = fs.readFileSync(pathToGeneratedFile, 'utf8');
+            // TODO add to return array of FileOp
+        } else {
+            console.error(`failed to generate file for: ${file.file} with error: ${res.reason}`);
+        }
+    });
+
+    // return updated FileOp[] if you add generated outputs
+    return files;
+}
+
 export async function specReview(
     context: Context,
     event?: MachineEvent,
@@ -157,6 +301,10 @@ export async function specReview(
         const updatedContents = await fs.promises.readFile(file, 'utf8');
         // get the file json to be used by the architect
         const files = await getEffectedFileList(updatedContents);
+        /**
+         * TODO call await generateFile(files)
+         * 
+         * */
         const plan = `# Affected Files
 \`\`\`json
 ${JSON.stringify(files, null, 2)}
