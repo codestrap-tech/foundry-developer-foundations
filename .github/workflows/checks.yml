@@ -11,6 +11,9 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      matrix:
+        target: [lint, test, build]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -19,9 +22,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22.13.0'
-          cache: 'npm'
-          cache-dependency-path: 'package-lock.json'
+          node-version: "22.13.0"
+          cache: "npm"
+          cache-dependency-path: "package-lock.json"
 
       - name: Configure npm
         run: |
@@ -47,10 +50,10 @@ jobs:
           npx nx --version
         timeout-minutes: 5
 
-      - name: Build Affected Projects
+      - name: Run ${{ matrix.target }} on Affected Projects
         run: |
-          echo "Building affected projects..."
-          npx nx affected --target=build --base=origin/${{ github.base_ref }} --parallel=3
+          echo "Running ${{ matrix.target }} for affected projects..."
+          npx nx affected --target=${{ matrix.target }} --base=origin/${{ github.base_ref }} --parallel=3
         env:
           FOUNDRY_STACK_URL: https://codestrap.usw-3.palantirfoundry.com
           FOUNDRY_TOKEN: ${{ secrets.FOUNDRY_TOKEN }}
@@ -71,45 +74,7 @@ jobs:
           RANGR_OSDK_CLIENT_SECRET: ${{ secrets.RANGR_OSDK_CLIENT_SECRET }}
           RANGR_FOUNDRY_STACK_URL: https://axis-data.palantirfoundry.com
           RANGR_ONTOLOGY_RID: ${{ secrets.RANGR_ONTOLOGY_RID }}
-          OFFICE_SERVICE_ACCOUNT: 'vici@codestrap.me'
-          OPEN_AI_KEY: ${{ secrets.OPEN_AI_KEY }}
-          SLACK_CLIENT_ID: ${{ secrets.SLACK_CLIENT_ID }}
-          SLACK_CLIENT_SECRET: ${{ secrets.SLACK_CLIENT_SECRET }}
-          SLACK_SIGNING_SECRET: ${{ secrets.SLACK_SIGNING_SECRET }}
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_APP_TOKEN: ${{ secrets.SLACK_APP_TOKEN }}
-          SLACK_BASE_URL: https://slack.com/api
-          GSUITE_SERVICE_ACCOUNT: ${{ secrets.GSUITE_SERVICE_ACCOUNT }}
-          EIA_API_KEY: ${{ secrets.EIA_API_KEY }}
-          EIA_BASE_URL: https://api.eia.gov/v2/petroleum/pri/gnd/data/
-          CA_SERIES_ID: ${{ secrets.CA_SERIES_ID }}
-          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
-          WORKSPACE_ROOT: ${{ github.workspace }}
-      - name: Run Tests on Affected Projects
-        run: |
-          echo "Running tests for affected projects..."
-          npx nx affected --target=test --base=origin/${{ github.base_ref }} --parallel=3
-        env:
-          FOUNDRY_STACK_URL: https://codestrap.usw-3.palantirfoundry.com
-          FOUNDRY_TOKEN: ${{ secrets.FOUNDRY_TOKEN }}
-          FOUNDRY_TEST_USER: ${{ secrets.FOUNDRY_TEST_USER }}
-          OSDK_CLIENT_SECRET: ${{ secrets.OSDK_CLIENT_SECRET }}
-          OSDK_CLIENT_ID: ${{ secrets.OSDK_CLIENT_ID }}
-          OPEN_WEATHER_API_KEY: ${{ secrets.OPEN_WEATHER_API_KEY }}
-          LOG_PREFIX: foundry-developer-foundations-x-reason
-          ONTOLOGY_RID: ${{ secrets.ONTOLOGY_RID }}
-          ONTOLOGY_ID: ${{ secrets.ONTOLOGY_ID }}
-          GOOGLE_SEARCH_API_KEY: ${{ secrets.GOOGLE_SEARCH_API_KEY }}
-          GOOGLE_SEARCH_ENGINE_ID: ${{ secrets.GOOGLE_SEARCH_ENGINE_ID }}
-          GOOGLE_SEARCH_ENGINE_MARKETS: ${{ secrets.GOOGLE_SEARCH_ENGINE_MARKETS }}
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          BROWSERFY_KEY: ${{ secrets.BROWSERFY_KEY }}
-          BROWSERFY_BROWSER_URL: wss://brd-customer-hl_9e688828-zone-scraping_browser1:g1uhvx23y9wr@brd.superproxy.io:9222
-          RANGR_OSDK_CLIENT_ID: ${{ secrets.RANGR_OSDK_CLIENT_ID }}
-          RANGR_OSDK_CLIENT_SECRET: ${{ secrets.RANGR_OSDK_CLIENT_SECRET }}
-          RANGR_FOUNDRY_STACK_URL: https://axis-data.palantirfoundry.com
-          RANGR_ONTOLOGY_RID: ${{ secrets.RANGR_ONTOLOGY_RID }}
-          OFFICE_SERVICE_ACCOUNT: 'vici@codestrap.me'
+          OFFICE_SERVICE_ACCOUNT: "vici@codestrap.me"
           OPEN_AI_KEY: ${{ secrets.OPEN_AI_KEY }}
           SLACK_CLIENT_ID: ${{ secrets.SLACK_CLIENT_ID }}
           SLACK_CLIENT_SECRET: ${{ secrets.SLACK_CLIENT_SECRET }}
