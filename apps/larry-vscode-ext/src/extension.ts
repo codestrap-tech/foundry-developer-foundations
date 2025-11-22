@@ -448,7 +448,9 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
   async getCurrentBranchName(repoPath: string): Promise<string> {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { exec } = require('child_process');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const util = require('util');
       const execAsync = util.promisify(exec);
 
@@ -1156,6 +1158,7 @@ export function deactivate() {
     // Stop SSE connections (if we keep a reference to provider)
     // For now, they'll be cleaned up when the extension process ends
 
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { exec } = require('child_process');
     exec('docker rm -f larry-main-server', () => {
       // Ignore errors during cleanup

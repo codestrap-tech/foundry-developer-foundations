@@ -222,10 +222,9 @@ ${message.message}`,
               // eslint-disable-next-line no-case-declarations
               const machine = await callGetMachines(executionId, token);
               if (machine?.state) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const state = JSON.parse(machine.state) as any;
                 const currentState = state.value;
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                 const context = state.context as any;
                 const results = Object.keys(context)
                   .filter((key) => key.indexOf('|') >= 0)
@@ -236,7 +235,6 @@ ${message.message}`,
                     return { taskName, taskOutput };
                   });
 
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const stack = (context.stack as any[])?.map(
                   (state) => state.split('|')[0],
                 );

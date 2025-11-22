@@ -2,6 +2,7 @@
 import nx from '@nx/eslint-plugin';
 import * as regexpPlugin from 'eslint-plugin-regexp';
 import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 
 /** @type {import('eslint').Linter.Config[]} */
@@ -67,6 +68,10 @@ export default [
       'regexp/no-super-linear-backtracking': 'off',
     },
   },
+  ...tseslint.configs.recommended.map((config) => ({
+    ...config,
+    files: ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'],
+  })),
   {
     // TypeScript files
     files: ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'],
@@ -78,6 +83,11 @@ export default [
     rules: {
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-empty-function': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+      // '@typescript-eslint/no-unused-vars': 'error',
+      // '@typescript-eslint/consistent-type-imports': 'error',
+      // '@typescript-eslint/no-import-type-side-effects': 'error',
     },
   },
 ];

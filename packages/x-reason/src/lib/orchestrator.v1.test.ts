@@ -113,6 +113,7 @@ jest.mock('@codestrap/developer-foundations-utils', () => ({
 jest.mock('./functions', () => ({
   ...jest.requireActual('./functions'),
   sendEmail: jest.fn().mockImplementation(() => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { mockEmailResponse } = require('./__fixtures__/Email');
     return Promise.resolve(mockEmailResponse);
   }),

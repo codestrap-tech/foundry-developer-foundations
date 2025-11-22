@@ -56,8 +56,8 @@ container
   .toConstantValue(
     foundryClientFactory(
       process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
-      undefined
-    )
+      undefined,
+    ),
   );
 
 container
@@ -119,7 +119,7 @@ container.bind(TYPES.VersionControlService).toConstantValue(makeGithubClient());
 container
   .bind(TYPES.MessageService)
   .toConstantValue(
-    makeSlackClient(process.env.SLACK_BASE_URL, process.env.SLACK_BOT_TOKEN)
+    makeSlackClient(process.env.SLACK_BASE_URL, process.env.SLACK_BOT_TOKEN),
   );
 
 container
