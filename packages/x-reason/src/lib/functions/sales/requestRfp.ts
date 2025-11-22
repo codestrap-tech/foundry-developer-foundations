@@ -22,7 +22,7 @@ function extractVendorName(input: string) {
 export async function requestRfp(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<RfpRequestResponse> {
   const vendorName = extractVendorName(task!);
   const vendorId = extractDomain(task!);
@@ -42,12 +42,12 @@ export async function requestRfp(
   ) {
     // TODO inject ranger dao and execute
     const rangrRfpDao = container.get<RangrRequestsDao>(
-      TYPES.RangrRfpRequestsDao
+      TYPES.RangrRfpRequestsDao,
     );
     // submit to RANGR
     const rangrRfpResult = rangrRfpDao.submit(
       task!,
-      context.machineExecutionId!
+      context.machineExecutionId!,
     );
 
     console.log(`RANGR returned the following response: ${rangrRfpResult}`);

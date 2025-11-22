@@ -54,7 +54,7 @@ export function parseEmailContext(context: ContextData): EmailContext | null {
 
 async function parseResearchReport(
   context: Context,
-  task?: string
+  task?: string,
 ): Promise<string | undefined> {
   const user = `
 # Task
@@ -95,7 +95,7 @@ const EMAIL_FOOTER = `
 export async function sendEmail(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<EmailThread> {
   console.log('[EMAIL] Starting email send process...');
   const emailData = parseEmailContext(context as unknown as ContextData);
@@ -116,7 +116,7 @@ export async function sendEmail(
   });
 
   const messageService = await container.getAsync<OfficeService>(
-    TYPES.OfficeService
+    TYPES.OfficeService,
   );
 
   const response = await messageService.sendEmail({

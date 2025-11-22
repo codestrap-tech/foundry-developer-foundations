@@ -114,9 +114,7 @@ container
   .bind(TYPES.OfficeService)
   .toConstantValue(makeGSuiteClientV2(process.env.OFFICE_SERVICE_ACCOUNT));
 
-  container
-  .bind(TYPES.VersionControlService)
-  .toConstantValue(makeGithubClient());
+container.bind(TYPES.VersionControlService).toConstantValue(makeGithubClient());
 
 container
   .bind(TYPES.MessageService)
@@ -124,6 +122,8 @@ container
     makeSlackClient(process.env.SLACK_BASE_URL, process.env.SLACK_BOT_TOKEN)
   );
 
-container.bind(TYPES.LarryCodingAgentFactory).toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
+container
+  .bind(TYPES.LarryCodingAgentFactory)
+  .toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
 
 export { container };

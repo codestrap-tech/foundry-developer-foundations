@@ -7,7 +7,7 @@ import { uuidv4 } from '@codestrap/developer-foundations-utils';
 export async function submitRangrRfp(
   rfp: string,
   machineExecutionId: string,
-  client: RangrClient
+  client: RangrClient,
 ): Promise<RfpRequestResponse> {
   console.log(`upsertRfpRequest machineExecutionId: ${machineExecutionId}`);
 

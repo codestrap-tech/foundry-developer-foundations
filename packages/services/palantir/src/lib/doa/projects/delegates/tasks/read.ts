@@ -4,7 +4,7 @@ export async function readTicket(
   id: string,
   token: string,
   ontologyRid: string,
-  url: string,
+  url: string
 ): Promise<Tickets> {
   console.log(`readTicket id: ${id}`);
 

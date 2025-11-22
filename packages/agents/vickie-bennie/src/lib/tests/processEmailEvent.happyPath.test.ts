@@ -28,10 +28,10 @@ jest.mock('@codestrap/developer-foundations-services-palantir', () => ({
         state: string,
         logs: string,
         lockOwner?: string,
-        lockUntil?: number
+        lockUntil?: number,
       ) => {
         return mockProcessEmailEventExecution;
-      }
+      },
     ),
     delete: jest.fn(),
     read: jest.fn((machineExecutionId: string) => {
@@ -139,7 +139,7 @@ jest.mock('googleapis', () => ({
           }),
           list: jest.fn((params: any) => {
             console.log(
-              `Calendar mock events.list called with: ${JSON.stringify(params)}`
+              `Calendar mock events.list called with: ${JSON.stringify(params)}`,
             );
             return Promise.resolve(mockCalendarList);
           }),
@@ -149,12 +149,12 @@ jest.mock('googleapis', () => ({
           query: jest.fn((params: any) => {
             console.log(
               `Calendar mock freebusy.query called with: ${JSON.stringify(
-                params
-              )}`
+                params,
+              )}`,
             );
             const mockResponse = getMockFreeBusyResponse(
               params.requestBody.timeMin,
-              params.requestBody.timeMax
+              params.requestBody.timeMax,
             );
             return Promise.resolve(mockResponse);
           }),
@@ -209,7 +209,7 @@ describe('testing Vickie', () => {
     const vickie = new Vickie();
     const result = await vickie.processEmailEvent(
       'eyJlbWFpbEFkZHJlc3MiOiJkc21pbGV5QGNvZGVzdHJhcC5tZSIsImhpc3RvcnlJZCI6MTc5MDUxMn0=',
-      '2025-07-22T20:43:55.184Z'
+      '2025-07-22T20:43:55.184Z',
     );
     expect(result).toBeDefined();
     expect(result.message).toBeDefined();

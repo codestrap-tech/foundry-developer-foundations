@@ -11,7 +11,7 @@ export async function searchMemoryRecall(
   kValue: number,
   token: string,
   ontologyRid: string,
-  url: string,
+  url: string
 ): Promise<MemoryRecall[]> {
   console.log(`searchMemoryRecall input search query: ${input}}`);
 

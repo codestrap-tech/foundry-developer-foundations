@@ -8,7 +8,7 @@ export type IncompleteQuestionResponse = {
 export async function incompleteQuestion(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<IncompleteQuestionResponse> {
   // use an LLM to summerize the missing infromation and return the result
   return {

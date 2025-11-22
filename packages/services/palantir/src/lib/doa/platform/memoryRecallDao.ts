@@ -7,7 +7,10 @@ import { readMemoryRecall } from './delegates/memoryRecall/read';
 import { foundryClientFactory } from '../../factory/foundryClientFactory';
 
 export function makeMemoryRecallDao(): MemoryRecallDao {
-  const { getToken, url, ontologyRid } = foundryClientFactory(process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE, undefined);
+  const { getToken, url, ontologyRid } = foundryClientFactory(
+    process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
+    undefined
+  );
 
   return {
     // TODO code out all methods using OSDK API calls
@@ -37,7 +40,13 @@ export function makeMemoryRecallDao(): MemoryRecallDao {
     search: async (task: string, kValue = 1) => {
       const token = await getToken();
 
-      const results = await searchMemoryRecall(task, kValue, token, ontologyRid, url);
+      const results = await searchMemoryRecall(
+        task,
+        kValue,
+        token,
+        ontologyRid,
+        url
+      );
       // there should be only one results based on the params
       return results;
     },

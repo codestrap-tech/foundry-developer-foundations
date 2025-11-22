@@ -139,7 +139,7 @@ export function getFunctionCatalog(dispatch: (action: any) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('readEmails implementation in function catalog called');
           dispatch({ type: 'CONTINUE' });
@@ -154,10 +154,10 @@ export function getFunctionCatalog(dispatch: (action: any) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log(
-            'researchReport implementation in function catalog called'
+            'researchReport implementation in function catalog called',
           );
           dispatch({ type: 'CONTINUE' });
         },
@@ -171,7 +171,7 @@ export function getFunctionCatalog(dispatch: (action: any) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('createTask implementation in function catalog called');
           dispatch({ type: 'CONTINUE' });
@@ -186,10 +186,10 @@ export function getFunctionCatalog(dispatch: (action: any) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log(
-            'getAvailableMeetingTimes implementation in function catalog called'
+            'getAvailableMeetingTimes implementation in function catalog called',
           );
           dispatch({ type: 'CONTINUE' });
         },
@@ -203,10 +203,10 @@ export function getFunctionCatalog(dispatch: (action: any) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log(
-            'resolveUnavailableAttendees implementation in function catalog called'
+            'resolveUnavailableAttendees implementation in function catalog called',
           );
           dispatch({ type: 'CONTINUE' });
         },
@@ -220,7 +220,7 @@ export function getFunctionCatalog(dispatch: (action: any) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('scheduleMeeting function catalog implementation called');
           dispatch({ type: 'CONTINUE' });
@@ -234,7 +234,7 @@ export function getFunctionCatalog(dispatch: (action: any) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('getProjectFiles function catalog implementation called');
           dispatch({ type: 'CONTINUE' });
@@ -249,10 +249,10 @@ export function getFunctionCatalog(dispatch: (action: any) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log(
-            'getProjectStatusReport function catalog implementation called'
+            'getProjectStatusReport function catalog implementation called',
           );
           dispatch({ type: 'CONTINUE' });
         },
@@ -265,7 +265,7 @@ export function getFunctionCatalog(dispatch: (action: any) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('sendEmail function catalog implementation called');
           dispatch({ type: 'CONTINUE' });
@@ -279,7 +279,7 @@ export function getFunctionCatalog(dispatch: (action: any) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('writeEmail function catalog implementation called');
           dispatch({ type: 'CONTINUE' });
@@ -293,10 +293,10 @@ export function getFunctionCatalog(dispatch: (action: any) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log(
-            'writeSlackMessage function catalog implementation called'
+            'writeSlackMessage function catalog implementation called',
           );
           dispatch({ type: 'CONTINUE' });
         },
@@ -309,10 +309,10 @@ export function getFunctionCatalog(dispatch: (action: any) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log(
-            'sendSlackMessage function catalog implementation called'
+            'sendSlackMessage function catalog implementation called',
           );
           dispatch({ type: 'CONTINUE' });
         },
@@ -325,7 +325,7 @@ export function getFunctionCatalog(dispatch: (action: any) => void) {
         implementation: (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('UnsafeQuestion implementation called');
           dispatch({ type: 'success' });
@@ -339,7 +339,7 @@ export function getFunctionCatalog(dispatch: (action: any) => void) {
         implementation: (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('UnsupportedQuestion implementation called');
           dispatch({ type: 'success' });

@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       scenarioPrices,
       caGallonsYear,
       caGdp,
-      caShareUsGdp
+      caShareUsGdp,
     );
 
     return NextResponse.json(results, {
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     console.error('energy/read error:', err);
     return NextResponse.json(
       { error: (err as Error)?.message ?? 'Internal error' },
-      { status: 500, headers: corsHeaders() }
+      { status: 500, headers: corsHeaders() },
     );
   }
 }
@@ -91,7 +91,7 @@ async function safeJson(req: NextRequest) {
 function badRequest(message: string) {
   return NextResponse.json(
     { error: message },
-    { status: 400, headers: corsHeaders() }
+    { status: 400, headers: corsHeaders() },
   );
 }
 

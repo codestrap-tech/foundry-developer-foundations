@@ -5,7 +5,10 @@ import {
 import { foundryClientFactory } from '../../factory/foundryClientFactory';
 
 export function makeTelemetryDao(): TelemetryDao {
-  const { getToken, url, ontologyRid } = foundryClientFactory(process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE, undefined);
+  const { getToken, url, ontologyRid } = foundryClientFactory(
+    process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
+    undefined
+  );
 
   return async (inputJSON) => {
     const token = await getToken();

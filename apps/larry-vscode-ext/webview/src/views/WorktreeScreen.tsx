@@ -14,7 +14,7 @@ export function WorktreeScreen() {
   const [firstMessage, setFirstMessage] = useState('');
   const [provisioning, setProvisioning] = useState(false);
   const [previousThreadId, setPreviousThreadId] = useState<string | undefined>(
-    undefined
+    undefined,
   );
   const dispatch = useExtensionDispatch();
   const { apiUrl, clientRequestId, currentThreadId, currentWorktreeName } =
@@ -31,7 +31,7 @@ export function WorktreeScreen() {
   // Read machine data from React Query cache (set by SSE bridge)
   const { data: machineData, isLoading } = useMachineQuery(
     apiUrl,
-    currentThreadId
+    currentThreadId,
   );
 
   // Read threads data to get the session label
@@ -47,7 +47,7 @@ export function WorktreeScreen() {
 
   // Find current thread label from threads list
   const currentThread = threadsData?.items?.find(
-    (t) => t.id === currentThreadId
+    (t) => t.id === currentThreadId,
   );
   const sessionLabel = currentThread?.label || 'Session 123';
 
@@ -57,7 +57,7 @@ export function WorktreeScreen() {
       // NOTE: Ideally extension should pass worktreeName in worktree_detection; otherwise we can prompt the user
       // For now we block and ask the user to reopen via main screen if undefined
       console.error(
-        'Worktree name is unknown. Please open from main screen or update the extension to pass worktreeName.'
+        'Worktree name is unknown. Please open from main screen or update the extension to pass worktreeName.',
       );
       return;
     }

@@ -40,6 +40,6 @@ export function useThreadsQuery(baseUrl: string) {
       refetchInterval: 5000,
       staleTime: 4000,
     },
-    queryClient
+    queryClient,
   );
 }

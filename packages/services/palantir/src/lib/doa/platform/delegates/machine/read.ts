@@ -7,7 +7,7 @@ export async function readMachineExecution(
   id: string,
   token: string,
   ontologyRid: string,
-  url: string,
+  url: string
 ): Promise<MachineExecutions> {
   console.log(`readMachineExecution id: ${id}`);
 

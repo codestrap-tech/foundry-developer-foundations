@@ -11,6 +11,7 @@ export default [
         'error',
         {
           ignoredFiles: ['{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}'],
+          ignoredDependencies: ['prettier'], // mismatch between eslint-plugin-prettier  @codestrap/developer-*
         },
       ],
     },

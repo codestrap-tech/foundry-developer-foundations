@@ -33,7 +33,7 @@ if (!process.env.E2E) {
       };
 
       const officeService = await container.getAsync<OfficeService>(
-        TYPES.OfficeService
+        TYPES.OfficeService,
       );
 
       const schedulingResult = await officeService.watchEmails(inputs);
@@ -45,7 +45,7 @@ if (!process.env.E2E) {
         schedulingResult.responses?.reduce((acc, cur) => {
           acc = `${acc}\n${cur}`;
           return acc;
-        }, results)
+        }, results),
       );
     }, 60000);
 
@@ -63,7 +63,7 @@ if (!process.env.E2E) {
       };
 
       const officeService = await container.getAsync<OfficeService>(
-        TYPES.OfficeService
+        TYPES.OfficeService,
       );
 
       const result = await officeService.readEmailHistory({
@@ -88,7 +88,7 @@ if (!process.env.E2E) {
       };
 
       const officeService = await container.getAsync<OfficeService>(
-        TYPES.OfficeService
+        TYPES.OfficeService,
       );
 
       const result = await officeService.readEmailHistory({
@@ -114,7 +114,7 @@ if (!process.env.E2E) {
       };
 
       const officeService = await container.getAsync<OfficeService>(
-        TYPES.OfficeService
+        TYPES.OfficeService,
       );
 
       const result = await officeService.readEmailHistory({

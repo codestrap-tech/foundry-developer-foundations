@@ -1,6 +1,9 @@
 import { drive_v3 } from 'googleapis';
 import { searchDriveFiles } from './searchDriveFiles';
-import { DriveSearchParams, DriveDateField } from '@codestrap/developer-foundations-types';
+import {
+  DriveSearchParams,
+  DriveDateField,
+} from '@codestrap/developer-foundations-types';
 
 // Mock the Google Drive API client
 const mockDriveClient = {
@@ -44,7 +47,7 @@ describe('searchDriveFiles', () => {
       expect(mockDriveClient.files.list).toHaveBeenCalledWith(
         expect.objectContaining({
           q: "(name contains 'transcripts' or name contains 'meeting') and trashed = false",
-        })
+        }),
       );
     });
 
@@ -62,7 +65,7 @@ describe('searchDriveFiles', () => {
       expect(mockDriveClient.files.list).toHaveBeenCalledWith(
         expect.objectContaining({
           q: "createdTime >= '2024-01-01T00:00:00.000Z' and createdTime <= '2024-12-31T00:00:00.000Z' and trashed = false",
-        })
+        }),
       );
     });
 
@@ -76,7 +79,7 @@ describe('searchDriveFiles', () => {
       expect(mockDriveClient.files.list).toHaveBeenCalledWith(
         expect.objectContaining({
           q: "mimeType = 'application/pdf' and trashed = false",
-        })
+        }),
       );
     });
 
@@ -90,7 +93,7 @@ describe('searchDriveFiles', () => {
       expect(mockDriveClient.files.list).toHaveBeenCalledWith(
         expect.objectContaining({
           q: "'user@example.com' in owners and trashed = false",
-        })
+        }),
       );
     });
 
@@ -104,7 +107,7 @@ describe('searchDriveFiles', () => {
       expect(mockDriveClient.files.list).toHaveBeenCalledWith(
         expect.objectContaining({
           q: 'sharedWithMe and trashed = false',
-        })
+        }),
       );
     });
 
@@ -118,7 +121,7 @@ describe('searchDriveFiles', () => {
       expect(mockDriveClient.files.list).toHaveBeenCalledWith(
         expect.objectContaining({
           q: 'trashed = true',
-        })
+        }),
       );
     });
 
@@ -140,7 +143,7 @@ describe('searchDriveFiles', () => {
         expect.objectContaining({
           q: "(name contains 'project' or name contains 'report') and modifiedTime >= '2024-01-01T00:00:00.000Z' and mimeType = 'application/pdf' and 'user@example.com' in owners and trashed = false",
           pageSize: 50,
-        })
+        }),
       );
     });
   });
@@ -166,7 +169,7 @@ describe('searchDriveFiles', () => {
       expect(mockDriveClient.files.list).toHaveBeenCalledWith(
         expect.objectContaining({
           q: "(name contains 'test \\(draft\\)' or name contains 'file\\[final\\]' or name contains 'report v2\\.0') and trashed = false",
-        })
+        }),
       );
     });
 
@@ -180,7 +183,7 @@ describe('searchDriveFiles', () => {
       expect(mockDriveClient.files.list).toHaveBeenCalledWith(
         expect.objectContaining({
           q: "(name contains 'file \\\"important\\\"' or name contains 'doc \\'final\\'') and trashed = false",
-        })
+        }),
       );
     });
 
@@ -194,7 +197,7 @@ describe('searchDriveFiles', () => {
       expect(mockDriveClient.files.list).toHaveBeenCalledWith(
         expect.objectContaining({
           q: "(name contains 'backup\\\\copy' or name contains 'path\\\\to\\\\file') and trashed = false",
-        })
+        }),
       );
     });
   });
@@ -234,7 +237,9 @@ describe('searchDriveFiles', () => {
         },
       };
 
-      (mockDriveClient.files.list as jest.Mock).mockResolvedValue(mockApiResponse);
+      (mockDriveClient.files.list as jest.Mock).mockResolvedValue(
+        mockApiResponse,
+      );
 
       const params: DriveSearchParams = {
         keywords: ['test'],
@@ -283,7 +288,9 @@ describe('searchDriveFiles', () => {
         },
       };
 
-      (mockDriveClient.files.list as jest.Mock).mockResolvedValue(mockApiResponse);
+      (mockDriveClient.files.list as jest.Mock).mockResolvedValue(
+        mockApiResponse,
+      );
 
       const params: DriveSearchParams = {
         keywords: ['nonexistent'],
@@ -307,7 +314,9 @@ describe('searchDriveFiles', () => {
         },
       };
 
-      (mockDriveClient.files.list as jest.Mock).mockResolvedValue(mockApiResponse);
+      (mockDriveClient.files.list as jest.Mock).mockResolvedValue(
+        mockApiResponse,
+      );
 
       const params: DriveSearchParams = {
         keywords: ['test'],
@@ -331,7 +340,7 @@ describe('searchDriveFiles', () => {
       const params: DriveSearchParams = { keywords: ['test'] };
 
       await expect(searchDriveFiles(mockDriveClient, params)).rejects.toThrow(
-        'invalid_grant: Invalid credentials'
+        'invalid_grant: Invalid credentials',
       );
     });
 
@@ -341,17 +350,21 @@ describe('searchDriveFiles', () => {
 
       const params: DriveSearchParams = { keywords: ['test'] };
 
-      await expect(searchDriveFiles(mockDriveClient, params)).rejects.toThrow('quota exceeded');
+      await expect(searchDriveFiles(mockDriveClient, params)).rejects.toThrow(
+        'quota exceeded',
+      );
     });
 
     it('should bubble not found errors', async () => {
       const notFoundError = new Error('notFound: Drive not found');
-      (mockDriveClient.files.list as jest.Mock).mockRejectedValue(notFoundError);
+      (mockDriveClient.files.list as jest.Mock).mockRejectedValue(
+        notFoundError,
+      );
 
       const params: DriveSearchParams = { keywords: ['test'] };
 
       await expect(searchDriveFiles(mockDriveClient, params)).rejects.toThrow(
-        'notFound: Drive not found'
+        'notFound: Drive not found',
       );
     });
 
@@ -361,15 +374,21 @@ describe('searchDriveFiles', () => {
 
       const params: DriveSearchParams = { keywords: ['test'] };
 
-      await expect(searchDriveFiles(mockDriveClient, params)).rejects.toThrow('Something went wrong');
+      await expect(searchDriveFiles(mockDriveClient, params)).rejects.toThrow(
+        'Something went wrong',
+      );
     });
 
     it('should bubble non-Error rejections as-is', async () => {
-      (mockDriveClient.files.list as jest.Mock).mockRejectedValue('String error');
+      (mockDriveClient.files.list as jest.Mock).mockRejectedValue(
+        'String error',
+      );
 
       const params: DriveSearchParams = { keywords: ['test'] };
 
-      await expect(searchDriveFiles(mockDriveClient, params)).rejects.toEqual('String error');
+      await expect(searchDriveFiles(mockDriveClient, params)).rejects.toEqual(
+        'String error',
+      );
     });
   });
 
@@ -394,7 +413,7 @@ describe('searchDriveFiles', () => {
       expect(mockDriveClient.files.list).toHaveBeenCalledWith(
         expect.objectContaining({
           q: 'trashed = false',
-        })
+        }),
       );
     });
 
@@ -408,7 +427,7 @@ describe('searchDriveFiles', () => {
       expect(mockDriveClient.files.list).toHaveBeenCalledWith(
         expect.objectContaining({
           q: "(name contains 'valid' or name contains 'another-valid') and trashed = false",
-        })
+        }),
       );
     });
 
@@ -422,7 +441,7 @@ describe('searchDriveFiles', () => {
       expect(mockDriveClient.files.list).toHaveBeenCalledWith(
         expect.objectContaining({
           q: "(name contains 'project plan' or name contains 'meeting notes') and trashed = false",
-        })
+        }),
       );
     });
 
@@ -437,7 +456,7 @@ describe('searchDriveFiles', () => {
       expect(mockDriveClient.files.list).toHaveBeenCalledWith(
         expect.objectContaining({
           q: "mimeType = 'application/pdf' and 'user@example.com' in owners and trashed = false",
-        })
+        }),
       );
     });
 
@@ -450,10 +469,11 @@ describe('searchDriveFiles', () => {
         expect.objectContaining({
           pageSize: 100,
           orderBy: 'modifiedTime desc',
-          fields: 'nextPageToken,files(id,name,mimeType,size,createdTime,modifiedTime,webViewLink,webContentLink,owners,lastModifyingUser,parents,description,starred,trashed)',
+          fields:
+            'nextPageToken,files(id,name,mimeType,size,createdTime,modifiedTime,webViewLink,webContentLink,owners,lastModifyingUser,parents,description,starred,trashed)',
           supportsAllDrives: true,
           includeItemsFromAllDrives: true,
-        })
+        }),
       );
     });
   });
@@ -475,7 +495,9 @@ describe('searchDriveFiles', () => {
         },
       };
 
-      (mockDriveClient.files.list as jest.Mock).mockResolvedValue(mockApiResponse);
+      (mockDriveClient.files.list as jest.Mock).mockResolvedValue(
+        mockApiResponse,
+      );
 
       const params: DriveSearchParams = {
         keywords: ['test'],
@@ -517,7 +539,9 @@ describe('searchDriveFiles', () => {
         },
       };
 
-      (mockDriveClient.files.list as jest.Mock).mockResolvedValue(mockApiResponse);
+      (mockDriveClient.files.list as jest.Mock).mockResolvedValue(
+        mockApiResponse,
+      );
 
       const params: DriveSearchParams = {
         keywords: ['test'],

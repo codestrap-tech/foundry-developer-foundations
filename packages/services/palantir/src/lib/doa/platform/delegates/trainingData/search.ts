@@ -8,7 +8,7 @@ export async function searchTrainingData(
   type: string,
   token: string,
   ontologyRid: string,
-  url: string,
+  url: string
 ): Promise<TrainingData[]> {
   console.log(`searchTrainingData xReason: ${xReason} type: ${type}`);
 

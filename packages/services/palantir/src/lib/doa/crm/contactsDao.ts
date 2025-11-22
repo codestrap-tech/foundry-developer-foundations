@@ -7,7 +7,10 @@ import { searchContacts } from './delegates/contacts/search';
 import { foundryClientFactory } from '../../factory/foundryClientFactory';
 
 export function makeContactsDao(): ContactsDao {
-  const { getToken, url, ontologyRid } = foundryClientFactory(process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE, undefined);
+  const { getToken, url, ontologyRid } = foundryClientFactory(
+    process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
+    undefined
+  );
 
   return {
     // TODO code out all methods using OSDK API calls
@@ -67,7 +70,14 @@ export function makeContactsDao(): ContactsDao {
     },
     search: async (fullName: string, company: string, pageSize?: number) => {
       const token = await getToken();
-      const result = await searchContacts(fullName, company, token, ontologyRid, url, pageSize);
+      const result = await searchContacts(
+        fullName,
+        company,
+        token,
+        ontologyRid,
+        url,
+        pageSize
+      );
 
       return result;
     },

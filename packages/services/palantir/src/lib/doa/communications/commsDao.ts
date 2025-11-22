@@ -7,7 +7,10 @@ import { upsertCommunications } from './communications/upsert';
 import { foundryClientFactory } from '../../factory/foundryClientFactory';
 
 export function makeCommsDao(): CommsDao {
-  const { getToken, url, ontologyRid } = foundryClientFactory(process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE, undefined);
+  const { getToken, url, ontologyRid } = foundryClientFactory(
+    process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
+    undefined
+  );
 
   return {
     // TODO code out all methods using OSDK API calls

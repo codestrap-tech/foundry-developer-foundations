@@ -23,7 +23,7 @@ export function handleForwardedSSE(
       worktreeName: string;
       threadId: string;
     }) => any;
-  }
+  },
 ) {
   const { baseUrl, event, data } = msg;
 
@@ -56,7 +56,7 @@ export function handleForwardedSSE(
           };
           console.log('Updated threads cache:', updated);
           return updated;
-        }
+        },
       );
 
       // If this event belongs to our submission, adopt the new machine/thread id

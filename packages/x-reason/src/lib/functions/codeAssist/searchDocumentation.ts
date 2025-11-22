@@ -14,7 +14,7 @@ export type SearchDocumentationResults = {
 export async function searchDocumentation(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<SearchDocumentationResults> {
   const threadsDao = container.get<ThreadsDao>(TYPES.ThreadsDao);
 
@@ -40,7 +40,7 @@ export async function searchDocumentation(
     undefined,
     undefined,
     undefined,
-    'b2b532a80bf4c4303'
+    'b2b532a80bf4c4303',
   );
 
   parsedMessages.push({
@@ -52,7 +52,7 @@ export async function searchDocumentation(
     await threadsDao.upsert(
       JSON.stringify(parsedMessages),
       'cli-tool',
-      context.machineExecutionId
+      context.machineExecutionId,
     );
   }
 

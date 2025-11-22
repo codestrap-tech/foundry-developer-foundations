@@ -73,7 +73,7 @@ const initialState: ExtensionState = {
 // Reducer
 function extensionReducer(
   state: ExtensionState,
-  action: ExtensionAction
+  action: ExtensionAction,
 ): ExtensionState {
   switch (action.type) {
     case 'SET_WORKTREE_DETECTION':

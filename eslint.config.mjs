@@ -2,9 +2,11 @@
 import nx from '@nx/eslint-plugin';
 import * as regexpPlugin from 'eslint-plugin-regexp';
 import reactRefresh from 'eslint-plugin-react-refresh';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
+  eslintPluginPrettierRecommended,
   reactRefresh.configs.next,
   regexpPlugin.configs['flat/recommended'],
   {

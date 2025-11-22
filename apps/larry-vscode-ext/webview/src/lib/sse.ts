@@ -7,7 +7,7 @@ export type SSEController = {
 export function openSSE(
   url: string,
   handlers: SSEHandlers,
-  onStatus?: (s: 'open' | 'error' | 'closed') => void
+  onStatus?: (s: 'open' | 'error' | 'closed') => void,
 ): SSEController {
   let es: EventSource | null = null;
   let closed = false;

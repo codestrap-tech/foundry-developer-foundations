@@ -30,10 +30,10 @@ jest.mock('@codestrap/developer-foundations-services-palantir', () => ({
         state: string,
         logs: string,
         lockOwner?: string,
-        lockUntil?: number
+        lockUntil?: number,
       ) => {
         return text2ActionTestMachineExecution;
-      }
+      },
     ),
     delete: jest.fn(),
     read: jest.fn((machineExecutionId: string) => {

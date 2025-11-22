@@ -7,7 +7,7 @@ export async function readMemoryRecall(
   id: string,
   token: string,
   ontologyRid: string,
-  url: string,
+  url: string
 ): Promise<MemoryRecall> {
   console.log(`readMemoryRecall id: ${id}`);
 

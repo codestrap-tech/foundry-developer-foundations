@@ -12,7 +12,7 @@ function validateEmailInput(context: EmailContext): void {
 
   if (!from || !recipients || !subject || !message) {
     throw new Error(
-      'No email data found in context. From, recipients, subject and message are required!'
+      'No email data found in context. From, recipients, subject and message are required!',
     );
   }
 
@@ -41,7 +41,7 @@ function createEmailContent(
   from: string,
   message: string,
   subject: string,
-  recipients: string | string[]
+  recipients: string | string[],
 ): string {
   const boundary = `boundary_${Date.now().toString(36)}`;
   const recipientList = Array.isArray(recipients)
@@ -129,12 +129,12 @@ function createGmailRequest(encodedContent: string) {
 
 export async function sendEmail(
   gmail: gmail_v1.Gmail,
-  context: EmailContext
+  context: EmailContext,
 ): Promise<SendEmailOutput> {
   console.log(
     `${LOG_PREFIX} Processing email request:\n  subject: ${
       context.subject
-    }\n  recipients: ${JSON.stringify(context.recipients, null, 2)}`
+    }\n  recipients: ${JSON.stringify(context.recipients, null, 2)}`,
   );
 
   try {
@@ -144,7 +144,7 @@ export async function sendEmail(
       context.from,
       context.message,
       context.subject,
-      context.recipients
+      context.recipients,
     );
 
     const encodedContent = encodeEmailForTransport(emailContent);
@@ -163,8 +163,8 @@ export async function sendEmail(
           labelIds: response.data.labelIds || [],
         },
         null,
-        2
-      )}`
+        2,
+      )}`,
     );
 
     return {
@@ -178,7 +178,7 @@ export async function sendEmail(
         error instanceof Error ? error.message : error
       }\n  stack: ${
         error instanceof Error ? error.stack : ''
-      }\n  response: ${JSON.stringify((error as any).response?.data, null, 2)}`
+      }\n  response: ${JSON.stringify((error as any).response?.data, null, 2)}`,
     );
     throw error;
   }

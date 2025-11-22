@@ -7,7 +7,7 @@ export async function readTrainingData(
   id: string,
   token: string,
   ontologyRid: string,
-  url: string,
+  url: string
 ): Promise<TrainingData> {
   console.log(`readTrainingData id: ${id}`);
 

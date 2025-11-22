@@ -6,7 +6,7 @@ import {
 
 export function makeSlackClient(
   baseUrl: string,
-  botToken: string
+  botToken: string,
 ): MessageService {
   return {
     sendMessage: async (message: Message) => {

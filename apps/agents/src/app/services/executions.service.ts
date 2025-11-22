@@ -16,7 +16,7 @@ export async function callGetCommunications(id: string, token: string) {
     console.log('Executions API failed');
     console.log(JSON.stringify(res));
     throw new Error(
-      `Executions API failed with:\n${JSON.stringify(res, null, 2)}`
+      `Executions API failed with:\n${JSON.stringify(res, null, 2)}`,
     );
   }
 
@@ -39,7 +39,7 @@ export async function callGetMachines(id: string, token: string) {
     console.log('Executions API failed');
     console.log(JSON.stringify(res));
     throw new Error(
-      `Executions API failed with:\n${JSON.stringify(res, null, 2)}`
+      `Executions API failed with:\n${JSON.stringify(res, null, 2)}`,
     );
   }
 

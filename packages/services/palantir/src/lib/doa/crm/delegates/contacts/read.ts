@@ -7,7 +7,7 @@ export async function readContact(
   id: string,
   token: string,
   ontologyRid: string,
-  url: string,
+  url: string
 ): Promise<Contacts> {
   console.log(`readContact id: ${id}`);
 

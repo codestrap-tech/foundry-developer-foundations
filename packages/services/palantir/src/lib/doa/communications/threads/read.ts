@@ -4,7 +4,7 @@ export async function readThread(
   id: string,
   token: string,
   ontologyRid: string,
-  url: string,
+  url: string
 ): Promise<Threads> {
   console.log(`readThread id: ${id}`);
 
