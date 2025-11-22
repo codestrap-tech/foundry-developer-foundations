@@ -9,6 +9,17 @@
   },
   "dependencies": {
     "inversify": "^7.5.1",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "reflect-metadata": "0.2.2",
+    "@codestrap/developer-foundations-types": "0.0.1",
+    "@codestrap/developer-foundations-services-weather": "0.0.1",
+    "@codestrap/developer-foundations-services-palantir": "0.0.1",
+    "@codestrap/developer-foundations-services-rangr": "0.0.1",
+    "@codestrap/developer-foundations-services-google": "0.0.1",
+    "@codestrap/developer-foundations-services-slack": "0.0.1",
+    "@codestrap/developer-foundations-utils": "0.0.1",
+    "@codestrap/developer-foundations-services-eia": "0.0.1",
+    "@codestrap/github": "0.0.1",
+    "@codestrap/larry-config": "0.0.1"
   }
 }

@@ -16,8 +16,8 @@ export function makeTicketsDao(): TicketsDao {
       alertTitle: string,
       alertType: string,
       description: string,
-      severity: string = 'Low',
-      status: string = 'Open',
+      severity = 'Low',
+      status = 'Open',
       points?: number,
       assignees?: string
     ) => {

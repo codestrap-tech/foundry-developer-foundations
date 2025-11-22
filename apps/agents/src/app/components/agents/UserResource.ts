@@ -6,7 +6,7 @@ import { Client } from "@osdk/client";
 function createResource<T>(promise: Promise<T>) {
     let status: "pending" | "success" | "error" = "pending";
     let result: T;
-    let suspender = promise.then(
+    const suspender = promise.then(
         (r) => {
             status = "success";
             result = r;

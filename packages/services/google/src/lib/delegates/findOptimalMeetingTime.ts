@@ -120,7 +120,7 @@ function calculateMeetingTime(
   timeframeContext: string,
   workingHours = { start_hour: 8, end_hour: 17 },
   now = new Date(),
-  timezone: string = 'America/Los_Angeles',
+  timezone = 'America/Los_Angeles',
   _fallbackOffset?: number,
   skipFridayMeetings = false,
   meetingDuration = 30 // minutes
@@ -130,7 +130,7 @@ function calculateMeetingTime(
   const isoNoTZ = /^\s*\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}(?::\d{2})?\s*$/;
 
   if (!isNaN(parsed.getTime())) {
-    const hasOffset = /([zZ]|[+\-]\d{2}:?\d{2})\s*$/.test(timeframeContext);
+    const hasOffset = /(z|[+\-]\d{2}:?\d{2})\s*$/i.test(timeframeContext);
     if (hasOffset) {
       const startTime = new Date(parsed);
       const endTime = new Date(startTime.getTime() + meetingDuration * 60000);

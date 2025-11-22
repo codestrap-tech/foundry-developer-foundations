@@ -5,6 +5,10 @@
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
   "dependencies": {
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "dotenv": "^16.5.0",
+    "@octokit/auth-app": "^8.1.1",
+    "@octokit/rest": "^22.0.0",
+    "@codestrap/developer-foundations-types": "0.0.1"
   }
 }

@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "@codestrap/developer-foundations-types": "*",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "@nx/devkit": "21.6.5",
+    "ramda": "^0.30.1"
   }
 }

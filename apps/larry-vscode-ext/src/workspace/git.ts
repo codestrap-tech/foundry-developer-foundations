@@ -90,7 +90,7 @@ export async function getCurrentWorktreeId(): Promise<string> {
         const gitDir = gitContent.toString().trim();
         console.log('Git dir content:', gitDir);
 
-        const worktreeMatch = gitDir.match(/worktrees\/([^\/]+)/);
+        const worktreeMatch = gitDir.match(/worktrees\/([^/]+)/);
         if (worktreeMatch) {
           return worktreeMatch[1]; // Return the actual worktree name
         } else {

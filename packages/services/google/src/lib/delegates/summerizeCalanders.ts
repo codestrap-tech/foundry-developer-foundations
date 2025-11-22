@@ -19,7 +19,7 @@ function extractMeetingLink(evt: calendar_v3.Schema$Event): string | undefined {
   // 3P links in description or location
   const text = `${evt.summary ?? ''} ${evt.description ?? ''} ${evt.location ?? ''}`;
   const regex =
-    /(https?:\/\/[^\s]*?(zoom\.us|teams\.microsoft\.com|meet\.google\.com|gotomeet\.|webex\.com)[^\s]*)/i;
+    /(https?:\/\/\S*?(zoom\.us|teams\.microsoft\.com|meet\.google\.com|gotomeet\.|webex\.com)\S*)/i;
   const m = text.match(regex);
   return m ? m[1] : undefined;
 }

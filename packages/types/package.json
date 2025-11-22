@@ -13,7 +13,8 @@
     "@sinclair/typebox": "^0.34.33",
     "xstate": "4.37.2",
     "googleapis": "^149.0.0",
-    "@osdk/client": "^2.2.1"
+    "@osdk/client": "^2.2.1",
+    "@osdk/foundry.admin": "^2.22.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.3"

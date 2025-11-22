@@ -42,13 +42,13 @@ type DelegateArgs = {
   slides?: slides_v1.Slides;
 };
 
-const DRIVE_ID_REGEX = /\/d\/([a-zA-Z0-9_-]{10,})/;
+const DRIVE_ID_REGEX = /\/d\/([\w-]{10,})/;
 
 function normalizeTemplateId(templateId: string): string | null {
   const m = templateId.match(DRIVE_ID_REGEX);
   if (m && m[1]) return m[1];
   // simple validation: Drive IDs are typically 10+ chars with - or _
-  if (/^[a-zA-Z0-9_-]{10,}$/.test(templateId)) return templateId;
+  if (/^[\w-]{10,}$/.test(templateId)) return templateId;
   return null;
 }
 
