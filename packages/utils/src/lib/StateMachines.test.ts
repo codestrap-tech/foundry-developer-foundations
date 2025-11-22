@@ -2,7 +2,7 @@ import {
   simpleMachine,
   complexMachine,
 } from './__fixtures__/DuplicateIdMachine';
-import { StateConfig } from '@codestrap/developer-foundations-types';
+import type { StateConfig } from '@codestrap/developer-foundations-types';
 import { getUniqueStateIds } from './StateMachines';
 let counter = 0;
 

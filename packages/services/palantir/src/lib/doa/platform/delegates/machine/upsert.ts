@@ -1,7 +1,5 @@
-import {
-  FoundryClient,
-  MachineExecutions,
-} from '@codestrap/developer-foundations-types';
+import type { MachineExecutions } from '@codestrap/developer-foundations-types';
+import { FoundryClient } from '@codestrap/developer-foundations-types';
 
 // Per-id queue state
 type UpsertArgs = {
@@ -59,7 +57,7 @@ async function doNetworkUpsert(args: UpsertArgs): Promise<MachineExecutions> {
 
   if (!apiResult.ok) {
     throw new Error(
-      `Upsert failed: ${apiResult.status} ${apiResult.statusText}`
+      `Upsert failed: ${apiResult.status} ${apiResult.statusText}`,
     );
   }
 
@@ -71,8 +69,8 @@ async function doNetworkUpsert(args: UpsertArgs): Promise<MachineExecutions> {
   if (!result.edits || result.edits.edits.length === 0) {
     throw new Error(
       `Failed to upsert machine message to the ontology with: ${JSON.stringify(
-        result
-      )}`
+        result,
+      )}`,
     );
   }
 
@@ -89,7 +87,7 @@ async function doNetworkUpsert(args: UpsertArgs): Promise<MachineExecutions> {
 
   if (!machineFetchResults.ok) {
     throw new Error(
-      `Fetch machine failed: ${machineFetchResults.status} ${machineFetchResults.statusText}`
+      `Fetch machine failed: ${machineFetchResults.status} ${machineFetchResults.statusText}`,
     );
   }
 
@@ -180,7 +178,7 @@ export function upsertMachineExecution(
   ontologyRid: string,
   url: string,
   lockOwner?: string,
-  lockUntil?: number
+  lockUntil?: number,
 ): Promise<MachineExecutions> {
   const args: UpsertArgs = {
     id,

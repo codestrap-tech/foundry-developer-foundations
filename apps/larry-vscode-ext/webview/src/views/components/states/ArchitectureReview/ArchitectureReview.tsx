@@ -1,7 +1,7 @@
 /* JSX */
 /* @jsxImportSource preact */
 import { useState, useRef } from 'preact/hooks';
-import { MachineStatus } from '../../../../lib/backend-types';
+import type { MachineStatus } from '../../../../lib/backend-types';
 import { useContentFromLocalFile } from '../../../../hooks/useContentFromLocalFile';
 import { useParseCodeEdits } from './useParseCodeEdits';
 import {

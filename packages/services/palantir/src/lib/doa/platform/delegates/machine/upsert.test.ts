@@ -47,13 +47,13 @@ describe('upsertMachineExecution queueing', () => {
       'logs',
       'token',
       'ontologyRid',
-      'http://example'
+      'http://example',
     );
 
     expect(result).toEqual({ id: 'abc123', state: 'some-state' });
     expect(mockFetch).toHaveBeenCalledTimes(2);
     expect(mockFetch.mock.calls[0][0]).toContain(
-      '/actions/upsert-machine/apply'
+      '/actions/upsert-machine/apply',
     );
     expect(mockFetch.mock.calls[1][0]).toContain('/MachineExecutions/abc123');
   });
@@ -75,7 +75,7 @@ describe('upsertMachineExecution queueing', () => {
       'logs1',
       'token',
       'ontology',
-      'http://example'
+      'http://example',
     );
     const p2 = upsertMachineExecution(
       'same',
@@ -84,7 +84,7 @@ describe('upsertMachineExecution queueing', () => {
       'logs2',
       'token',
       'ontology',
-      'http://example'
+      'http://example',
     );
 
     // Resolve the first POST late
@@ -112,8 +112,8 @@ describe('upsertMachineExecution queueing', () => {
         'logs',
         'token',
         'ontologyRid',
-        'http://example'
-      )
+        'http://example',
+      ),
     ).rejects.toThrow(/Upsert failed: 500/);
   });
 
@@ -134,8 +134,8 @@ describe('upsertMachineExecution queueing', () => {
         'logs',
         'token',
         'ontologyRid',
-        'http://example'
-      )
+        'http://example',
+      ),
     ).rejects.toThrow(/Fetch machine failed: 404/);
   });
 });

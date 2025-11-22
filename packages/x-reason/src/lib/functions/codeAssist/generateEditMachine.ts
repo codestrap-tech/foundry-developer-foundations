@@ -2,13 +2,15 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { container } from '@codestrap/developer-foundations-di';
-import {
+import type {
   CodeEdits,
   Context,
   MachineEvent,
   ThreadsDao,
-  TYPES,
   UserIntent,
+} from '@codestrap/developer-foundations-types';
+import {
+  TYPES,
   VersionControlService,
 } from '@codestrap/developer-foundations-types';
 import { openAiEditOpsGenerator } from './delegates';

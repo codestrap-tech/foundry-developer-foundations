@@ -1,11 +1,13 @@
-import { Context, MachineEvent } from '@codestrap/developer-foundations-types';
+import type {
+  Context,
+  MachineEvent,
+} from '@codestrap/developer-foundations-types';
 import { extractHtmlFromBackticks } from '@codestrap/developer-foundations-utils';
-import {
-  TYPES,
+import type {
   GeminiService,
-  MessageService,
   OfficeService,
 } from '@codestrap/developer-foundations-types';
+import { TYPES, MessageService } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 
 // Types for Email functionality

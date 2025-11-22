@@ -1,4 +1,4 @@
-import { FoundryClient } from '@codestrap/developer-foundations-types';
+import type { FoundryClient } from '@codestrap/developer-foundations-types';
 import { getRequestContext } from '@codestrap/developer-foundations-utils/src/lib/asyncLocalStorage';
 
 // this is a utility method to manage usage of the Foundry Client and ensure we only get a singleton
@@ -22,7 +22,7 @@ function createFoundryClient(): FoundryClient {
     !process.env['NEXT_PUBLIC_ONTOLOGY_RID']
   ) {
     throw new Error(
-      'missing required env vars: NEXT_PUBLIC_OSDK_CLIENT_ID, NEXT_PUBLIC_REDIRECT_URL, NEXT_PUBLIC_FOUNDRY_STACK_URL, NEXT_PUBLIC_ONTOLOGY_RID'
+      'missing required env vars: NEXT_PUBLIC_OSDK_CLIENT_ID, NEXT_PUBLIC_REDIRECT_URL, NEXT_PUBLIC_FOUNDRY_STACK_URL, NEXT_PUBLIC_ONTOLOGY_RID',
     );
   }
 
@@ -42,7 +42,7 @@ function createFoundryClient(): FoundryClient {
     const context = getRequestContext();
 
     console.log(
-      `public getToken called, returning length: ${context?.token?.length}`
+      `public getToken called, returning length: ${context?.token?.length}`,
     );
 
     return context?.token;

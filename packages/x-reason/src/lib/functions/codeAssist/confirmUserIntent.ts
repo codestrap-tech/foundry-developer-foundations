@@ -1,11 +1,11 @@
-import {
+import type {
   Completion,
   Context,
   MachineEvent,
   ThreadsDao,
   UserIntent,
-  VersionControlService,
 } from '@codestrap/developer-foundations-types';
+import { VersionControlService } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 import { TYPES } from '@codestrap/developer-foundations-types';
 import * as path from 'path';

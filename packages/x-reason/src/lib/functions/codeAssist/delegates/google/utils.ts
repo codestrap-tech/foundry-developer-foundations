@@ -1,4 +1,4 @@
-import { GenerateContentResponse } from '@google/genai';
+import type { GenerateContentResponse } from '@google/genai';
 
 export function getTokenomics(
   response: GenerateContentResponse,

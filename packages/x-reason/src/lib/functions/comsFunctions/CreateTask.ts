@@ -1,14 +1,17 @@
-import { Context, MachineEvent } from '@codestrap/developer-foundations-types';
+import type {
+  Context,
+  MachineEvent,
+} from '@codestrap/developer-foundations-types';
 import {
   extractJsonFromBackticks,
   uuidv4,
 } from '@codestrap/developer-foundations-utils';
 import { container } from '@codestrap/developer-foundations-di';
-import {
+import type {
   GeminiService,
   TicketsDao,
-  TYPES,
 } from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 
 enum Users {
   Connor_Deeks = '147c63f3-69c1-4576-88a2-49e2cb6421c7',

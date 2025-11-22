@@ -1,11 +1,14 @@
-import { Context, MachineEvent } from '@codestrap/developer-foundations-types';
+import type {
+  Context,
+  MachineEvent,
+} from '@codestrap/developer-foundations-types';
 import { uuidv4 } from '@codestrap/developer-foundations-utils';
-import {
+import type {
   RangrRequestsDao,
   RfpRequestsDao,
-  TYPES,
   RfpRequestResponse,
 } from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 
 function extractDomain(input: string) {

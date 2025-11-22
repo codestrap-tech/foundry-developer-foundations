@@ -1,10 +1,13 @@
-import { Context, MachineEvent } from '@codestrap/developer-foundations-types';
-import {
+import type {
+  Context,
+  MachineEvent,
+} from '@codestrap/developer-foundations-types';
+import type {
   Meeting,
   ProposedTimes,
-  TYPES,
   OfficeService,
 } from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 
 // This function extracts the proposed time slot found on the input context and the attendees and schedules a meeting with Google Calander API

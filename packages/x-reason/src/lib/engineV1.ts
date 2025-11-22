@@ -1,6 +1,6 @@
 import { interpret } from 'xstate';
 
-import {
+import type {
   StateConfig,
   EvaluationInput,
   EvaluatorResult,
@@ -11,11 +11,11 @@ import programV1 from './programmerV1';
 
 import { extractJsonFromBackticks } from '@codestrap/developer-foundations-utils';
 import { container } from '@codestrap/developer-foundations-di';
-import {
+import type {
   GeminiService,
   LoggingService,
-  TYPES,
 } from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 
 async function solve(query: string, solver: Prompt): Promise<string> {
   // TODO remove the use of the threads API and go with completions

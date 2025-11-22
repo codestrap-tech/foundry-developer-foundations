@@ -7,11 +7,11 @@ import { foundryClientFactory } from './factory/foundryClientFactory';
 export async function gpt4oService(
   user: string,
   system: string,
-  gptParams?: Gpt40Parameters
+  gptParams?: Gpt40Parameters,
 ): Promise<string> {
   const { getToken, url, ontologyRid } = foundryClientFactory(
     process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
-    undefined
+    undefined,
   );
 
   const apiKey = await getToken();

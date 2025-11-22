@@ -1,9 +1,11 @@
 import { curry } from 'ramda';
+import type {
+  LarryAgentFactoryType,
+  LarryAgent,
+} from '@codestrap/developer-foundations-types';
 import {
   SupportedCodingAgents,
-  LarryAgentFactoryType,
   SupportedEngines,
-  LarryAgent,
 } from '@codestrap/developer-foundations-types';
 
 const factory = curry((map, key, config) => {

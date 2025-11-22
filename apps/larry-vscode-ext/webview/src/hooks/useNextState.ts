@@ -1,4 +1,4 @@
-import { MachineResponse } from '../lib/backend-types';
+import type { MachineResponse } from '../lib/backend-types';
 import { queryClient } from '../lib/query';
 
 type Payload = {

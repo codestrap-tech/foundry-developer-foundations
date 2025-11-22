@@ -1,5 +1,5 @@
 // scheduler.ts
-import { calendar_v3 } from 'googleapis';
+import type { calendar_v3 } from 'googleapis';
 import {
   partsInTZ,
   wallClockToUTC,

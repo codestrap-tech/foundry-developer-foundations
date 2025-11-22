@@ -1,8 +1,10 @@
 import { xReasonFactory, SupportTrainingDataTypes } from '../../../../factory';
-import {
+import type {
   ActionType,
   Context,
   TrainingDataDao,
+} from '@codestrap/developer-foundations-types';
+import {
   TYPES,
   SupportedEngines,
 } from '@codestrap/developer-foundations-types';

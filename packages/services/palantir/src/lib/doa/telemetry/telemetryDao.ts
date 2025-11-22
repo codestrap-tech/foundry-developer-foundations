@@ -7,7 +7,7 @@ import { foundryClientFactory } from '../../factory/foundryClientFactory';
 export function makeTelemetryDao(): TelemetryDao {
   const { getToken, url, ontologyRid } = foundryClientFactory(
     process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
-    undefined
+    undefined,
   );
 
   return async (inputJSON) => {
@@ -34,17 +34,17 @@ export function makeTelemetryDao(): TelemetryDao {
         method: 'POST',
         headers,
         body,
-      }
+      },
     );
 
     const apiResponse = (await apiResults.json()) as any;
 
     if (apiResponse.errorCode) {
       console.log(
-        `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`
+        `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`,
       );
       throw new Error(
-        `An error occurred while writing telemetry data errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`
+        `An error occurred while writing telemetry data errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`,
       );
     }
 

@@ -1,14 +1,17 @@
-import { Context, MachineEvent } from '@codestrap/developer-foundations-types';
+import type {
+  Context,
+  MachineEvent,
+} from '@codestrap/developer-foundations-types';
 import { extractJsonFromBackticks } from '@codestrap/developer-foundations-utils';
 import { container } from '@codestrap/developer-foundations-di';
-import {
+import type {
   GeminiService,
   ProposedTimes,
-  TYPES,
   MeetingRequest,
   OfficeService,
 } from '@codestrap/developer-foundations-types';
-import { DraftAtendeeEmailResponse } from './ResolveUnavailableAttendees';
+import { TYPES } from '@codestrap/developer-foundations-types';
+import type { DraftAtendeeEmailResponse } from './ResolveUnavailableAttendees';
 
 // This function gets the attendees from the input context and then
 // uses Google Calendar APIs to find available meeting times for anyone with a codestrap.me (we should make the home domain configurable) email address

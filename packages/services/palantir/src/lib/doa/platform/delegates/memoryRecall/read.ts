@@ -1,13 +1,11 @@
-import {
-  FoundryClient,
-  MemoryRecall,
-} from '@codestrap/developer-foundations-types';
+import type { MemoryRecall } from '@codestrap/developer-foundations-types';
+import { FoundryClient } from '@codestrap/developer-foundations-types';
 
 export async function readMemoryRecall(
   id: string,
   token: string,
   ontologyRid: string,
-  url: string
+  url: string,
 ): Promise<MemoryRecall> {
   console.log(`readMemoryRecall id: ${id}`);
 
@@ -28,10 +26,10 @@ export async function readMemoryRecall(
 
   if (apiResponse.errorCode) {
     console.log(
-      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`
+      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`,
     );
     throw new Error(
-      `An error occurred while calling read machine errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`
+      `An error occurred while calling read machine errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`,
     );
   }
 

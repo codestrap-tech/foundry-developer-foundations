@@ -4,7 +4,7 @@ import { foundryClientFactory } from './factory/foundryClientFactory';
 export async function embeddingsService(input: string): Promise<[number[]]> {
   const { getToken, url, ontologyRid } = foundryClientFactory(
     process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
-    undefined
+    undefined,
   );
 
   const apiKey = await getToken();

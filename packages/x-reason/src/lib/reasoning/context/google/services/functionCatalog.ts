@@ -1,10 +1,10 @@
-import {
+import type {
   Context,
   MachineEvent,
   Task,
   ActionType,
-  UserIntent,
 } from '@codestrap/developer-foundations-types';
+import { UserIntent } from '@codestrap/developer-foundations-types';
 
 import {
   applyEdits,

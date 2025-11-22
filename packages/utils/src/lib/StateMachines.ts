@@ -1,4 +1,4 @@
-import { StateConfig } from '@codestrap/developer-foundations-types';
+import type { StateConfig } from '@codestrap/developer-foundations-types';
 import { uuidv4 } from './uuid';
 
 export function getUniqueStateIds(

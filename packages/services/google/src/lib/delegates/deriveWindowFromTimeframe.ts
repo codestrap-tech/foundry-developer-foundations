@@ -1,4 +1,4 @@
-import {
+import type {
   MeetingRequest,
   DerivedWindow,
 } from '@codestrap/developer-foundations-types';

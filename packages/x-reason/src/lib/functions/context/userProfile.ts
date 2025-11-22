@@ -1,10 +1,10 @@
-import {
+import type {
   Context,
   MachineEvent,
   UserProfile,
-  TYPES,
   UserDao,
 } from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 
 // This function enriches the context with the most likely user profiles relevant to the user's request

@@ -1,11 +1,13 @@
-import {
+import type {
   AbstractReviewState,
   ArchitectureReviewState,
   Context,
   MachineEvent,
   ThreadsDao,
-  TYPES,
   UserIntent,
+} from '@codestrap/developer-foundations-types';
+import {
+  TYPES,
   VersionControlService,
 } from '@codestrap/developer-foundations-types';
 import * as path from 'path';

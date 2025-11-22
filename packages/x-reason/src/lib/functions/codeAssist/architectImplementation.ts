@@ -1,15 +1,15 @@
 import * as path from 'path';
 import * as fs from 'fs';
 
-import {
+import type {
   Completion,
   Context,
   FileOp,
   MachineEvent,
   ThreadsDao,
   UserIntent,
-  VersionControlService,
 } from '@codestrap/developer-foundations-types';
+import { VersionControlService } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 import { TYPES } from '@codestrap/developer-foundations-types';
 import { openAiImplementationGenerator } from './delegates';

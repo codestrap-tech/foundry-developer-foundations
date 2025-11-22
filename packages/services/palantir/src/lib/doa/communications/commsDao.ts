@@ -9,7 +9,7 @@ import { foundryClientFactory } from '../../factory/foundryClientFactory';
 export function makeCommsDao(): CommsDao {
   const { getToken, url, ontologyRid } = foundryClientFactory(
     process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
-    undefined
+    undefined,
   );
 
   return {
@@ -23,7 +23,7 @@ export function makeCommsDao(): CommsDao {
       owner: string,
       questionPrompt?: string,
       tokens?: number,
-      id?: string
+      id?: string,
     ) => {
       const token = await getToken();
 
@@ -39,14 +39,14 @@ export function makeCommsDao(): CommsDao {
         url,
         questionPrompt,
         tokens,
-        id
+        id,
       );
 
       return comms;
     },
     delete: async (id: string) =>
       console.log(
-        `stub delete method called for: ${id}. We do not support deleting machines but include the method as it is part of the interface.`
+        `stub delete method called for: ${id}. We do not support deleting machines but include the method as it is part of the interface.`,
       ),
     read: async (id: string) => {
       const token = await getToken();

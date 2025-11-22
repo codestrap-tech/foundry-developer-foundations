@@ -9,7 +9,7 @@ import { foundryClientFactory } from '../../factory/foundryClientFactory';
 export function makeTicketsDao(): TicketsDao {
   const { getToken, url, ontologyRid } = foundryClientFactory(
     process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
-    undefined
+    undefined,
   );
 
   return {
@@ -22,7 +22,7 @@ export function makeTicketsDao(): TicketsDao {
       severity = 'Low',
       status = 'Open',
       points?: number,
-      assignees?: string
+      assignees?: string,
     ) => {
       const token = await getToken();
 
@@ -37,14 +37,14 @@ export function makeTicketsDao(): TicketsDao {
         severity,
         status,
         points,
-        assignees
+        assignees,
       );
 
       return ticket;
     },
     delete: async (id: string) =>
       console.log(
-        `stub delete method called for: ${id}. We do not support deleting tickets but include the method as it is part of the interface.`
+        `stub delete method called for: ${id}. We do not support deleting tickets but include the method as it is part of the interface.`,
       ),
     read: async (id: string) => {
       const token = await getToken();

@@ -1,10 +1,10 @@
 import { GoogleGenAI } from '@google/genai';
 import { getTokenomics } from './utils';
-import {
+import type {
   EditOp,
-  EditOpsJsonSchema,
   Tokenomics,
 } from '@codestrap/developer-foundations-types';
+import { EditOpsJsonSchema } from '@codestrap/developer-foundations-types';
 
 export async function generateEditOps(
   user: string,

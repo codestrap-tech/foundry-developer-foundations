@@ -1,4 +1,4 @@
-import { EventObject, StateNode } from 'xstate';
+import type { EventObject, StateNode } from 'xstate';
 import { Message } from '../types';
 
 export type ActionType = {

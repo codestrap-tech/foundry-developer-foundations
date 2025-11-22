@@ -1,7 +1,5 @@
-import {
-  FoundryClient,
-  SupportedFoundryClients,
-} from '@codestrap/developer-foundations-types';
+import type { FoundryClient } from '@codestrap/developer-foundations-types';
+import { SupportedFoundryClients } from '@codestrap/developer-foundations-types';
 import { curry } from 'ramda';
 import { getFoundryClient as getFoundryClientPrivate } from '../foundryClient';
 import { getFoundryClient as getFoundryClientPublic } from '../foundryClientPublic';
@@ -14,10 +12,10 @@ const factory = curry(
       (config?: Record<string, any>) => FoundryClient
     >,
     key: SupportedFoundryClients,
-    config?: Record<string, any>
+    config?: Record<string, any>,
   ) => {
     const supportedKeys = Object.keys(SupportedFoundryClients).map((item) =>
-      item.toLowerCase()
+      item.toLowerCase(),
     );
 
     if (!supportedKeys.includes(key)) {
@@ -25,7 +23,7 @@ const factory = curry(
     }
 
     return map[key](config);
-  }
+  },
 );
 
 const clients = {
@@ -45,5 +43,5 @@ const clients = {
 
 export const foundryClientFactory = factory(clients) as (
   key: SupportedFoundryClients,
-  config?: Record<string, any>
+  config?: Record<string, any>,
 ) => FoundryClient;

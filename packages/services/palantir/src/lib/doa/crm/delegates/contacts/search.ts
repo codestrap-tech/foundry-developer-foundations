@@ -1,7 +1,5 @@
-import {
-  Contacts,
-  FoundryClient,
-} from '@codestrap/developer-foundations-types';
+import type { Contacts } from '@codestrap/developer-foundations-types';
+import { FoundryClient } from '@codestrap/developer-foundations-types';
 
 export async function searchContacts(
   fullName: string,
@@ -9,7 +7,7 @@ export async function searchContacts(
   token: string,
   ontologyRid: string,
   url: string,
-  pageSize = 10
+  pageSize = 10,
 ): Promise<Contacts[]> {
   console.log(`searchContacts fullName: ${fullName} company: ${company}`);
 
@@ -53,10 +51,10 @@ export async function searchContacts(
 
   if (apiResponse.errorCode) {
     console.log(
-      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`
+      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`,
     );
     throw new Error(
-      `An error occurred while calling search Contacts errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`
+      `An error occurred while calling search Contacts errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`,
     );
   }
 

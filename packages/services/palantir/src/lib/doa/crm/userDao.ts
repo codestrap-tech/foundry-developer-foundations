@@ -8,7 +8,7 @@ import { foundryClientFactory } from '../../factory/foundryClientFactory';
 export function makeUserDao(): UserDao {
   const { getUser } = foundryClientFactory(
     process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
-    undefined
+    undefined,
   );
 
   return async (userId?: string) => {
