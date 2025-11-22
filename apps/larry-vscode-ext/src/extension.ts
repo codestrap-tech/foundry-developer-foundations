@@ -21,8 +21,8 @@ let dockerImageName = process.env.REPO_ROOT ? `${process.env.REPO_ROOT}-larry-se
 
 let projectName: string | undefined;
 
-let defaultMainPort = 4210;
-let defaultWorktreePort = 4220;
+const defaultMainPort = 4210;
+const defaultWorktreePort = 4220;
 
 loadLarryConfig().then(async (config) => {
   projectName = config.name;
@@ -524,7 +524,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
           const gitDir = gitContent.toString().trim();
           console.log('Git dir content:', gitDir);
 
-          const worktreeMatch = gitDir.match(/worktrees\/([^\/]+)/);
+          const worktreeMatch = gitDir.match(/worktrees\/([^/]+)/);
           if (worktreeMatch) {
             return worktreeMatch[1]; // Return the actual worktree name
           } else {

@@ -23,7 +23,7 @@ function buildSearchQuery(params: DriveSearchParams): string {
     let out = s
       .replace(/\\/g, '\\\\')
       .replace(/'/g, "\\'")
-      .replace(/\"/g, '\\"')
+      .replace(/"/g, '\\"')
       .replace(/\(/g, '\\(')
       .replace(/\)/g, '\\)')
       .replace(/\[/g, '\\[')

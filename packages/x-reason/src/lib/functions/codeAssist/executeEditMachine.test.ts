@@ -219,7 +219,7 @@ describe('executeEditMachine (mocked FS, in-memory ts-morph) — full v1 coverag
             dryRun: false,
             write: true,
             format: true,
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
+             
             onLog: () => { },
         } as any);
 
@@ -248,13 +248,13 @@ describe('executeEditMachine (mocked FS, in-memory ts-morph) — full v1 coverag
         // imports
         expect(diff1).toMatch(/import\s*\{\s*z\s*\}\s*from 'zod'/);
         // 1) Diff shows the deletion of the real import (not a comment)
-        expect(diff1).toMatch(/^- \s*import\s+[^;]*\bfrom\s+['"]x['"];?\s*$/m);
+        expect(diff1).toMatch(/^- \s*import\s[^;]*\bfrom\s+['"]x['"];?\s*$/m);
         // 2) Diff does NOT show any added import for 'x'
-        expect(diff1).not.toMatch(/^\+ \s*import\s+[^;]*\bfrom\s+['"]x['"];?\s*$/m);
+        expect(diff1).not.toMatch(/^\+ \s*import\s[^;]*\bfrom\s+['"]x['"];?\s*$/m);
         // 3) Persisted source has no non-comment import from 'x'
         // (line starts with optional whitespace, then 'import', so comments won't match)
         const persisted = VFS[fileAbs] ?? VFS[fileRel];
-        expect(persisted).not.toMatch(/^[ \t]*import\s+[^;]*\bfrom\s+['"]x['"];?\s*$/m);
+        expect(persisted).not.toMatch(/^[ \t]*import\s[^;]*\bfrom\s+['"]x['"];?\s*$/m);
         // interface property insert
         expect(diff1).toMatch(/export interface User[\s\S]*email\?:\s*string/);
         // type-literal property update
@@ -294,7 +294,7 @@ describe('executeEditMachine (mocked FS, in-memory ts-morph) — full v1 coverag
             dryRun: false,
             write: true,
             format: true,
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
+             
             onLog: () => { },
         } as any);
 
