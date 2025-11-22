@@ -143,9 +143,9 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Watch for workspace changes to detect worktree changes
     const workspaceWatcher = vscode.workspace.onDidChangeWorkspaceFolders(
-      () => {
+      async () => {
         try {
-          provider.notifyWorktreeChange();
+          await provider.notifyWorktreeChange();
         } catch (error) {
           console.error('❌ Error in worktree change handler:', error);
         }
@@ -427,7 +427,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
           const gitDir = gitContent.toString().trim();
           console.log('Git dir content:', gitDir);
 
-          const worktreeMatch = gitDir.match(/worktrees\/([^\/]+)/);
+          const worktreeMatch = gitDir.match(/worktrees\/([^/]+)/);
           if (worktreeMatch) {
             return worktreeMatch[1]; // Return the actual worktree name
           } else {
@@ -619,9 +619,9 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         threadId,
       });
 
-      setTimeout(() => {
+      setTimeout(async () => {
         this.startWorktreeSSE(); // <— start SSE for worktree events
-        this.openWorktree(finalWorktreeName);
+        await this.openWorktree(finalWorktreeName);
         this.view?.webview.postMessage({
           type: 'update_thread_state',
           state: 'ready',

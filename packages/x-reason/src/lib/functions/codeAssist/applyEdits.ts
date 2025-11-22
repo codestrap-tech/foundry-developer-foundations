@@ -63,7 +63,7 @@ export async function applyEdits(
     dryRun: false,
     write: true,
     format: true,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
+     
     onLog: () => { },
   };
 

@@ -170,7 +170,7 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
     });
 
     expect(slots.length).toBeGreaterThan(0);
-    const offsetRegex = /(-07:00|-08:00)$/;
+    const offsetRegex = /(?:-07:00|-08:00)$/;
     for (const s of slots) {
       expect(offsetRegex.test(s.start) || offsetRegex.test(s.end)).toBeTruthy();
     }
@@ -199,7 +199,7 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
     });
 
     expect(slots.length).toBeGreaterThan(0);
-    const offsetRegex = /(-07:00|-08:00)$/;
+    const offsetRegex = /(?:-07:00|-08:00)$/;
     for (const s of slots) {
       expect(offsetRegex.test(s.start)).toBe(true);
     }

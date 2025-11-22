@@ -34,7 +34,7 @@ export function makeMemoryRecallDao(): MemoryRecallDao {
 
       return memoryRecall;
     },
-    search: async (task: string, kValue: number = 1) => {
+    search: async (task: string, kValue = 1) => {
       const token = await getToken();
 
       const results = await searchMemoryRecall(task, kValue, token, ontologyRid, url);

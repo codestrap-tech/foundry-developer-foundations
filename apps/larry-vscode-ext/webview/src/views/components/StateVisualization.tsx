@@ -187,14 +187,14 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
     return data.context?.currentState === stateKey || data.context?.stateId === stateKey;
   };
 
-  const continueToNextState = () => {
-    fetchGetNextState({ machineId: data.id, contextUpdate: {} });
-  }
+  const continueToNextState = async () => {
+    await fetchGetNextState({ machineId: data.id, contextUpdate: {} });
+  };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!input.value.trim()) return;
-    
+
     if (!data?.currentState) {
       console.error('Machine data is missing current state');
       return;
@@ -202,13 +202,15 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
 
     if (data.currentState.startsWith('specReview')) {
       const messages = data.context?.[data.currentState]?.messages;
-      const lastMessage =
-      messages
+      const lastMessage = messages
         ?.slice()
         .reverse()
         .find((item) => item.user === undefined);
       lastMessage.user = input.value;
-      fetchGetNextState({ machineId: data.id, contextUpdate: { [data.currentState]: { approved: false, messages } } });
+      await fetchGetNextState({
+        machineId: data.id,
+        contextUpdate: { [data.currentState]: { approved: false, messages } },
+      });
       setSpecReviewRejected(false);
 
       return;
@@ -216,28 +218,41 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
 
     if (data.currentState.startsWith('architectureReview')) {
       const messages = data.context?.[data.currentState]?.messages;
-      const lastMessage =
-      messages
+      const lastMessage = messages
         ?.slice()
         .reverse()
         .find((item) => item.user === undefined);
       lastMessage.user = `${architectureReviewPayload}\n\n${input.value}`;
-      fetchGetNextState({ machineId: data.id, contextUpdate: { [data.currentState]: { approved: false, messages } } });
+      await fetchGetNextState({
+        machineId: data.id,
+        contextUpdate: { [data.currentState]: { approved: false, messages } },
+      });
       setArchitectureReviewRejected(false);
       setArchitectureReviewPayload(null);
       return;
     }
 
-    fetchGetNextState({ machineId: data.id, contextUpdate: { [data.currentState]: { userResponse: input.value } } });
+    await fetchGetNextState({
+      machineId: data.id,
+      contextUpdate: { [data.currentState]: { userResponse: input.value } },
+    });
 
-    setInput(curr => ({...curr, value: '', placeholder: 'Tell me more...'}));
+    setInput((curr) => ({
+      ...curr,
+      value: '',
+      placeholder: 'Tell me more...',
+    }));
     scrollToBottom();
-  }
+  };
 
 
 
-  const handleAction = (action: string, payload?: any) => {
-    if (action === 'approveSpec' || action === 'approveArchitecture' || action === 'approveCodeReview') {
+  const handleAction = async (action: string, payload?: any) => {
+    if (
+      action === 'approveSpec' ||
+      action === 'approveArchitecture' ||
+      action === 'approveCodeReview'
+    ) {
       setSpecReviewRejected(false);
 
       if (!data?.currentState) {
@@ -246,17 +261,21 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
       }
 
       const messages = data.context?.[data.currentState]?.messages;
-      const lastMessage =
-      messages
+      const lastMessage = messages
         ?.slice()
         .reverse()
         .find((item) => item.user === undefined);
       lastMessage.user = 'Looks good, approved.';
 
-      fetchGetNextState({ machineId: data.id, contextUpdate: { [data.currentState]: { approved: true,  messages} } });
+      await fetchGetNextState({
+        machineId: data.id,
+        contextUpdate: { [data.currentState]: { approved: true, messages } },
+      });
     } else if (action === 'rejectSpec') {
-
-      setInput(curr => ({...curr, placeholder: 'Please provide feedback on what you would like changed'}));
+      setInput((curr) => ({
+        ...curr,
+        placeholder: 'Please provide feedback on what you would like changed',
+      }));
       setSpecReviewRejected(true);
     } else if (action === 'rejectArchitecture') {
       if (!data?.currentState) {
@@ -264,28 +283,32 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
         return;
       }
       const messages = data.context?.[data.currentState]?.messages;
-      const lastMessage =
-      messages
+      const lastMessage = messages
         ?.slice()
         .reverse()
         .find((item) => item.user === undefined);
       lastMessage.user = payload;
-      fetchGetNextState({ machineId: data.id, contextUpdate: { [data.currentState]: { approved: false,  messages} } });
+      await fetchGetNextState({
+        machineId: data.id,
+        contextUpdate: { [data.currentState]: { approved: false, messages } },
+      });
     } else if (action === 'rejectCodeReview') {
       if (!data?.currentState) {
         console.error('Machine data is missing current state');
         return;
       }
       const messages = data.context?.[data.currentState]?.messages;
-      const lastMessage =
-      messages
+      const lastMessage = messages
         ?.slice()
         .reverse()
         .find((item) => item.user === undefined);
       lastMessage.user = 'Rejected.';
-      fetchGetNextState({ machineId: data.id, contextUpdate: { [data.currentState]: { approved: false,  messages} } });
+      await fetchGetNextState({
+        machineId: data.id,
+        contextUpdate: { [data.currentState]: { approved: false, messages } },
+      });
     }
-  }
+  };
 
   const finished = data.currentState === 'applyEdits' || data.currentState === 'success' || getDeduplicatedStack().includes('success');
 

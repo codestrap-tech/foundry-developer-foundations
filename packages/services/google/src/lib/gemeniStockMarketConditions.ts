@@ -82,7 +82,7 @@ async function synthesizeAnswer(
 
 async function performSearch(
   query: string,
-  numResults: number = 5
+  numResults = 5
 ): Promise<SearchResult> {
   if (!SEARCH_API_KEY || !SEARCH_ENGINE_ID) {
     throw new Error('Search API key or Search Engine ID missing.');

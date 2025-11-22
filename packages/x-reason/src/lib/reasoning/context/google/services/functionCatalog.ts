@@ -323,9 +323,9 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
             {
                 description:
                     "Default state to display for unsafe questions",
-                implementation: (context: Context, event?: MachineEvent, task?: string) => {
+                implementation: async (context: Context, event?: MachineEvent, task?: string) => {
                     console.log('UnsafeQuestion implementation called');
-                    dispatch({ type: 'success' });
+                    await dispatch({ type: 'success' });
                 },
             },
         ],
@@ -334,9 +334,9 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
             {
                 description:
                     "Default state to display for unsupported questions",
-                implementation: (context: Context, event?: MachineEvent, task?: string) => {
+                implementation: async (context: Context, event?: MachineEvent, task?: string) => {
                     console.log('UnsupportedQuestion implementation called');
-                    dispatch({ type: 'success' });
+                    await dispatch({ type: 'success' });
                 },
             },
         ]
