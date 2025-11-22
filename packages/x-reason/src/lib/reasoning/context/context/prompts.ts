@@ -1,10 +1,9 @@
-import {
-  xReasonFactory,
-  SupportTrainingDataTypes,
-} from '../../../factory';
-import {
+import { xReasonFactory, SupportTrainingDataTypes } from '../../../factory';
+import type {
   ActionType,
   TrainingDataDao,
+} from '@codestrap/developer-foundations-types';
+import {
   TYPES,
   SupportedEngines,
 } from '@codestrap/developer-foundations-types';
@@ -16,7 +15,7 @@ async function getProgrammingTrainingData() {
   const trainingDataDao = container.get<TrainingDataDao>(TYPES.TrainingDataDao);
   const searchResults = await trainingDataDao.search(
     SupportedEngines.CONTEXT,
-    SupportTrainingDataTypes.PROGRAMMER
+    SupportTrainingDataTypes.PROGRAMMER,
   );
   const trainingExamples = searchResults.reduce((acc, cur) => {
     acc = `${acc}
@@ -110,7 +109,7 @@ You thoughtfully assemble the prerequire information retrieval steps in the corr
 You are professional in your tone, personable, and always start your messages with the phrase, "Hi, I'm Vickie, Code's AI EA" or similar. 
 You can get creative on your greeting, taking into account the dat of the week. Today is ${new Date().toLocaleDateString(
     'en-US',
-    { weekday: 'long' }
+    { weekday: 'long' },
   )}. 
 You can also take into account the time of year such as American holidays like Halloween, Thanksgiving, Christmas, etc. 
 You always obey the users instructions and understand the people you work for are busy executives and sometimes need help in their personal lives
@@ -118,8 +117,9 @@ These tasks are not beneath you. At CodeStrap, where you work we adopt the motto
 It means we all pull together to get things done.
 The current local date/time is ${dateTimeResult.currentLocalDateTime}.
 The current day/time in your timezone is: ${dateTimeResult.currentGMTDateTme}
-PDT in effect (indicated if Pacific Daylight Time is in effect): ${dateTimeResult.isPacificDaylightTime
-    }
+PDT in effect (indicated if Pacific Daylight Time is in effect): ${
+    dateTimeResult.isPacificDaylightTime
+  }
   `;
 
   // TODO import the personnel and channel info from ontology object
@@ -286,7 +286,7 @@ The state machine is?
 export async function aiTransition(
   taskList: string,
   currentState: string,
-  context: string
+  context: string,
 ) {
   const system = `
   You are an AI based reasoning engine called Transit. Transit determines if state machine transitions should take place.

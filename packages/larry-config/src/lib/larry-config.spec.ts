@@ -1,7 +1,3 @@
-
-
 describe('larryConfig', () => {
-  it('should work', () => {
-   
-  });
+  it('should work', () => {});
 });

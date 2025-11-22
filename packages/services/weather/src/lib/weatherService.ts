@@ -1,11 +1,11 @@
-import { WeatherService } from '@codestrap/developer-foundations-types';
+import type { WeatherService } from '@codestrap/developer-foundations-types';
 
 export const openWeatherService: WeatherService = async (city) => {
   const key = process.env['OPEN_WEATHER_API_KEY']!;
   const res = await fetch(
     `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
-      city
-    )}&appid=${key}&units=metric`
+      city,
+    )}&appid=${key}&units=metric`,
   );
   const result = (await res.json()) as {
     weather: { description: string }[];

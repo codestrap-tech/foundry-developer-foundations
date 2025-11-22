@@ -1,4 +1,4 @@
-import {
+import type {
   Context,
   MachineEvent,
   Task,
@@ -32,7 +32,7 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('userProfile implementation in function catalog called');
           const result = await userProfile(context, event, task);
@@ -55,7 +55,7 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('dateTime implementation in function catalog called');
           const result = await dateTime(context, event, task);
@@ -78,7 +78,7 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('recall implementation in function catalog called');
           const result = await recall(context, event, task);
@@ -100,7 +100,7 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
         implementation: (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('UnsafeQuestion implementation called');
           dispatch({ type: 'success' });
@@ -114,7 +114,7 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
         implementation: (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('UnsupportedQuestion implementation called');
           dispatch({ type: 'success' });

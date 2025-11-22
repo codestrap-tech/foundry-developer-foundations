@@ -1,13 +1,13 @@
-import {
+import type {
   Context,
   MachineEvent,
   ContactsDao,
   GeminiService,
   MemoryRecallDao,
-  TYPES,
   UserDao,
   UserProfile,
 } from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 import { extractJsonFromBackticks } from '@codestrap/developer-foundations-utils';
 import { container } from '@codestrap/developer-foundations-di';
 
@@ -29,7 +29,7 @@ export type ModelMemory = {
 export async function recall(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<ModelMemory> {
   const memoryRecallDao = container.get<MemoryRecallDao>(TYPES.MemoryRecallDao);
   const contactsDao = container.get<ContactsDao>(TYPES.ContactsDao);
@@ -37,7 +37,7 @@ export async function recall(
 
   // find the user profile state
   const lastStackKey = context?.stack?.find(
-    (stackItem) => stackItem.indexOf('userProfile') >= 0
+    (stackItem) => stackItem.indexOf('userProfile') >= 0,
   );
   const userDetails: UserProfile = {
     name: undefined,
@@ -73,7 +73,7 @@ export async function recall(
       messageText: JSON.stringify(message.originalText),
       taskOwnerIfAny: message.userId,
       source: message.source,
-    }))
+    })),
   );
 
   const contactsString = JSON.stringify(
@@ -85,7 +85,7 @@ export async function recall(
       account: contact.keyAccounts,
       company: contact.company,
       notes: contact.notes,
-    }))
+    })),
   );
 
   const user = `
@@ -142,23 +142,23 @@ export async function recall(
     Use the provided message, if any, to give you more context on which contact is the most relevant
     If not contacts are are relevant to the task return an empty array
     ${JSON.stringify([
-    {
-      name: 'Bob Seager',
-      email: 'bob.seager@ford.com',
-      talksTo: 'DORIAN',
-      contextOfTheRelatioship: [
-        'Met a few times at AIP/DevCon, See each other at every event, Worked with him on several bootcamps, small sessions, and AIPcon prep',
-      ],
-      account: 'Ford',
-    },
-    {
-      name: 'Bob Baymon',
-      email: 'bob.baymon@gmail.com',
-      talksTo: 'CONNOR',
-      contextOfTheRelatioship: ['Friend of mine that works at IBM'],
-      account: 'Personal',
-    },
-  ])}
+      {
+        name: 'Bob Seager',
+        email: 'bob.seager@ford.com',
+        talksTo: 'DORIAN',
+        contextOfTheRelatioship: [
+          'Met a few times at AIP/DevCon, See each other at every event, Worked with him on several bootcamps, small sessions, and AIPcon prep',
+        ],
+        account: 'Ford',
+      },
+      {
+        name: 'Bob Baymon',
+        email: 'bob.baymon@gmail.com',
+        talksTo: 'CONNOR',
+        contextOfTheRelatioship: ['Friend of mine that works at IBM'],
+        account: 'Personal',
+      },
+    ])}
 
     # Messages retrieved using vector search:
     Only return messages where you are 90% sure or more they are relevant to the task at hand, if any
@@ -192,7 +192,7 @@ export async function recall(
 
   let parsedResult;
   let response;
-  let result
+  let result;
 
   try {
     response = await geminiService(user, system);
@@ -204,7 +204,8 @@ export async function recall(
     console.log(e);
     console.log(`the model returned the following invalid JSON: ${response}`);
     // god I hate my life
-    response = await geminiService(`
+    response = await geminiService(
+      `
       ${user} 
       
       Your response of:
@@ -213,7 +214,9 @@ export async function recall(
       Is not fucking valid JSON!!! It produce the following error:
       ${(e as Error).message}
       Stop sending me dog shit responses and send me valid fucking JSON!!!!!!!
-      `, system);
+      `,
+      system,
+    );
 
     result = extractJsonFromBackticks(response);
 
@@ -221,7 +224,8 @@ export async function recall(
       contacts: [],
       currentUser: userDetails,
       messages: [],
-      reasoning: 'this model returned an empty response for the grounding context',
+      reasoning:
+        'this model returned an empty response for the grounding context',
     } as ModelMemory;
   }
 

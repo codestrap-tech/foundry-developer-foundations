@@ -1,5 +1,5 @@
-import { calendar_v3, gmail_v1 } from 'googleapis';
-import {
+import type { calendar_v3, gmail_v1 } from 'googleapis';
+import type {
   WatchEmailsInput,
   WatchEmailsOutput,
 } from '@codestrap/developer-foundations-types';
@@ -13,7 +13,7 @@ export async function watchEmails(
   makeClient: (userId: string) => Promise<{
     emailClient: gmail_v1.Gmail;
     calendarClient: calendar_v3.Calendar;
-  }>
+  }>,
 ): Promise<WatchEmailsOutput> {
   const results = await Promise.allSettled(
     context.config.flatMap(
@@ -31,8 +31,8 @@ export async function watchEmails(
               labelFilterBehavior,
             },
           });
-        })
-    )
+        }),
+    ),
   );
 
   const errors: string[] = [];

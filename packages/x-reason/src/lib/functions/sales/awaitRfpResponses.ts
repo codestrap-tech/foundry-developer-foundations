@@ -1,4 +1,4 @@
-import {
+import type {
   Context,
   MachineEvent,
   RfpResponsesResult,
@@ -7,7 +7,7 @@ import {
 export async function awaitRfpResponses(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<RfpResponsesResult> {
   /*
     find all request rfp nodes.
@@ -19,7 +19,7 @@ export async function awaitRfpResponses(
 
   // all received if there had been a response and the status is 200
   const allResponsesReceived = allResponses.every(
-    (item) => item.received && item.status === 200
+    (item) => item.received && item.status === 200,
   );
   const vendors = allResponses.map((item) => item.vendorId);
 

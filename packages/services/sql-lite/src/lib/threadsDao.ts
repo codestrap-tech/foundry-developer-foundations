@@ -2,7 +2,10 @@ import initSqlJs from 'sql.js';
 import * as path from 'path';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
-import { Threads, ThreadsDao } from '@codestrap/developer-foundations-types';
+import type {
+  Threads,
+  ThreadsDao,
+} from '@codestrap/developer-foundations-types';
 
 let SQL: any = null;
 let db: any = null;
@@ -12,12 +15,13 @@ let initPromise: Promise<void> | null = null;
 // Note: In VSCode extension context, the DB path should be set via environment variable
 // by the extension.ts file using proper VSCode workspace APIs
 const DEFAULT_DB_PATH = path.resolve(
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('os').homedir(),
-  'larry-db/developer-foundations-threads.sqlite'
+  'larry-db/developer-foundations-threads.sqlite',
 );
 
 async function initDatabase(
-  dbPath: string = process.env['SQL_LITE_DB_PATH'] || DEFAULT_DB_PATH
+  dbPath: string = process.env['SQL_LITE_DB_PATH'] || DEFAULT_DB_PATH,
 ): Promise<void> {
   // If already initialized, return
   if (db) return;
@@ -93,14 +97,14 @@ async function saveDatabase(dbPath: string): Promise<void> {
     dbPath,
     'size:',
     data.length,
-    'bytes'
+    'bytes',
   );
 }
 
 function ensureDb() {
   if (!db) {
     throw new Error(
-      'SQLite threads store not initialized. Call ensureInitialized() first.'
+      'SQLite threads store not initialized. Call ensureInitialized() first.',
     );
   }
 }
@@ -129,7 +133,7 @@ export function makeSqlLiteThreadsDao(): ThreadsDao {
     upsert: async (
       messages: string,
       appId: string,
-      id?: string
+      id?: string,
     ): Promise<Threads> => {
       await ensureInitialized();
 
@@ -203,7 +207,7 @@ export function makeSqlLiteThreadsDao(): ThreadsDao {
       await ensureInitialized();
 
       const stmt = db.prepare(
-        'SELECT id, appId, messages, userId FROM threads ORDER BY updated_at DESC'
+        'SELECT id, appId, messages, userId FROM threads ORDER BY updated_at DESC',
       );
       const results: Threads[] = [];
 

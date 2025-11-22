@@ -1,7 +1,11 @@
 import { createClient } from '@osdk/client';
-import { User, Users } from '@osdk/foundry.admin';
+import type { User } from '@osdk/foundry.admin';
+import { Users } from '@osdk/foundry.admin';
 import { createConfidentialOauthClient } from '@osdk/oauth';
-import { RangrClient, Token } from '@codestrap/developer-foundations-types';
+import type {
+  RangrClient,
+  Token,
+} from '@codestrap/developer-foundations-types';
 
 let client: RangrClient | undefined = undefined;
 
@@ -14,7 +18,6 @@ export function getRangrClient(): RangrClient {
 }
 
 function createRangrClient(): RangrClient {
-
   if (
     !process.env['RANGR_OSDK_CLIENT_ID'] ||
     !process.env['RANGR_OSDK_CLIENT_SECRET'] ||
@@ -44,7 +47,7 @@ function createRangrClient(): RangrClient {
     clientId,
     clientSecret,
     url,
-    scopes
+    scopes,
   );
   const client = createClient(url, ontologyRid, auth);
 
@@ -69,7 +72,6 @@ function createRangrClient(): RangrClient {
   });
 
   const getToken = async function () {
-
     if (token && tokenExpire) {
       // add 60 seconds to account for processing time
       const skew = tokenExpire.getTime() + 60000;
@@ -90,12 +92,11 @@ function createRangrClient(): RangrClient {
     } catch (e) {
       console.log(e);
 
-      throw (e);
+      throw e;
     } finally {
       pendingRequest = undefined;
     }
-
-  }
+  };
 
   return { auth, ontologyRid, url, client, getUser, getToken };
 }

@@ -11,13 +11,17 @@ export function MainRepoScreen() {
   const { apiUrl, currentThreadState } = useExtensionStore();
   const { data, isLoading } = useThreadsQuery(apiUrl);
   const [newLabel, setNewLabel] = useState('');
-  const [selectedThreadId, setSelectedThreadId] = useState<string | undefined>(undefined);
-  const [setupPhase, setSetupPhase] = useState<'idle'
-  | 'creating_worktree'
-  | 'creating_container'
-  | 'setting_up_environment'
-  | 'ready'
-  | 'error'>('idle');
+  const [selectedThreadId, setSelectedThreadId] = useState<string | undefined>(
+    undefined,
+  );
+  const [setupPhase, setSetupPhase] = useState<
+    | 'idle'
+    | 'creating_worktree'
+    | 'creating_container'
+    | 'setting_up_environment'
+    | 'ready'
+    | 'error'
+  >('idle');
 
   useEffect(() => {
     if (currentThreadState === 'ready') {
@@ -37,7 +41,6 @@ export function MainRepoScreen() {
       return;
     }
 
-    
     setSetupPhase(currentThreadState);
   }, [currentThreadState]);
 
@@ -62,7 +65,12 @@ export function MainRepoScreen() {
   function openWorktreeNew() {
     setSelectedThreadId(undefined);
     if (!newLabel.trim()) return;
-    postMessage({ type: 'open_worktree', worktreeName: '', threadId: '', label: newLabel.trim() });
+    postMessage({
+      type: 'open_worktree',
+      worktreeName: '',
+      threadId: '',
+      label: newLabel.trim(),
+    });
     setSetupPhase('creating_worktree');
   }
 
@@ -84,72 +92,129 @@ export function MainRepoScreen() {
       {selectedThreadId ? (
         <div className="pt-1 mt-2 mb-2">
           {setupPhase === 'creating_worktree' && (
-            <div><span style={{fontSize: '10px'}} className="shimmer-loading">Creating git worktree</span><AnimatedEllipsis /></div>
+            <div>
+              <span style={{ fontSize: '10px' }} className="shimmer-loading">
+                Creating git worktree
+              </span>
+              <AnimatedEllipsis />
+            </div>
           )}
           {setupPhase === 'creating_container' && (
-            <div><span style={{fontSize: '10px'}} className="shimmer-loading">Creating docker container</span><AnimatedEllipsis /></div>
+            <div>
+              <span style={{ fontSize: '10px' }} className="shimmer-loading">
+                Creating docker container
+              </span>
+              <AnimatedEllipsis />
+            </div>
           )}
           {setupPhase === 'setting_up_environment' && (
-            <div><span style={{fontSize: '10px'}} className="shimmer-loading">Setting up environment</span><AnimatedEllipsis /></div>
+            <div>
+              <span style={{ fontSize: '10px' }} className="shimmer-loading">
+                Setting up environment
+              </span>
+              <AnimatedEllipsis />
+            </div>
           )}
-        {setupPhase === 'idle' && (
-          <button className="btn btn-primary" disabled={!selected || setupPhase !== 'idle'} onClick={openWorktreeExisting}>
-            Start
-          </button>
-        )}
-      </div>
-      ): null}
+          {setupPhase === 'idle' && (
+            <button
+              className="btn btn-primary"
+              disabled={!selected || setupPhase !== 'idle'}
+              onClick={openWorktreeExisting}
+            >
+              Start
+            </button>
+          )}
+        </div>
+      ) : null}
 
-      <div className="border-top pt-3 mt-3" style={{position: 'relative'}}>
-        <h6 style={{position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--vscode-tab-activeBackground)', color: 'var(--vscode-foreground)', padding: '0 10px', fontSize: '12px'}}>OR</h6>
+      <div className="border-top pt-3 mt-3" style={{ position: 'relative' }}>
+        <h6
+          style={{
+            position: 'absolute',
+            top: '-10px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            backgroundColor: 'var(--vscode-tab-activeBackground)',
+            color: 'var(--vscode-foreground)',
+            padding: '0 10px',
+            fontSize: '12px',
+          }}
+        >
+          OR
+        </h6>
         <div className="width-full mb-2">
           <input
             className="form-control flex-1 width-full"
             placeholder="Create new working item..."
             value={newLabel}
-            onInput={(e) => setNewLabel((e.currentTarget as HTMLInputElement).value)}
+            onInput={(e) =>
+              setNewLabel((e.currentTarget as HTMLInputElement).value)
+            }
           />
-          </div>
-          <div className="width-full mb-2">
+        </div>
+        <div className="width-full mb-2">
           <CustomSelect
-          items={[{
-            id: '1',
-            label: 'Google',
-            worktreeName: '',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },{
-            id: '4',
-            label: 'MS 365',
-            worktreeName: '',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },{
-            id: '3',
-            label: 'React Components',
-            worktreeName: '',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          }]}
-          selectedId={'1'}
-          size="small"
-          onSelect={() => undefined}
-          placeholder="Select agent..."
-          searchPlaceholder="Select agent..."
-          emptyMessage="No agents found"
-        />
-          </div>
-          <div>
+            items={[
+              {
+                id: '1',
+                label: 'Google',
+                worktreeName: '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              },
+              {
+                id: '4',
+                label: 'MS 365',
+                worktreeName: '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              },
+              {
+                id: '3',
+                label: 'React Components',
+                worktreeName: '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+              },
+            ]}
+            selectedId={'1'}
+            size="small"
+            onSelect={() => undefined}
+            placeholder="Select agent..."
+            searchPlaceholder="Select agent..."
+            emptyMessage="No agents found"
+          />
+        </div>
+        <div>
           {setupPhase === 'creating_worktree' && !selectedThreadId && (
-            <div><span style={{fontSize: '10px'}} className="shimmer-loading">Creating git worktree</span><AnimatedEllipsis /></div>
+            <div>
+              <span style={{ fontSize: '10px' }} className="shimmer-loading">
+                Creating git worktree
+              </span>
+              <AnimatedEllipsis />
+            </div>
           )}
           {setupPhase === 'creating_container' && !selectedThreadId && (
-            <div><span style={{fontSize: '10px'}} className="shimmer-loading">Creating docker container</span><AnimatedEllipsis /></div>
+            <div>
+              <span style={{ fontSize: '10px' }} className="shimmer-loading">
+                Creating docker container
+              </span>
+              <AnimatedEllipsis />
+            </div>
           )}
           {setupPhase === 'setting_up_environment' && !selectedThreadId && (
-            <div><span style={{fontSize: '10px'}} className="shimmer-loading">Setting up environment</span><AnimatedEllipsis /></div>
+            <div>
+              <span style={{ fontSize: '10px' }} className="shimmer-loading">
+                Setting up environment
+              </span>
+              <AnimatedEllipsis />
+            </div>
           )}
-          <button className={`btn ${newLabel.trim() ? 'btn-primary' : ''}`} disabled={!newLabel.trim() || setupPhase !== 'idle'} onClick={openWorktreeNew}>
+          <button
+            className={`btn ${newLabel.trim() ? 'btn-primary' : ''}`}
+            disabled={!newLabel.trim() || setupPhase !== 'idle'}
+            onClick={openWorktreeNew}
+          >
             Start
           </button>
         </div>

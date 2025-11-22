@@ -3,7 +3,7 @@
 export function createLoggingService(
   perExecBytes = 256 * 1024,
   globalBytes = 64 * 1024 * 1024,
-  now: () => number = Date.now // injectable clock for deterministic tests
+  now: () => number = Date.now, // injectable clock for deterministic tests
 ) {
   type Buf = { entries: string[]; byteSize: number; lastAccess: number };
 

@@ -1,4 +1,4 @@
-import { User } from "@osdk/foundry.admin";
+import type { User } from '@osdk/foundry.admin';
 
 export async function callAskVickie({
   action,
@@ -13,7 +13,7 @@ export async function callAskVickie({
   inputs,
 }: {
   action: string;
-  token: string,
+  token: string;
   user: User;
   text?: string;
   query?: string;

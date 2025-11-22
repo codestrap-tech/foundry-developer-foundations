@@ -1,4 +1,7 @@
-import { Context, MachineEvent } from '@codestrap/developer-foundations-types';
+import type {
+  Context,
+  MachineEvent,
+} from '@codestrap/developer-foundations-types';
 
 export type File = {
   kind: string;
@@ -14,7 +17,7 @@ export type File = {
 export async function getProjectFiles(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<File[]> {
   return new Promise((resolve) => {
     // TODO use LLM to extract the input parameters from the context.solution parameter

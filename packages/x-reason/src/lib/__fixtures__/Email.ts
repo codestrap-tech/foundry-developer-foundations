@@ -1,4 +1,4 @@
-import { Context } from '@codestrap/developer-foundations-types';
+import type { Context } from '@codestrap/developer-foundations-types';
 
 const date = new Date();
 // get tomorrow
@@ -7,7 +7,7 @@ date.setDate(date.getDate() + 1);
 // Helper to generate ISO strings with specified hour and minute in UTC
 function getISOTime(date: Date, hour: number, minute: number): string {
   const d = new Date(
-    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), hour, minute)
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), hour, minute),
   );
   return d.toISOString();
 }
@@ -132,7 +132,7 @@ export const mockMessageGetThreadsResponse = {
           body: {
             data: Buffer.from(
               mockEmailHistoryWithResolution.data.messages[0].body,
-              'utf8'
+              'utf8',
             ).toString('base64'),
           },
         },
@@ -153,7 +153,7 @@ export const mockMessageGetThreadsResponse = {
           body: {
             data: Buffer.from(
               mockEmailHistoryWithResolution.data.messages[1].body,
-              'utf8'
+              'utf8',
             ).toString('base64'),
           },
         },
@@ -174,7 +174,7 @@ export const mockMessageGetThreadsResponse = {
           body: {
             data: Buffer.from(
               mockEmailHistoryWithResolution.data.messages[2].body,
-              'utf8'
+              'utf8',
             ).toString('base64'),
           },
         },
@@ -203,7 +203,7 @@ export const mockMessageGetThreadsResponseNoResolution = {
           body: {
             data: Buffer.from(
               mockEmailHistoryNoResolution.data.messages[0].body,
-              'utf8'
+              'utf8',
             ).toString('base64'),
           },
         },

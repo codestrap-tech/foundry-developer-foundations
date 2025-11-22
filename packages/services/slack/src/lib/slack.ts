@@ -1,12 +1,12 @@
 import { sendSlackMessage } from './delegates/sendMessage';
-import {
+import type {
   Message,
   MessageService,
 } from '@codestrap/developer-foundations-types';
 
 export function makeSlackClient(
   baseUrl: string,
-  botToken: string
+  botToken: string,
 ): MessageService {
   return {
     sendMessage: async (message: Message) => {

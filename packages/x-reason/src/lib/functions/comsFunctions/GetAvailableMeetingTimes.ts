@@ -1,60 +1,81 @@
-import { Context, MachineEvent } from '@codestrap/developer-foundations-types';
-import {
-    extractJsonFromBackticks,
-} from '@codestrap/developer-foundations-utils';
-import { container } from '@codestrap/developer-foundations-di';
-import {
-    GeminiService,
-    ProposedTimes,
-    TYPES,
-    MeetingRequest,
-    OfficeService,
+import type {
+  Context,
+  MachineEvent,
 } from '@codestrap/developer-foundations-types';
-import { DraftAtendeeEmailResponse } from './ResolveUnavailableAttendees';
-
+import { extractJsonFromBackticks } from '@codestrap/developer-foundations-utils';
+import { container } from '@codestrap/developer-foundations-di';
+import type {
+  GeminiService,
+  ProposedTimes,
+  MeetingRequest,
+  OfficeService,
+} from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
+import type { DraftAtendeeEmailResponse } from './ResolveUnavailableAttendees';
 
 // This function gets the attendees from the input context and then
 // uses Google Calendar APIs to find available meeting times for anyone with a codestrap.me (we should make the home domain configurable) email address
 // For external emails it will send an email asking for available time slots if it can not find them on the input context
 // The calling function in the function catalog will then determine whether or not to pause machine execution waiting for a response of continue forward
-export async function getAvailableMeetingTimes(context: Context, event?: MachineEvent, task?: string): Promise<ProposedTimes> {
-    try {
-        const options = {
-            timeZone: "America/Los_Angeles",
-            timeZoneName: "short" // This will produce "PST" or "PDT"
-        };
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        //@ts-expect-error
-        const formatter = new Intl.DateTimeFormat("en-US", options);
-        const formatted = formatter.format(new Date());
+export async function getAvailableMeetingTimes(
+  context: Context,
+  event?: MachineEvent,
+  task?: string,
+): Promise<ProposedTimes> {
+  try {
+    const options = {
+      timeZone: 'America/Los_Angeles',
+      timeZoneName: 'short', // This will produce "PST" or "PDT"
+    };
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-expect-error
+    const formatter = new Intl.DateTimeFormat('en-US', options);
+    const formatted = formatter.format(new Date());
 
-        console.log(`formatted int date: ${formatted}`);
-        const isPDT = formatted.includes("PDT");
+    console.log(`formatted int date: ${formatted}`);
+    const isPDT = formatted.includes('PDT');
 
-        const getAvailableStateId = context.stack?.slice().reverse().find(item => item.includes('getAvailableMeetingTimes'));
-        // find the last instance of a resolveUnavailableAttendees state in the stack
-        const resolveStateId = context.stack?.slice().reverse().find(item => item.includes('resolveUnavailableAttendees'));
+    const getAvailableStateId = context.stack
+      ?.slice()
+      .reverse()
+      .find((item) => item.includes('getAvailableMeetingTimes'));
+    // find the last instance of a resolveUnavailableAttendees state in the stack
+    const resolveStateId = context.stack
+      ?.slice()
+      .reverse()
+      .find((item) => item.includes('resolveUnavailableAttendees'));
 
-        const { resolution } = resolveStateId && context[resolveStateId] ? context[resolveStateId] as DraftAtendeeEmailResponse : { resolution: undefined };
-        const { allAvailable } = getAvailableStateId && context[getAvailableStateId] ? context[getAvailableStateId] as ProposedTimes : { allAvailable: false };
-        let resolutionClause = '';
-        if (!allAvailable && resolution) {
-            resolutionClause = `# Conflict Resolution
+    const { resolution } =
+      resolveStateId && context[resolveStateId]
+        ? (context[resolveStateId] as DraftAtendeeEmailResponse)
+        : { resolution: undefined };
+    const { allAvailable } =
+      getAvailableStateId && context[getAvailableStateId]
+        ? (context[getAvailableStateId] as ProposedTimes)
+        : { allAvailable: false };
+    let resolutionClause = '';
+    if (!allAvailable && resolution) {
+      resolutionClause = `# Conflict Resolution
 All the attendees were previously not available at the proposed time.
 The resolution for the conflict that has been agreed upon by al parties is: ${resolution}. 
 Update the meeting time to use this resolution. Output local date string in Pacific Time. 
 The current day/time in Pacific Time is: ${new Date().toString()}
 PDT in effect (indicated if Pacific Daylight Time is in effect): ${isPDT}`;
-        }
-        // we are all on the west coast so we hard code our time zone for now
-        const system = `You are a helpful virtual assistant tasked with meeting scheduling.
+    }
+    // we are all on the west coast so we hard code our time zone for now
+    const system = `You are a helpful virtual assistant tasked with meeting scheduling.
     You are professional in your tone, personable, and always start your messages with the phrase, "Hi, I'm Vickie, Code's AI EA" or similar. 
-    You can get creative on your greeting, taking into account the day of the week. Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long' })}. 
+    You can get creative on your greeting, taking into account the day of the week. Today is ${new Date().toLocaleDateString(
+      'en-US',
+      { weekday: 'long' },
+    )}. 
     You can also take into account the time of year such as American holidays like Halloween, Thanksgiving, Christmas, etc. 
-    The current local date/time is ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })}. 
+    The current local date/time is ${new Date().toLocaleString('en-US', {
+      timeZone: 'America/Los_Angeles',
+    })}. 
     When scheduling meetings you always extract the key details from the input task.`;
 
-        const user = `
+    const user = `
 # Task
 Using the meeting request from the end user extract the key details. You must extract:
 1. The participants
@@ -143,87 +164,102 @@ Your response is:
 }
 `;
 
-        const geminiService = container.get<GeminiService>(TYPES.GeminiService);
+    const geminiService = container.get<GeminiService>(TYPES.GeminiService);
 
-        const response = await geminiService(user, system);
+    const response = await geminiService(user, system);
 
-        const clean = extractJsonFromBackticks(response);
+    const clean = extractJsonFromBackticks(response);
 
-        const parsedResult = JSON.parse(clean) as MeetingRequest;
-        console.log(`the model returned the following meeting time proposal:\n${clean}`);
-        const timeFrame = (parsedResult.timeframe_context === 'user defined exact date/time') ? parsedResult.localDateString! : parsedResult.timeframe_context;
-        const participants = Array.from(new Set(parsedResult.participants));
-        //remove external email addresses since we can't check them
-        const codeStrapParticipants = participants.filter(participant => participant.indexOf('codestrap.me') >= 0 || participant.indexOf('codestrap.com') >= 0);
-        const inputs = {
-            participants: codeStrapParticipants,
-            localDateString: timeFrame,
-            timeframe_context: parsedResult.timeframe_context,
-            subject: parsedResult.subject,
-            duration_minutes: parsedResult.duration_minutes,
-            working_hours: {
-                start_hour: 8,
-                end_hour: 17,
-            },
-            timezone: "America/Los_Angeles", // hard code for now, should be the organizer's time zone
-        } as MeetingRequest;
+    const parsedResult = JSON.parse(clean) as MeetingRequest;
+    console.log(
+      `the model returned the following meeting time proposal:\n${clean}`,
+    );
+    const timeFrame =
+      parsedResult.timeframe_context === 'user defined exact date/time'
+        ? parsedResult.localDateString!
+        : parsedResult.timeframe_context;
+    const participants = Array.from(new Set(parsedResult.participants));
+    //remove external email addresses since we can't check them
+    const codeStrapParticipants = participants.filter(
+      (participant) =>
+        participant.indexOf('codestrap.me') >= 0 ||
+        participant.indexOf('codestrap.com') >= 0,
+    );
+    const inputs = {
+      participants: codeStrapParticipants,
+      localDateString: timeFrame,
+      timeframe_context: parsedResult.timeframe_context,
+      subject: parsedResult.subject,
+      duration_minutes: parsedResult.duration_minutes,
+      working_hours: {
+        start_hour: 8,
+        end_hour: 17,
+      },
+      timezone: 'America/Los_Angeles', // hard code for now, should be the organizer's time zone
+    } as MeetingRequest;
 
+    const officeService = await container.getAsync<OfficeService>(
+      TYPES.OfficeService,
+    );
 
+    let availableTimes = await officeService.getAvailableMeetingTimes(inputs);
 
-        const officeService = await container.getAsync<OfficeService>(TYPES.OfficeService);
-
-        let availableTimes = await officeService.getAvailableMeetingTimes(inputs);
-
-        // no times found, retry when the user has not specified a time frame
-        if (availableTimes.suggested_times.length === 0 && inputs.timeframe_context === 'as soon as possible') {
-            // first try this week, then next week
-            inputs.timeframe_context = 'this week';
-            availableTimes = await officeService.getAvailableMeetingTimes(inputs);
-            if (availableTimes.suggested_times.length === 0) {
-                inputs.timeframe_context = 'next week';
-                availableTimes = await officeService.getAvailableMeetingTimes(inputs);
-            }
-        }
-
-        // still nothing, return allAvailable false to resolve manually
-        if (availableTimes.suggested_times.length === 0) {
-            return {
-                times: [
-                    {
-                        start: timeFrame,
-                        end: timeFrame,
-                        availableAttendees: [],
-                        unavailableAttendees: participants,
-                    }
-                ],
-                subject: parsedResult.subject,
-                durationInMinutes: inputs.duration_minutes,
-                allAvailable: false,
-            }
-        }
-        // the array is presorted based on score, 
-        // we return all the times for use cases there people want the explore the times themselves
-        const times = availableTimes.suggested_times.map(time => ({
-            start: time.start,
-            end: time.end,
-            availableAttendees: participants,
-            unavailableAttendees: [],
-        }));
-        const message = availableTimes.message;
-
-        const returnValue: ProposedTimes = {
-            times, // Array of available time slots
-            agenda: message,
-            subject: parsedResult.subject, // Meeting subject or title
-            durationInMinutes: inputs.duration_minutes, // Meeting duration in minutes
-            allAvailable: true, // findOptimalMeetingTime will always find a timeslot currently since it does not allow you to specify an exact day/time yet
-        }
-
-        console.log('findOptimalMeetingTime response:', JSON.stringify(availableTimes));
-
-        return returnValue;
-    } catch (e) {
-        console.log((e as Error).message);
-        throw e;
+    // no times found, retry when the user has not specified a time frame
+    if (
+      availableTimes.suggested_times.length === 0 &&
+      inputs.timeframe_context === 'as soon as possible'
+    ) {
+      // first try this week, then next week
+      inputs.timeframe_context = 'this week';
+      availableTimes = await officeService.getAvailableMeetingTimes(inputs);
+      if (availableTimes.suggested_times.length === 0) {
+        inputs.timeframe_context = 'next week';
+        availableTimes = await officeService.getAvailableMeetingTimes(inputs);
+      }
     }
+
+    // still nothing, return allAvailable false to resolve manually
+    if (availableTimes.suggested_times.length === 0) {
+      return {
+        times: [
+          {
+            start: timeFrame,
+            end: timeFrame,
+            availableAttendees: [],
+            unavailableAttendees: participants,
+          },
+        ],
+        subject: parsedResult.subject,
+        durationInMinutes: inputs.duration_minutes,
+        allAvailable: false,
+      };
+    }
+    // the array is presorted based on score,
+    // we return all the times for use cases there people want the explore the times themselves
+    const times = availableTimes.suggested_times.map((time) => ({
+      start: time.start,
+      end: time.end,
+      availableAttendees: participants,
+      unavailableAttendees: [],
+    }));
+    const message = availableTimes.message;
+
+    const returnValue: ProposedTimes = {
+      times, // Array of available time slots
+      agenda: message,
+      subject: parsedResult.subject, // Meeting subject or title
+      durationInMinutes: inputs.duration_minutes, // Meeting duration in minutes
+      allAvailable: true, // findOptimalMeetingTime will always find a timeslot currently since it does not allow you to specify an exact day/time yet
+    };
+
+    console.log(
+      'findOptimalMeetingTime response:',
+      JSON.stringify(availableTimes),
+    );
+
+    return returnValue;
+  } catch (e) {
+    console.log((e as Error).message);
+    throw e;
+  }
 }

@@ -19,6 +19,15 @@
       "cache": true,
       "dependsOn": ["^build"],
       "inputs": ["default", "^default"]
+    },
+    "lint": {
+      "cache": true
+    },
+    "build": {
+      "cache": true
+    },
+    "test": {
+      "cache": true
     }
   },
   "release": {
@@ -31,13 +40,13 @@
     {
       "plugin": "@nx/eslint/plugin",
       "options": {
-        "targetName": "eslint:lint"
+        "targetName": "lint"
       }
     },
     {
       "plugin": "@nx/jest/plugin",
       "options": {
-        "targetName": "jest:test"
+        "targetName": "test"
       }
     },
     {

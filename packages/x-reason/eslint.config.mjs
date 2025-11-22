@@ -1,5 +1,7 @@
+// @ts-check
 import baseConfig from '../../eslint.config.mjs';
 
+/** @type {import('eslint').Linter.Config[]} */
 export default [
   ...baseConfig,
   {
@@ -9,6 +11,7 @@ export default [
         'error',
         {
           ignoredFiles: ['{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}'],
+          ignoredDependencies: ['prettier'], // mismatch between eslint-plugin-prettier  @codestrap/developer-*
         },
       ],
     },

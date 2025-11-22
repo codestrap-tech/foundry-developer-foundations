@@ -1,6 +1,4 @@
-import type {
-  RfpRequestsDao,
-} from '@codestrap/developer-foundations-types';
+import type { RfpRequestsDao } from '@codestrap/developer-foundations-types';
 import { getRangrClient } from '../../rangrClient';
 import { upsertRfpRequest } from './delegates/rfpRequests/upsert';
 import { readRfpRequest } from './delegates/rfpRequests/read';
@@ -17,7 +15,7 @@ export function makeRfpRequestsDao(): RfpRequestsDao {
       vendorId: string,
       machineExecutionId: string,
       id?: string,
-      rfpResponseStatus?: number
+      rfpResponseStatus?: number,
     ) => {
       const machine = await upsertRfpRequest(
         rfp,
@@ -26,14 +24,14 @@ export function makeRfpRequestsDao(): RfpRequestsDao {
         machineExecutionId,
         client,
         id,
-        rfpResponseStatus
+        rfpResponseStatus,
       );
 
       return machine;
     },
     delete: async (id: string) =>
       console.log(
-        `stub delete method called for: ${id}. We do not support deleting RfpRequests but include the method as it is part of the interface.`
+        `stub delete method called for: ${id}. We do not support deleting RfpRequests but include the method as it is part of the interface.`,
       ),
     read: async (id: string) => {
       const machine = await readRfpRequest(id, client);
@@ -44,7 +42,7 @@ export function makeRfpRequestsDao(): RfpRequestsDao {
       const results = await searchRfpRequest(
         machineExecutionId,
         vendorId,
-        client
+        client,
       );
       // there should be only one results based on the params
       return results[0];

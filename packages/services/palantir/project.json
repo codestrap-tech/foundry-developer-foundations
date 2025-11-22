@@ -33,6 +33,15 @@
       "options": {
         "jestConfig": "packages/services/palantir/jest.config.ts"
       }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": [
+          "packages/services/palantir/**/*.{ts,tsx,js,jsx,json,cjs,mjs,cts,mts}"
+        ]
+      }
     }
   }
 }

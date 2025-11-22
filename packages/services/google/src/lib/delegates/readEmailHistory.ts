@@ -1,5 +1,5 @@
-import { gmail_v1 } from 'googleapis';
-import {
+import type { gmail_v1 } from 'googleapis';
+import type {
   EmailMessage,
   ReadEmailHistoryContext,
 } from '@codestrap/developer-foundations-types';
@@ -9,10 +9,10 @@ import {
  */
 function getHeader(
   message: gmail_v1.Schema$Message,
-  name: string
+  name: string,
 ): string | undefined {
   const header = message.payload?.headers?.find(
-    (h) => h.name?.toLowerCase() === name.toLowerCase()
+    (h) => h.name?.toLowerCase() === name.toLowerCase(),
   )?.value;
 
   return header || undefined;
@@ -22,7 +22,7 @@ function getHeader(
  * Extract the plain text body of the email
  */
 function getPlainTextBody(
-  message: gmail_v1.Schema$Message
+  message: gmail_v1.Schema$Message,
 ): string | undefined {
   if (!message.payload) return;
 
@@ -32,7 +32,7 @@ function getPlainTextBody(
 
     if (message.payload.parts) {
       const part = message.payload.parts.find(
-        (p) => p.mimeType === 'text/plain'
+        (p) => p.mimeType === 'text/plain',
       );
       return getBodyData(part?.body?.data || undefined);
     }
@@ -46,12 +46,12 @@ function getPlainTextBody(
 
 export async function readEmailHistory(
   gmail: gmail_v1.Gmail,
-  context: ReadEmailHistoryContext
+  context: ReadEmailHistoryContext,
 ): Promise<EmailMessage[]> {
   // get all unread emails for the since since 15 minutes before the notification
   // yes this is the best way to do this, don't ask unless you want to understand how historyId works
   const afterEpoch = Math.floor(
-    (new Date(context.publishTime).getTime() - 15 * 60 * 1000) / 1000
+    (new Date(context.publishTime).getTime() - 15 * 60 * 1000) / 1000,
   );
 
   const baseQuery = [`is:unread`, `after:${afterEpoch}`];
@@ -84,8 +84,8 @@ export async function readEmailHistory(
           userId: context.email,
           id,
           format: 'full',
-        })
-      )
+        }),
+      ),
     )
   )
     .filter((settled) => settled.status === 'fulfilled')
@@ -96,8 +96,8 @@ export async function readEmailHistory(
     new Set(
       messageResponses
         .map((res) => res.data.threadId)
-        .filter((id): id is string => !!id)
-    )
+        .filter((id): id is string => !!id),
+    ),
   );
 
   // then fetch all the messages for a given thread
@@ -107,8 +107,8 @@ export async function readEmailHistory(
         userId: context.email,
         id: threadId,
         format: 'full',
-      })
-    )
+      }),
+    ),
   );
 
   // then flatten res.data.messages and construct our output

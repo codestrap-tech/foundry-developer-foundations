@@ -1,34 +1,35 @@
 import { extractJsonFromBackticks } from './Extractors';
 describe('Testing JSON extraction and clearning', () => {
   test('extracts JSON from a normal ```json fenced block (baseline)', () => {
-    const input = "```json\n{\n  \"a\": 1\n}\n```";
+    const input = '```json\n{\n  "a": 1\n}\n```';
     const result = extractJsonFromBackticks(input);
     const parsed = JSON.parse(result);
     expect(parsed.a).toBe(1);
   });
 
   test('works when language tag is absent', () => {
-    const input = "```\n{\n  \"ok\": true\n}\n```";
+    const input = '```\n{\n  "ok": true\n}\n```';
     const result = extractJsonFromBackticks(input);
     const parsed = JSON.parse(result);
     expect(parsed.ok).toBe(true);
   });
 
   test('handles nested backticks inside JSON string (escaped), does not terminate early', () => {
-    const input = "```json\n{\n  \"msg\": \"Here are backticks: \\`\\`\\` inside a string\"\n}\n```";
+    const input =
+      '```json\n{\n  "msg": "Here are backticks: \\`\\`\\` inside a string"\n}\n```';
     const result = extractJsonFromBackticks(input);
     const parsed = JSON.parse(result);
-    expect(parsed.msg).toContain("`");
-    expect(parsed.msg).toContain("```");
+    expect(parsed.msg).toContain('`');
+    expect(parsed.msg).toContain('```');
   });
 
   test('handles nested backticks inside JSON string (escaped, multiline)', () => {
     const input =
-      "```json\r\n" +
-      "{\r\n" +
-      "  \"body\": \"Start line\\n\\`\\`\\`\\nEnd line\"\r\n" +
-      "}\r\n" +
-      "```";
+      '```json\r\n' +
+      '{\r\n' +
+      '  "body": "Start line\\n\\`\\`\\`\\nEnd line"\r\n' +
+      '}\r\n' +
+      '```';
     const result = extractJsonFromBackticks(input);
     const parsed = JSON.parse(result);
     expect(parsed.body).toMatch(/Start line/);
@@ -37,9 +38,9 @@ describe('Testing JSON extraction and clearning', () => {
 
   test('extracts from the FIRST fenced block even if more blocks follow', () => {
     const input =
-      "```json\n{\"first\": true}\n```\n" +
-      "Some text...\n" +
-      "```json\n{\"second\": true}\n```";
+      '```json\n{"first": true}\n```\n' +
+      'Some text...\n' +
+      '```json\n{"second": true}\n```';
     const result = extractJsonFromBackticks(input);
     const parsed = JSON.parse(result);
     expect(parsed.first).toBe(true);
@@ -48,8 +49,7 @@ describe('Testing JSON extraction and clearning', () => {
 
   test('ignores earlier non-JSON fences before the JSON one (extracts from the first fenced block overall)', () => {
     const input =
-      "```txt\nthis is just text\n```\n" +
-      "```json\n{\"ok\": 1}\n```";
+      '```txt\nthis is just text\n```\n' + '```json\n{"ok": 1}\n```';
     // NOTE: By design, extractor grabs the FIRST fenced block overall,
     // so this should parse the *txt* block which is NOT JSON and should throw.
     // This test documents current behavior.
@@ -57,7 +57,7 @@ describe('Testing JSON extraction and clearning', () => {
   });
 
   test('array root is supported ([ ... ])', () => {
-    const input = "```json\n[1,2,3]\n```";
+    const input = '```json\n[1,2,3]\n```';
     const result = extractJsonFromBackticks(input);
     const parsed = JSON.parse(result);
     expect(Array.isArray(parsed)).toBe(true);
@@ -65,38 +65,42 @@ describe('Testing JSON extraction and clearning', () => {
   });
 
   test('CRLF line endings are handled', () => {
-    const input = "```json\r\n{\r\n  \"x\": 42\r\n}\r\n```";
+    const input = '```json\r\n{\r\n  "x": 42\r\n}\r\n```';
     const result = extractJsonFromBackticks(input);
     const parsed = JSON.parse(result);
     expect(parsed.x).toBe(42);
   });
 
   test('leading/trailing noise outside fences is ignored', () => {
-    const input = "noise before\n```json\n{\"n\": 9}\n```\nnoise after";
+    const input = 'noise before\n```json\n{"n": 9}\n```\nnoise after';
     const result = extractJsonFromBackticks(input);
     const parsed = JSON.parse(result);
     expect(parsed.n).toBe(9);
   });
 
   test('parses when no fences exist', () => {
-    const input = "{ \"x\": 1 }";
+    const input = '{ "x": 1 }';
     const result = extractJsonFromBackticks(input);
     const parsed = JSON.parse(result);
     expect(parsed.x).toBe(1);
   });
 
   test('throws when opening fence exists but no closing fence', () => {
-    const input = "```json\n{\"x\":1}";
-    expect(() => extractJsonFromBackticks(input)).toThrow(/No valid closing fence/i);
+    const input = '```json\n{"x":1}';
+    expect(() => extractJsonFromBackticks(input)).toThrow(
+      /No valid closing fence/i,
+    );
   });
 
   test('throws when JSON start is not found between fences', () => {
-    const input = "```json\nnot json\n```";
-    expect(() => extractJsonFromBackticks(input)).toThrow(/JSON must start with either \{ or \[/i);
+    const input = '```json\nnot json\n```';
+    expect(() => extractJsonFromBackticks(input)).toThrow(
+      /JSON must start with either \{ or \[/i,
+    );
   });
 
   test('Fixes malformed JSON between fences', () => {
-    const input = "```json\n{ \"x\": 1, }\n```"; // trailing comma
+    const input = '```json\n{ "x": 1, }\n```'; // trailing comma
     const result = extractJsonFromBackticks(input);
     const parsed = JSON.parse(result);
     expect(parsed.x).toBe(1);
@@ -128,7 +132,8 @@ describe('Testing JSON extraction and clearning', () => {
   });
 
   test('Should extract and clean JSON from a FUBAR string with nested backticks', () => {
-    const inputJSON = '```json' +
+    const inputJSON =
+      '```json' +
       '{' +
       '"contacts": [],' +
       '"currentUser": {' +
@@ -151,4 +156,4 @@ describe('Testing JSON extraction and clearning', () => {
     expect(parsed.contacts.length).toBe(0);
     expect(parsed.currentUser.email).toBe('dsmiley@codestrap.me');
   });
-})
+});

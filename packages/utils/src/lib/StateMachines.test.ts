@@ -2,7 +2,7 @@ import {
   simpleMachine,
   complexMachine,
 } from './__fixtures__/DuplicateIdMachine';
-import { StateConfig } from '@codestrap/developer-foundations-types';
+import type { StateConfig } from '@codestrap/developer-foundations-types';
 import { getUniqueStateIds } from './StateMachines';
 let counter = 0;
 
@@ -24,7 +24,7 @@ describe('Testing the getUniqueStateIds function', () => {
     const serializedResults = JSON.stringify(deduplicatedStates);
 
     expect(serializedResults).toBe(
-      '[{"id":"sendSlackMessage|1","transitions":[{"on":"CONTINUE","target":"sendSlackMessage|2"},{"on":"ERROR","target":"failure"}]},{"id":"sendSlackMessage|2","transitions":[{"on":"CONTINUE","target":"sendSlackMessage|3"},{"on":"ERROR","target":"failure"}]},{"id":"sendSlackMessage|3","transitions":[{"on":"CONTINUE","target":"success"},{"on":"ERROR","target":"failure"}]},{"id":"success","type":"final"},{"id":"failure","type":"final"}]'
+      '[{"id":"sendSlackMessage|1","transitions":[{"on":"CONTINUE","target":"sendSlackMessage|2"},{"on":"ERROR","target":"failure"}]},{"id":"sendSlackMessage|2","transitions":[{"on":"CONTINUE","target":"sendSlackMessage|3"},{"on":"ERROR","target":"failure"}]},{"id":"sendSlackMessage|3","transitions":[{"on":"CONTINUE","target":"success"},{"on":"ERROR","target":"failure"}]},{"id":"success","type":"final"},{"id":"failure","type":"final"}]',
     );
   });
 
@@ -34,7 +34,7 @@ describe('Testing the getUniqueStateIds function', () => {
     const serializedResults = JSON.stringify(deduplicatedStates);
 
     expect(serializedResults).toBe(
-      '[{"id":"sendSlackMessage|1","transitions":[{"on":"CONTINUE","target":"sendSlackMessage|2"},{"on":"ERROR","target":"failure"}]},{"id":"sendSlackMessage|2","transitions":[{"on":"CONTINUE","target":"parallelChecks|3"},{"on":"ERROR","target":"failure"}]},{"id":"parallelChecks|3","type":"parallel","states":[{"id":"RegulatoryCheck|5","transitions":[{"on":"CONTINUE","target":"success"},{"on":"ERROR","target":"failure"}],"parentId":"parallelChecks|3"},{"id":"ConcentrationEstimation|6","transitions":[{"on":"CONTINUE","target":"success"},{"on":"ERROR","target":"failure"}],"parentId":"parallelChecks|3"}],"onDone":"sendSlackMessage|4"},{"id":"sendSlackMessage|4","transitions":[{"on":"CONTINUE","target":"success"},{"on":"ERROR","target":"failure"}]},{"id":"success","type":"final"},{"id":"failure","type":"final"}]'
+      '[{"id":"sendSlackMessage|1","transitions":[{"on":"CONTINUE","target":"sendSlackMessage|2"},{"on":"ERROR","target":"failure"}]},{"id":"sendSlackMessage|2","transitions":[{"on":"CONTINUE","target":"parallelChecks|3"},{"on":"ERROR","target":"failure"}]},{"id":"parallelChecks|3","type":"parallel","states":[{"id":"RegulatoryCheck|5","transitions":[{"on":"CONTINUE","target":"success"},{"on":"ERROR","target":"failure"}],"parentId":"parallelChecks|3"},{"id":"ConcentrationEstimation|6","transitions":[{"on":"CONTINUE","target":"success"},{"on":"ERROR","target":"failure"}],"parentId":"parallelChecks|3"}],"onDone":"sendSlackMessage|4"},{"id":"sendSlackMessage|4","transitions":[{"on":"CONTINUE","target":"success"},{"on":"ERROR","target":"failure"}]},{"id":"success","type":"final"},{"id":"failure","type":"final"}]',
     );
   });
 });

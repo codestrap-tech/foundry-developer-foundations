@@ -1,23 +1,26 @@
-import { Context, MachineEvent } from '@codestrap/developer-foundations-types';
-import {
+import type {
+  Context,
+  MachineEvent,
+} from '@codestrap/developer-foundations-types';
+import type {
   Message,
   MessageResponse,
   MessageService,
-  TYPES,
 } from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 
 // This function is called by the state machine and uses the connection already established in Text2Action
 export async function sendSlackMessage(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<MessageResponse> {
   // Get the state ID for the writeSlackMessage step that preceded this
   const writeSlackStateId = context.stack?.[context.stack?.length - 2];
   if (!writeSlackStateId) {
     throw new Error(
-      'Unable to find writeSlackMessage state in the machine stack.'
+      'Unable to find writeSlackMessage state in the machine stack.',
     );
   }
 

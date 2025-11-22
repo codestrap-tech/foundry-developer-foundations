@@ -1,5 +1,5 @@
 import { google } from 'googleapis';
-import {
+import type {
   CalendarContext,
   EmailContext,
   FindOptimalMeetingTimeOutput,
@@ -15,7 +15,10 @@ import { scheduleMeeting } from './delegates/scheduleMeeting';
 import { sendEmail } from './delegates/sendEmail';
 import { readEmailHistory } from './delegates/readEmailHistory';
 import { watchEmails } from './delegates/watchEmails';
-import { loadServiceAccountFromEnv, makeGoogleAuth } from './helpers/googleAuth';
+import {
+  loadServiceAccountFromEnv,
+  makeGoogleAuth,
+} from './helpers/googleAuth';
 
 export enum GSUITE_SCOPES {
   CALENDAR_READ = 'https://www.googleapis.com/auth/calendar.readonly',
@@ -62,24 +65,22 @@ async function makeClient(user: string) {
   return { emailClient, calendarClient };
 }
 
-export async function makeGSuiteClient(
-  user: string
-): Promise<OfficeServiceV1> {
+export async function makeGSuiteClient(user: string): Promise<OfficeServiceV1> {
   const { emailClient, calendarClient } = await makeClient(user);
 
   return {
     getAvailableMeetingTimes: async (
-      meetingRequest: MeetingRequest
+      meetingRequest: MeetingRequest,
     ): Promise<FindOptimalMeetingTimeOutput> => {
       const result = await findOptimalMeetingTime(
         calendarClient,
-        meetingRequest
+        meetingRequest,
       );
 
       return result;
     },
     scheduleMeeting: async (
-      meeting: CalendarContext
+      meeting: CalendarContext,
     ): Promise<ScheduleMeetingOutput> => {
       const result = await scheduleMeeting(calendarClient, meeting);
 

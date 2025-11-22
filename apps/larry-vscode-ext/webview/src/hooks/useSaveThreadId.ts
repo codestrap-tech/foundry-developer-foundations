@@ -16,7 +16,7 @@ export function useSaveThreadId() {
         threadId,
       });
     },
-    []
+    [],
   );
 
   return { fetch: saveThreadId };

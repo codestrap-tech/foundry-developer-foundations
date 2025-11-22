@@ -2,11 +2,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { container } from '@codestrap/developer-foundations-di';
-import {
+import type {
   Context,
   EditOp,
   MachineEvent,
   ThreadsDao,
+} from '@codestrap/developer-foundations-types';
+import {
   TYPES,
   VersionControlService,
 } from '@codestrap/developer-foundations-types';
@@ -16,7 +18,7 @@ import { writeFileIfNotFoundLocally } from './delegates/github';
 export async function applyEdits(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ) {
   const threadsDao = container.get<ThreadsDao>(TYPES.ThreadsDao);
   const repoRootFolder = process.env.REPO_ROOT as string;
@@ -63,22 +65,22 @@ export async function applyEdits(
     dryRun: false,
     write: true,
     format: true,
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    onLog: () => { },
+
+    onLog: () => {},
   };
 
   const results = await executeEditMachine(edits.ops, options);
 
   parsedMessages.push({
     system: `applied edits to the following files: ${results.changedFiles.join(
-      ','
+      ',',
     )}`,
   });
 
   await threadsDao.upsert(
     JSON.stringify(parsedMessages),
     'cli-tool',
-    context.machineExecutionId!
+    context.machineExecutionId!,
   );
 
   return results;

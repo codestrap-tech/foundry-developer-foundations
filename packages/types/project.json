@@ -14,7 +14,7 @@
   "tags": ["type:utility"],
   "targets": {
     "build": {
-      "executor": "@nx/js:tsc", 
+      "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/packages/types",

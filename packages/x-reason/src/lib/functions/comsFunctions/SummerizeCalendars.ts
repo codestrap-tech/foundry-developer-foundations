@@ -1,4 +1,4 @@
-import {
+import type {
   Context,
   MachineEvent,
   OfficeServiceV2,
@@ -6,7 +6,8 @@ import {
 } from '@codestrap/developer-foundations-types';
 import { extractJsonFromBackticks } from '@codestrap/developer-foundations-utils';
 import { container } from '@codestrap/developer-foundations-di';
-import { GeminiService, TYPES } from '@codestrap/developer-foundations-types';
+import type { GeminiService } from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 
 function nowInTZ(tz: string, ref: Date): Date {
   const dtf = new Intl.DateTimeFormat('en-US', {
@@ -20,7 +21,7 @@ function nowInTZ(tz: string, ref: Date): Date {
     hour12: false,
   });
   const p = Object.fromEntries(
-    dtf.formatToParts(ref).map((x) => [x.type, x.value])
+    dtf.formatToParts(ref).map((x) => [x.type, x.value]),
   );
   return new Date(
     Number(p.year),
@@ -29,7 +30,7 @@ function nowInTZ(tz: string, ref: Date): Date {
     Number(p.hour),
     Number(p.minute),
     Number(p.second),
-    0
+    0,
   );
 }
 
@@ -55,7 +56,7 @@ function startOfWeekMonday(d: Date): Date {
 export async function summarizeCalendars(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<Summaries> {
   const TZ = 'America/Los_Angeles';
   const nowPT = nowInTZ(TZ, new Date()); // wall-clock PT “now”
@@ -137,8 +138,8 @@ export async function summarizeCalendars(
     }
     case 'next week': {
       const nextMon = startOfWeekMonday(addDays(nowPT, 7)); // next Monday 00:00
-      windowStartLocal = nextMon;                           // start of next week
-      windowEndLocal = startOfDay(addDays(nextMon, 7));     // following Monday 00:00
+      windowStartLocal = nextMon; // start of next week
+      windowEndLocal = startOfDay(addDays(nextMon, 7)); // following Monday 00:00
       break;
     }
     case 'today':
@@ -149,7 +150,7 @@ export async function summarizeCalendars(
   }
 
   const officeService = await container.getAsync<OfficeServiceV2>(
-    TYPES.OfficeService
+    TYPES.OfficeService,
   );
 
   const result = await officeService.summarizeCalendars({

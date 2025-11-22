@@ -1,4 +1,4 @@
-import {
+import type {
   RangrClient,
   RfpRequests,
 } from '@codestrap/developer-foundations-types';
@@ -6,10 +6,10 @@ import {
 export async function searchRfpRequest(
   machineExecutionId: string,
   vendorId: string,
-  client: RangrClient
+  client: RangrClient,
 ): Promise<RfpRequests[]> {
   console.log(
-    `searchRfpRequest machineExecutionId: ${machineExecutionId} vendorId: ${vendorId}`
+    `searchRfpRequest machineExecutionId: ${machineExecutionId} vendorId: ${vendorId}`,
   );
 
   const apiKey = await client.getToken();
@@ -49,10 +49,10 @@ export async function searchRfpRequest(
 
   if (apiResponse.errorCode) {
     console.log(
-      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`
+      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`,
     );
     throw new Error(
-      `An error occurred while calling read RfpRequest errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`
+      `An error occurred while calling read RfpRequest errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`,
     );
   }
 

@@ -65,14 +65,14 @@ async function loadPageContent(results: SearchResultItem[]): Promise<string[]> {
 
 async function synthesizeAnswer(
   summaries: string[],
-  originalQuery: string
+  originalQuery: string,
 ): Promise<string> {
   if (!summaries || summaries.length === 0) {
     return 'No relevant information found.';
   }
 
   const prompt = `You are a helpful AI analyst tasked with helping users understand the current market conditions. You always format your responses per the users instructions and use tables to format key facts and figures. Using only the following information:\n\n${summaries.join(
-    '\n\n'
+    '\n\n',
   )} \n\n Generate a market report for the users query: "${originalQuery}"`;
   const geminiProResponse = await geminiProModel.generateContent(prompt);
   return (
@@ -82,7 +82,7 @@ async function synthesizeAnswer(
 
 async function performSearch(
   query: string,
-  numResults: number = 5
+  numResults = 5,
 ): Promise<SearchResult> {
   if (!SEARCH_API_KEY || !SEARCH_ENGINE_ID) {
     throw new Error('Search API key or Search Engine ID missing.');
@@ -146,7 +146,7 @@ async function researchAssistant(userInput: string): Promise<string> {
       }
       return acc;
     },
-    [] as SearchResultItem[]
+    [] as SearchResultItem[],
   );
 
   const summaries = await loadPageContent(flattenedResults);
@@ -155,7 +155,7 @@ async function researchAssistant(userInput: string): Promise<string> {
 
 // Example Usage:
 export async function gemeniStockMarketConditions(
-  userInput: string
+  userInput: string,
 ): Promise<string> {
   const answer = await researchAssistant(userInput);
 

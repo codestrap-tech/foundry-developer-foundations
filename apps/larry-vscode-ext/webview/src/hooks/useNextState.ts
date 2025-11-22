@@ -1,4 +1,4 @@
-import { MachineResponse } from '../lib/backend-types';
+import type { MachineResponse } from '../lib/backend-types';
 import { queryClient } from '../lib/query';
 
 type Payload = {
@@ -18,7 +18,7 @@ export function useNextMachineState(baseUrl: string) {
             ...(prev as MachineResponse),
             status: 'running',
           };
-        }
+        },
       );
 
       return fetch(`${baseUrl}/machines/${machineId}/next`, {

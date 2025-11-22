@@ -2,8 +2,8 @@ export const machineId = 'mock-execution-id';
 export const machineId2 = 'mock-execution-id2';
 
 export const mockExecution = {
-    id: machineId,
-    state: `{
+  id: machineId,
+  state: `{
             "actions":[{"type":"entry"}],
             "activities":{},
             "meta":{},
@@ -30,7 +30,7 @@ export const mockExecution = {
             "done":false,
             "tags":[]
         }`,
-    machine: `[
+  machine: `[
             {
                 "id": "sendEmail|2",
                 "transitions": [
@@ -82,7 +82,7 @@ export const mockExecution = {
                 "id": "failure",
                 "type": "final"
             }
-        ]`
+        ]`,
 };
 
 const date = new Date();
@@ -92,8 +92,8 @@ const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
 
 // this is the second state in the machine
 export const mockExecution2 = {
-    id: machineId2,
-    state: `{
+  id: machineId2,
+  state: `{
     "actions": [
         {
             "type": "entry"
@@ -329,7 +329,7 @@ export const mockExecution2 = {
     "done": true,
     "tags": []
 }`,
-    machine: `
+  machine: `
         [
             {
                 "id": "sendEmail",
@@ -409,43 +409,43 @@ export const mockExecution2 = {
                 "type": "final"
             }
         ]
-        `
+        `,
 };
 
 export const mockModifyFetchResponse = {
-    validation: {
-        result: "VALID",
-        submissionCriteria: [],
-        parameters: {}
-    },
-    edits: {
-        type: "edits",
-        edits: [
-            {
-                type: "modifyObject",
-                primaryKey: "310e5c75-9ccf-4b01-8d0b-f4bf9bf6667e",
-                objectType: "MachineExecutions"
-            }
-        ],
-        addedObjectCount: 0,
-        modifiedObjectsCount: 1,
-        deletedObjectsCount: 0,
-        addedLinksCount: 0,
-        deletedLinksCount: 0
-    }
+  validation: {
+    result: 'VALID',
+    submissionCriteria: [],
+    parameters: {},
+  },
+  edits: {
+    type: 'edits',
+    edits: [
+      {
+        type: 'modifyObject',
+        primaryKey: '310e5c75-9ccf-4b01-8d0b-f4bf9bf6667e',
+        objectType: 'MachineExecutions',
+      },
+    ],
+    addedObjectCount: 0,
+    modifiedObjectsCount: 1,
+    deletedObjectsCount: 0,
+    addedLinksCount: 0,
+    deletedLinksCount: 0,
+  },
 };
 
 export const mockModifyApiResponse = (): Response =>
-({
+  ({
     ok: true,
     status: 200,
-    statusText: "OK",
+    statusText: 'OK',
     headers: {},
-    json: () => Promise.resolve(mockModifyFetchResponse)
-} as Response);
+    json: () => Promise.resolve(mockModifyFetchResponse),
+  }) as Response;
 
 export const text2ActionTestMachineExecution = {
-    machine: `
+  machine: `
         [
             {
                 "id": "sendEmail|1",
@@ -487,14 +487,14 @@ export const text2ActionTestMachineExecution = {
             }
         ]
         `,
-    state: `{"actions":[{"type":"entry"}],"activities":{},"meta":{},"events":[],"value":"sendEmail|1","context":{"status":0,"requestId":"test","stack":["sendEmail|1"], "sendEmail|1": {"message": "test", "subject": "test subject", "recipients": ["test@example.com"],"modelDialog": "sample dialog", "ts": "1234567890"}},"_event":{"name":"xstate.init","data":{"type":"xstate.init"},"$$type":"scxml","type":"external"},"_sessionid":"x:1","event":{"type":"xstate.init"},"children":{},"done":false,"tags":[]}`,
+  state: `{"actions":[{"type":"entry"}],"activities":{},"meta":{},"events":[],"value":"sendEmail|1","context":{"status":0,"requestId":"test","stack":["sendEmail|1"], "sendEmail|1": {"message": "test", "subject": "test subject", "recipients": ["test@example.com"],"modelDialog": "sample dialog", "ts": "1234567890"}},"_event":{"name":"xstate.init","data":{"type":"xstate.init"},"$$type":"scxml","type":"external"},"_sessionid":"x:1","event":{"type":"xstate.init"},"children":{},"done":false,"tags":[]}`,
 };
 
 export const mockProcessEmailEventExecution = {
-    id: 'f41b004c-c032-4f3a-b7b8-be831804cb03',
-    currentState: 'pause',
-    logs: '',
-    state: `
+  id: 'f41b004c-c032-4f3a-b7b8-be831804cb03',
+  currentState: 'pause',
+  logs: '',
+  state: `
     {
     "actions": [],
     "activities": {},
@@ -681,7 +681,7 @@ export const mockProcessEmailEventExecution = {
     "tags": []
 }
     `,
-    machine: `
+  machine: `
     [
     {
         "id": "getAvailableMeetingTimes|cdd45abd-d759-4b8f-9341-a8852d8dde67",
@@ -759,5 +759,5 @@ export const mockProcessEmailEventExecution = {
         "type": "final"
     }
 ]
-    `};
-
+    `,
+};
