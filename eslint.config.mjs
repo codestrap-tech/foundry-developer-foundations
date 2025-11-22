@@ -1,9 +1,11 @@
 // @ts-check
 import nx from '@nx/eslint-plugin';
 import * as regexpPlugin from 'eslint-plugin-regexp';
+import reactRefresh from 'eslint-plugin-react-refresh';
 
 /** @type {import('eslint').Linter.Config[]} */
 export default [
+  reactRefresh.configs.next,
   regexpPlugin.configs['flat/recommended'],
   {
     // JSON files

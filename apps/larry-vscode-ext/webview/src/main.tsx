@@ -7,6 +7,7 @@ import { BootChannel } from './views/BootChannel';
 import { queryClient } from './lib/query';
 import {ExtensionStoreProvider} from './store/store';
 
+// eslint-disable-next-line react-refresh/only-export-components
 function Root() {
   const content = (
     <ExtensionStoreProvider>
