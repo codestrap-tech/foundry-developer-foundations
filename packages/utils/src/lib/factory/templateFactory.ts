@@ -14,6 +14,7 @@ import { curryFactoryGenerator, CurryFactoryGeneratorSchema, googleClientGenerat
 
 import {
   Tree,
+  workspaceRoot,
 } from '@nx/devkit';
 
 /**
@@ -37,8 +38,10 @@ export enum SupportedTemplates {
  * Each template maps to a file path that can be loaded dynamically.
  */
 export interface TemplateDefinition<TOptions = unknown> {
-  generator: (tree: Tree, options: TOptions) => Promise<void>;
+  generator: string;
   samplePrompts: string[];
+  promptGuide: string;
+  projectJson: () => Promise<string>;
 }
 
 /**
@@ -58,23 +61,20 @@ type TemplateRegistry = {
  */
 export const templateRegistry: TemplateRegistry = {
   [SupportedTemplates.GSUITE_CLIENT]: {
-      generator: async (tree: Tree, options) => {
-      // the caller in the code gen tool can derive the package name and function/fileName from the path in the added block.
-      // the prompt will bee supplied by the developer for now as an additional property in the added block
-      await googleClientGenerator(tree, options);
-    },
+    generator: 'google-client',
+    projectJson: async () => fs.readFile(path.resolve(workspaceRoot, 'packages/services/google/project.json'), 'utf-8'),
     samplePrompts: [
       `Generate a new google service client using the provided template to learn the CodeStrap pattern.
 The new client should be able to write files to drive. The new client number should be v3.
 The only method to add is writeFileToDrive. This should take an array of files to write. The file content will be a file Buffer.`
     ],
+    promptGuide: `The prompt must include the client version to use, required permissions/scopes the method(s) to be added 
+    or modified, and the method inputs such as file arrays, identifiers, etc and their types. Do not ever advise on security policy or design patters.
+    Just generate the fucking prompt and nothing else.`,
   },
   [SupportedTemplates.FACTORY]: {
-    generator: async (tree: Tree, options) => {
-      // the caller in the code gen tool can derive the package name and function/fileName from the path in the added block.
-      // the prompt will bee supplied by the developer for now as an additional property in the added block
-      await curryFactoryGenerator(tree, options);
-    },
+    generator: 'curry-factory',
+    projectJson: async () => fs.readFile(path.resolve(workspaceRoot, 'packages/utils/project.json'), 'utf-8'),
     samplePrompts: [
       `Create a new factory using the template below that will:
 Manage retrieval of templates based on file paths in the moduleRegistry. 
@@ -86,6 +86,20 @@ Rename all the placeholder variables for moduleRegistry, SupportedModules, etc t
 The ModuleInterface should also be renamed and have the property: template: string (path to the template to use)
  `
     ],
+    promptGuide: `The prompt should clearly outline the factory's purpose and shape of the proposed moduleRegistry.
+    It should also include a description of the factory behavior and a propsal for the ModuleInterface shape.
+    The ModuleInterface maps factory keys to values, for example:
+    /**
+     * Defines the structure of a single module implementation.
+     * You can replace the function signatures below with whatever
+     * components your modules expose (e.g., services, actions, handlers).
+     */
+    export interface ModuleInterface {
+      initialize: (config: Record<string, unknown>) => void;
+      execute: (...args: unknown[]) => unknown;
+      shutdown?: () => void;
+    }
+    `,
   },
 };
 
@@ -105,7 +119,7 @@ export const buildTemplateFactory = curry(
   async (
     registry: TemplateRegistry,
     filePath: string
-  ): Promise<(tree: Tree, options: unknown) => Promise<void>> => {
+  ): Promise<TemplateDefinition> => {
     const normalizedPath = path.normalize(filePath);
     const entries = Object.entries(registry) as Array<[string, TemplateDefinition]>;
 
@@ -116,7 +130,7 @@ export const buildTemplateFactory = curry(
 
       if (regex.test(normalizedPath)) {
         // Match found
-        return definition.generator;
+        return definition;
       }
     }
 
@@ -133,7 +147,7 @@ export const buildTemplateFactory = curry(
  *   const content = await getTemplate('/path/to/gsuite/clientConfig.ts');
  */
 export const templateFactory = () =>
-  buildTemplateFactory(templateRegistry) as (filePath: string) => Promise<(tree: Tree, options: unknown) => Promise<void>>;
+  buildTemplateFactory(templateRegistry) as (filePath: string) => Promise<TemplateDefinition>;
 
 /**
  * Example Usage

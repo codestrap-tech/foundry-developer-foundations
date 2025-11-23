@@ -18,6 +18,7 @@ import { saveFileToGithub, writeFileIfNotFoundLocally } from './delegates/github
 import { templateFactory } from '@codestrap/developer-foundations-utils';
 import { addProjectConfiguration, type Tree, workspaceRoot, names } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
+import { exec } from 'child_process';
 
 async function verifyFilePaths(ops: FileOp[]) {
     const root = process.cwd();
@@ -130,140 +131,156 @@ Try again and make sure paths match exactly the paths in the supplied plan
     return ops;
 }
 
-function loadProjectConfigFromDisk(projectJsonAbs: string) {
-    const raw = fs.readFileSync(projectJsonAbs, 'utf8');
-    const json = JSON.parse(raw) as {
-        name?: string;
-        root?: string;
-        sourceRoot?: string;
-        projectType?: 'application' | 'library';
-        targets?: Record<string, any>;
-        tags?: string[];
-    };
-
-    // Absolute directory that contains project.json
-    const projectRootAbs = path.dirname(projectJsonAbs);
-
-    // MUST be relative to the workspace root for addProjectConfiguration
-    const rootRel = path.relative(workspaceRoot, projectRootAbs) || '.';
-
-    // Prefer explicit name; else use folder name
-    const name =
-        json.name && json.name.trim().length > 0
-            ? json.name
-            : path.basename(projectRootAbs);
-
-    // Minimal, valid ProjectConfiguration shape
-    const config = {
-        root: rootRel,                               // <- relative
-        sourceRoot: json.sourceRoot,                 // keep if present
-        projectType: json.projectType ?? 'library',  // sensible default
-        targets: json.targets ?? {},                 // preserve targets
-        tags: json.tags ?? [],
-    };
-
-    return { name, config };
+async function runNxGenerate(generator: string, options: {
+    name: string | undefined; // name of the package where the generated file will be placed
+    promptFile: string; // path to the prompt file to be used by the generator
+    fileName: string; // name of the file to be generated
+}): Promise<void> {
+    return new Promise((resolve, reject) => {
+        const { name, promptFile, fileName } = options;
+        exec(
+            `npx nx g ${generator} ${name} ${fileName} ${promptFile}`,
+            { cwd: workspaceRoot },
+            (error, stdout, stderr) => {
+                if (stdout) process.stdout.write(stdout);
+                if (stderr) process.stderr.write(stderr);
+                if (error) return reject(error);
+                resolve();
+            }
+        );
+    });
 }
 
-function findClosestProjectJson(startFileAbs: string): string | null {
-    let dir = path.dirname(startFileAbs);
-    const stopAt = path.parse(dir).root;
+async function generateFiles(designSpec: string): Promise<FileOp[]> {
+    const files: FileOp[] = await getEffectedFileList(designSpec);
 
-    while (true) {
-        const candidate = path.join(dir, 'project.json');
-        if (fs.existsSync(candidate)) {
-            return candidate;
-        }
-        if (dir === stopAt) break;
-        dir = path.dirname(dir);
-    }
-    return null;
-}
-
-
-async function generateFile(files: FileOp[]): Promise<FileOp[]> {
     const addedFiles = files.filter((f) => f.type === 'added');
     const getTemplate = templateFactory();
 
     // 1) Resolve generators WITH context
     const matchSettled = await Promise.allSettled(
         addedFiles.map(async (file) => {
-            const gen = await getTemplate(file.file);
-            return { file, gen }; // attach file context
+            const result = await getTemplate(file.file);
+            return { file, ...result }; // attach file context
         })
     );
 
     // 2) For each successful match, kick off the generator and keep context
-    const runTasks: Array<{ file: FileOp; promise: Promise<{ 
-        name: string; 
-        promptFile: string; 
-        fileName: string; 
-        root: string;
-        sourceRoot: string | undefined;
-        projectType: "application" | "library";
-        targets: Record<string, any>;
-        tags: string[];
-    } | undefined
-        > }> = [];
+    const runTasks: Promise<{file: FileOp; fileContents: string}>[] = [];
 
     for (const r of matchSettled) {
-        if (r.status !== 'fulfilled' || !r.value?.gen) {
+        if (r.status !== 'fulfilled' || !r.value?.generator) {
             const file = r.status === 'fulfilled' ? r.value.file : undefined;
             console.error(`failed to find a generator for file: ${file?.file ?? '(unknown)'}`);
             continue;
         }
 
-        const { file, gen } = r.value;
+        const { file, generator, samplePrompts, projectJson, promptGuide } = r.value;
 
-        const promise = (async () => {
-            const tree: Tree = createTreeWithEmptyWorkspace();
-
-            const absFilePath = path.isAbsolute(file.file)
-                ? file.file
-                : path.resolve(workspaceRoot, file.file);
-
-            const found = findClosestProjectJson(absFilePath);
-            if (!found) {
-                console.error(`could not find project.json for file: ${file.file}`);
-                return;
-            }
-
-            const { name: projectName, config } = loadProjectConfigFromDisk(found);
+        const promise = new Promise<{file: FileOp; fileContents: string}>(async (resolve, reject) => {
             try {
-                addProjectConfiguration(tree, projectName, config);
-            } catch {
-                // already added — ignore
+                const projectConfigFile = await projectJson();
+                const config = JSON.parse(projectConfigFile) as {
+                    name?: string;
+                    root?: string;
+                    sourceRoot?: string;
+                    projectType?: 'application' | 'library';
+                    targets?: Record<string, any>;
+                    tags?: string[];
+                };
+
+                // use GPT 5 mini to generate the prompt file based on the supplied file block, samplePrompts array, and design spec
+                const system = `You are a helpful AI coding assistant tasked with generating code generation prompts based on file templates.`;
+                const user = `
+# Goal
+Generate the unput prompt for the code generator based on the software design spec below and the file to be generated.
+
+# Rules for Answer Sythesis
+${promptGuide}
+
+# The file to be generated
+${file.file}
+
+# The Design Spec
+${designSpec}
+
+# Sample Prompts
+Here are some sample prompts that have been used to generate similar files in the past. Use these as inspiration to create a new prompt that fits the current file to be generated.
+${samplePrompts.join('\n\n')}
+
+# Response format
+Response with the prompt as a single string. Do not include any additional commentary or explanation.
+            `;
+
+                const response = await fetch('https://api.openai.com/v1/responses', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Authorization: `Bearer ${process.env.OPEN_AI_KEY}`,
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-5-mini',
+                        input: [
+                            { role: 'system', content: [{ type: 'input_text', text: system }] },
+                            { role: 'user', content: [{ type: 'input_text', text: user }] },
+                        ],
+                        reasoning: { "effort": "low" },
+                        text: { verbosity: 'low' },
+                        store: true,
+                    }),
+                });
+
+                const resp = await response.json();
+
+                // Find the message block inside the output
+                const msg = (resp.output ?? []).find(
+                    (o: any) => o.type === 'message' && o.status === 'completed'
+                ).content[0].text;
+                if (!msg) {
+                    throw new Error('No message block found in output');
+                }
+
+                // save the file
+                const fileName = `generator-prompt-${generator}.md`;
+                const abs = path.resolve(process.env.BASE_FILE_STORAGE || process.cwd(), fileName);
+                await fs.promises.writeFile(abs, msg, 'utf8');
+
+                // make sure to capture any changes to the spec file that resulted from direct user edits
+                await saveFileToGithub(fileName, msg);
+
+                const options = {
+                    name: config.name, // the NX package name
+                    promptFile: abs,
+                    fileName: path.basename(file.file, path.extname(file.file)),
+                };
+
+                await runNxGenerate(generator, options);
+
+                // load the generated file. Generators always send output to the packages src/lib directory for now
+                // if this ever changes we need to capture the output path from the generator
+                const fileContents = await fs.promises.readFile(path.resolve(workspaceRoot, options.name!, 'src/lib', options.fileName), 'utf-8')
+                file.stubCode = fileContents;
+                
+                resolve({file, fileContents});
+            } catch (error) {
+                reject({ file, error });
             }
+        });
 
-            const options = {
-                name: projectName,
-                promptFile: 'TODO, generate the prompt file based on the supplied file block',
-                fileName: path.basename(file.file, path.extname(file.file)),
-            };
-
-            await gen(tree, options);
-            console.log(`calling generator for file: ${file.file}`);
-            return {...options, ...config};
-        })();
-
-        runTasks.push({ file, promise });
+        runTasks.push(promise);
     }
 
     // 3) Await all generator runs and report using attached context (no indexes)
-    const results = await Promise.allSettled(runTasks.map((t) => t.promise));
-    results.forEach((res, i) => {
-        const { file } = runTasks[i];
+    const results = await Promise.allSettled(runTasks.map((t) => t));
+    results.forEach((res) => {
         if (res.status === 'fulfilled') {
+            const { file } = res.value;
             console.log(`successfully generated file for: ${file.file}`);
-            // TODO: load the generated file contents and push into the return value
-            const { name, promptFile, fileName, sourceRoot, root } = res.value || {};
-            // the generators are hard coded to generate at src/lib
-            const normalizedFileName = names(fileName!);
-            const pathToGeneratedFile = path.resolve(workspaceRoot, sourceRoot!, 'lib' , normalizedFileName.fileName);
-            const generatedContent = fs.readFileSync(pathToGeneratedFile, 'utf8');
-            // TODO add to return array of FileOp
         } else {
-            console.error(`failed to generate file for: ${file.file} with error: ${res.reason}`);
+            // just skip failures and let the process continue
+            const { file, error } = res.reason as {file: FileOp; error: any};
+            console.error(`failed to generate file for: ${file.file} with error: ${error.message}
+                Error Stack: ${error.stack}`);
         }
     });
 
@@ -300,11 +317,7 @@ export async function specReview(
     if (approved) {
         const updatedContents = await fs.promises.readFile(file, 'utf8');
         // get the file json to be used by the architect
-        const files = await getEffectedFileList(updatedContents);
-        /**
-         * TODO call await generateFile(files)
-         * 
-         * */
+        const files = await generateFiles(updatedContents);
         const plan = `# Affected Files
 \`\`\`json
 ${JSON.stringify(files, null, 2)}
