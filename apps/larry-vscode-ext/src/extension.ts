@@ -686,6 +686,24 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         throw new Error('Failed to create or find worktree');
       }
 
+      let isRunning = false;
+      try {
+        const containerName = `${projectName || 'larry'}-worktree-${finalWorktreeName}`;
+      const { stdout: inspectOutput } = await execAsync(
+        `docker inspect ${containerName}`
+      );
+
+      const containerInfo = JSON.parse(inspectOutput);
+      if (containerInfo.length > 0) {
+        const container = containerInfo[0];
+        isRunning = container.State.Running;
+      }
+      } catch (e) {
+        isRunning = false;
+      }
+      
+
+      if (!isRunning) {
       // Setup worktree environment
       await this.setupWorktreeEnvironment(finalWorktreeName, threadId);
 
@@ -694,21 +712,13 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         type: 'update_thread_state',
         state: 'creating_container',
       });
-      const { stdout } = await execAsync(
-        `docker ps -q --filter "publish=4220"`
-      );
-      const containerId = stdout.trim();
-      console.log('Container ID:', containerId);
-      if (containerId) {
-        await execAsync(`docker kill ${containerId}`);
-        await execAsync(`docker rm ${containerId}`);
-      }
 
       if (threadId) {
         await this.writeCurrentThreadId(finalWorktreeName, threadId);
       }
 
       await this.startWorktreeDockerContainer(finalWorktreeName, threadId);
+      }
 
       // Notify that worktree is ready
       this.view?.webview.postMessage({
@@ -718,6 +728,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       });
 
       setTimeout(() => {
+        // This one will need to be refactored because user should be able to select agent per thread, not per worktree
         this.startWorktreeSSE(agentKey); // <— start SSE for worktree events with selected agent
         this.openWorktree(finalWorktreeName);
         this.view?.webview.postMessage({
@@ -1252,6 +1263,226 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
           filePath: msg.filePath,
           content: content,
         });
+        return;
+      }
+
+      if (msg?.type === 'list_local_worktrees') {
+        try {
+          /*
+            we need to check if we are in workspace (any repo), because
+            without that when extension is being run in empty folder
+            (e.g VS Code start screen) then it will crash
+          */
+          const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+          if (!workspaceFolder) {
+            view.webview.postMessage({
+              type: 'local_worktrees_response',
+              worktrees: [],
+            });
+            return;
+          }
+
+          const { stdout } = await execAsync('git worktree list --porcelain', {
+            cwd: workspaceFolder.uri.fsPath,
+          });
+
+          /* Parse worktree blocks separated by blank lines
+          example out of git worktree list --porcelain:
+          worktree /Users/przemek/Projects/foundry-developer-foundations
+          HEAD eb907726f9838ed37501d33b6973b9646d4603e1
+          branch refs/heads/pn/parametrize-larry-extension
+
+          worktree /Users/przemek/Projects/foundry-developer-foundations/.larry/worktrees/create-sending-email-function-gsf
+          HEAD 234786afcd4c40f6a47a78b7796062891cc591be
+          branch refs/heads/larry/create-sending-email-function-gsf
+          */
+          const worktreeBlocks = stdout.split('\n\n').filter((block) => block.trim());
+          
+          const worktrees = worktreeBlocks
+            .map((block) => {
+              const lines = block.split('\n');
+              const worktreeLine = lines.find((l) => l.startsWith('worktree '));
+              const branchLine = lines.find((l) => l.startsWith('branch '));
+
+              if (!worktreeLine) return null;
+
+              const path = worktreeLine.replace('worktree ', '').trim();
+              
+              let branch = 'detached';
+              if (branchLine) {
+                const branchRef = branchLine.replace('branch ', '').trim();
+                branch = branchRef.replace('refs/heads/', '');
+              }
+              const pathMatch = path.match(/\.larry[/\\]worktrees[/\\]([^/\\]+)$/);
+              if (!pathMatch) return null;
+
+              const worktreeName = pathMatch[1];
+
+              return {
+                worktreeName,
+                branch,
+                path,
+              };
+            })
+            .filter((item) => item !== null);
+
+          view.webview.postMessage({
+            type: 'local_worktrees_response',
+            worktrees,
+          });
+        } catch (error) {
+          console.error('Error listing local worktrees:', error);
+          view.webview.postMessage({
+            type: 'local_worktrees_response',
+            worktrees: [],
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+        return;
+      }
+
+      if (msg?.type === 'get_docker_status') {
+        try {
+          const containerName = `${projectName || 'larry'}-worktree-${msg.worktreeName}`;
+          const { stdout: inspectOutput } = await execAsync(
+            `docker inspect ${containerName}`
+          );
+          const containerInfo = JSON.parse(inspectOutput);
+
+          if (containerInfo.length > 0) {
+            const container = containerInfo[0];
+            const isRunning = container.State.Running;
+            const containerId = container.Id;
+
+            view.webview.postMessage({
+              type: 'docker_status_response',
+              worktreeName: msg.worktreeName,
+              isRunning,
+              containerId,
+            });
+          } else {
+            view.webview.postMessage({
+              type: 'docker_status_response',
+              worktreeName: msg.worktreeName,
+              isRunning: false,
+              containerId: undefined,
+            });
+          }
+        } catch (error) {
+          // Container doesn't exist - this is expected when manually deleted
+          // Return stopped status without logging error
+          view.webview.postMessage({
+            type: 'docker_status_response',
+            worktreeName: msg.worktreeName,
+            isRunning: false,
+            containerId: undefined,
+          });
+        }
+        return;
+      }
+
+      if (msg?.type === 'start_docker_container') {
+        try {
+          await this.startWorktreeDockerContainer(msg.worktreeName, undefined, true);
+          view.webview.postMessage({
+            type: 'docker_action_complete',
+            action: 'start',
+            worktreeName: msg.worktreeName,
+            success: true,
+          });
+        } catch (error) {
+          console.error('Error starting docker container:', error);
+          view.webview.postMessage({
+            type: 'docker_action_complete',
+            action: 'start',
+            worktreeName: msg.worktreeName,
+            success: false,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+        return;
+      }
+
+      if (msg?.type === 'stop_docker_container') {
+        try {
+          const containerName = `${projectName || 'larry'}-worktree-${msg.worktreeName}`;
+          await execAsync(`docker stop ${containerName}`);
+          view.webview.postMessage({
+            type: 'docker_action_complete',
+            action: 'stop',
+            worktreeName: msg.worktreeName,
+            success: true,
+          });
+        } catch (error) {
+          console.error('Error stopping docker container:', error);
+          view.webview.postMessage({
+            type: 'docker_action_complete',
+            action: 'stop',
+            worktreeName: msg.worktreeName,
+            success: false,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+        return;
+      }
+
+      if (msg?.type === 'delete_worktree') {
+        try {
+          const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+          if (!workspaceFolder) {
+            throw new Error('No workspace folder found');
+          }
+
+          const containerName = `${projectName || 'larry'}-worktree-${msg.worktreeName}`;
+
+          // Stop and remove docker container
+          try {
+            await execAsync(`docker stop ${containerName}`);
+          } catch (e) {
+          }
+          try {
+            await execAsync(`docker rm -f ${containerName}`);
+          } catch (e) {
+          }
+
+          // Remove git worktree
+          const worktreePath = vscode.Uri.joinPath(
+            workspaceFolder.uri,
+            '.larry',
+            'worktrees',
+            msg.worktreeName
+          ).fsPath;
+
+          await execAsync(`git worktree remove "${worktreePath}" --force`, {
+            cwd: workspaceFolder.uri.fsPath,
+          });
+
+          try {
+            await vscode.workspace.fs.delete(
+              vscode.Uri.file(worktreePath),
+              { recursive: true }
+            );
+          } catch (e) {
+          }
+
+          await execAsync('git worktree prune', {
+            cwd: workspaceFolder.uri.fsPath,
+          });
+
+          view.webview.postMessage({
+            type: 'worktree_deleted',
+            worktreeName: msg.worktreeName,
+            success: true,
+          });
+        } catch (error) {
+          console.error('Error deleting worktree:', error);
+          view.webview.postMessage({
+            type: 'worktree_deleted',
+            worktreeName: msg.worktreeName,
+            success: false,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
         return;
       }
     });

@@ -1,11 +1,17 @@
-import React from 'react';
+/* JSX */
+/* @jsxImportSource preact */
 import { useMemo, useState, useEffect } from 'preact/hooks';
-import { useThreadsQuery } from '../hooks/useThreadsQuery';
 import { useExtensionStore, useExtensionDispatch } from '../store/store';
 import { postMessage } from '../lib/vscode';
-import type { ThreadListItem } from '../lib/backend-types';
 import { CustomSelect } from './components/CustomSelect';
 import { AnimatedEllipsis } from './components/AnimatedEllipsis';
+import { WorktreeListItem } from './components/WorktreeListItem';
+import { useLocalWorktrees } from '../hooks/useLocalWorktrees';
+import { useWorktreeActions } from '../hooks/useWorktreeActions';
+
+// TODO: Add support for REMOTE items from useThreadsQuery
+// const { data, isLoading } = useThreadsQuery(apiUrl);
+// For now, remote items are empty
 
 function capitalizeAgentName(agentKey: string): string {
   return agentKey
@@ -15,11 +21,12 @@ function capitalizeAgentName(agentKey: string): string {
 }
 
 export function MainRepoScreen() {
-  const { apiUrl, currentThreadState, agents, selectedAgent } = useExtensionStore();
+  const { currentThreadState, agents, selectedAgent } = useExtensionStore();
   const dispatch = useExtensionDispatch();
-  const { data, isLoading } = useThreadsQuery(apiUrl);
+  const { worktrees, isLoading, error, refetch } = useLocalWorktrees();
+  const { startContainer, stopContainer, deleteWorktree, processingWorktree, lastResult } = useWorktreeActions();
   const [newLabel, setNewLabel] = useState('');
-  const [selectedThreadId, setSelectedThreadId] = useState<string | undefined>(undefined);
+  const [searchQuery, setSearchQuery] = useState('');
   const [localSelectedAgent, setLocalSelectedAgent] = useState(selectedAgent);
   const [setupPhase, setSetupPhase] = useState<'idle'
   | 'creating_worktree'
@@ -28,11 +35,9 @@ export function MainRepoScreen() {
   | 'ready'
   | 'error'>('idle');
 
-
   useEffect(() => {
     setLocalSelectedAgent(selectedAgent);
   }, [selectedAgent]);
-
 
   const agentItems = useMemo(() => {
     return Object.keys(agents).map(agentKey => ({
@@ -50,7 +55,8 @@ export function MainRepoScreen() {
       setTimeout(() => {
         setSetupPhase('idle');
         setNewLabel('');
-        setSelectedThreadId(undefined);
+        // Trigger worktrees list refresh
+        refetch();
       }, 1500);
       return;
     }
@@ -58,34 +64,43 @@ export function MainRepoScreen() {
     if (currentThreadState === 'error') {
       setSetupPhase('error');
       setNewLabel('');
-      setSelectedThreadId(undefined);
       return;
     }
 
-    
     setSetupPhase(currentThreadState);
-  }, [currentThreadState]);
+  }, [currentThreadState, refetch]);
 
-  const items = data?.items ?? [];
+  // Handle action completion from useWorktreeActions
+  useEffect(() => {
+    if (lastResult && lastResult.success) {
+      // Refetch worktrees list after successful action
+      refetch();
+    }
+  }, [lastResult, refetch]);
 
-  const selected: ThreadListItem | undefined = useMemo(() => {
-    if (!selectedThreadId) return undefined;
-    return items.find((t) => t.id === selectedThreadId);
-  }, [items, selectedThreadId]);
+  // Filter worktrees by search query
+  const filteredWorktrees = useMemo(() => {
+    return worktrees.filter(w =>
+      w.worktreeName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [worktrees, searchQuery]);
 
-  function openWorktreeExisting() {
-    if (!selected) return;
+  function openWorktree(worktreeName: string) {
     postMessage({
       type: 'open_worktree',
-      worktreeName: selected.worktreeName,
-      threadId: selected.id,
-      label: selected.label,
+      worktreeName,
+      threadId: '',
+      label: worktreeName,
     });
-    setSetupPhase('setting_up_environment');
+
+    // if only opening we can reset the setup phase
+    setTimeout(() => {
+      setSetupPhase('idle');
+      setNewLabel('');
+    }, 3000);
   }
 
   function openWorktreeNew() {
-    setSelectedThreadId(undefined);
     if (!newLabel.trim()) return;
     postMessage({ 
       type: 'open_worktree', 
@@ -104,20 +119,49 @@ export function MainRepoScreen() {
 
   return (
     <div className="Box d-flex flex-column gap-3 p-3">
-      {isLoading ? (
-        <div className="color-fg-muted">Loading items...</div>
-      ) : (
-        <CustomSelect
-          items={items}
-          selectedId={selectedThreadId}
-          onSelect={(id) => setSelectedThreadId(id)}
-          placeholder="Pick a working item..."
-          searchPlaceholder="Pick a working item..."
-          emptyMessage="No working items found"
+      {/* Existing Worktrees Section */}
+      <div className="worktrees-section">
+        <h6 className="section-title">Existing Worktrees</h6>
+        
+        {/* Search Input */}
+        <input
+          type="text"
+          className="form-control width-full mb-2"
+          placeholder="Search worktrees..."
+          value={searchQuery}
+          onInput={(e) => setSearchQuery((e.currentTarget as HTMLInputElement).value)}
         />
-      )}
 
-      {selectedThreadId ? (
+        {/* Loading State */}
+        {isLoading ? (
+          <div className="color-fg-muted text-center py-3">Loading worktrees...</div>
+        ) : error ? (
+          <div className="text-danger">Error loading worktrees: {error}</div>
+        ) : filteredWorktrees.length === 0 ? (
+          <div className="color-fg-muted text-center py-3">
+            {searchQuery ? 'No worktrees match your search' : 'No worktrees found'}
+          </div>
+        ) : (
+          <div className="worktrees-list gap-2 d-flex flex-column">
+            {filteredWorktrees.map((worktree, index) => (
+              <WorktreeListItem
+                isLastItem={index === filteredWorktrees.length - 1}
+                key={worktree.worktreeName}
+                worktreeName={worktree.worktreeName}
+                branch={worktree.branch}
+                onOpen={() => openWorktree(worktree.worktreeName)}
+                onDelete={deleteWorktree}
+                onStartContainer={startContainer}
+                onStopContainer={stopContainer}
+                isProcessing={processingWorktree === worktree.worktreeName}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Status Messages During Worktree Operations */}
+      {setupPhase !== 'idle' && (
         <div className="pt-1 mt-2 mb-2">
           {setupPhase === 'creating_worktree' && (
             <div><span style={{fontSize: '10px'}} className="shimmer-loading">Creating git worktree</span><AnimatedEllipsis /></div>
@@ -128,14 +172,13 @@ export function MainRepoScreen() {
           {setupPhase === 'setting_up_environment' && (
             <div><span style={{fontSize: '10px'}} className="shimmer-loading">Setting up environment</span><AnimatedEllipsis /></div>
           )}
-        {setupPhase === 'idle' && (
-          <button className="btn btn-primary" disabled={!selected || setupPhase !== 'idle'} onClick={openWorktreeExisting}>
-            Start
-          </button>
-        )}
-      </div>
-      ): null}
+          {setupPhase === 'error' && (
+            <div className="text-danger">Error setting up worktree</div>
+          )}
+        </div>
+      )}
 
+      {/* Create New Worktree Section */}
       <div className="border-top pt-3 mt-3" style={{position: 'relative'}}>
         <h6 style={{position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--vscode-tab-activeBackground)', color: 'var(--vscode-foreground)', padding: '0 10px', fontSize: '12px'}}>OR</h6>
         <div className="width-full mb-2">
@@ -145,38 +188,28 @@ export function MainRepoScreen() {
             value={newLabel}
             onInput={(e) => setNewLabel((e.currentTarget as HTMLInputElement).value)}
           />
-          </div>
-          <div className="width-full mb-2">
+        </div>
+        <div className="width-full mb-2">
           <CustomSelect
-          items={agentItems}
-          selectedId={localSelectedAgent}
-          size="small"
-          onSelect={handleAgentSelect}
-          placeholder="Select agent..."
-          searchPlaceholder="Select agent..."
-          emptyMessage="No agents found"
-        />
-          </div>
-          <div>
-          {setupPhase === 'creating_worktree' && !selectedThreadId && (
-            <div><span style={{fontSize: '10px'}} className="shimmer-loading">Creating git worktree</span><AnimatedEllipsis /></div>
-          )}
-          {setupPhase === 'creating_container' && !selectedThreadId && (
-            <div><span style={{fontSize: '10px'}} className="shimmer-loading">Creating docker container</span><AnimatedEllipsis /></div>
-          )}
-          {setupPhase === 'setting_up_environment' && !selectedThreadId && (
-            <div><span style={{fontSize: '10px'}} className="shimmer-loading">Setting up environment</span><AnimatedEllipsis /></div>
-          )}
-          <button className={`btn ${newLabel.trim() ? 'btn-primary' : ''}`} disabled={!newLabel.trim() || setupPhase !== 'idle'} onClick={openWorktreeNew}>
+            items={agentItems}
+            selectedId={localSelectedAgent}
+            size="small"
+            onSelect={handleAgentSelect}
+            placeholder="Select agent..."
+            searchPlaceholder="Select agent..."
+            emptyMessage="No agents found"
+          />
+        </div>
+        <div>
+          <button 
+            className={`btn ${newLabel.trim() ? 'btn-primary' : ''}`} 
+            disabled={!newLabel.trim() || setupPhase !== 'idle'} 
+            onClick={openWorktreeNew}
+          >
             Start
           </button>
         </div>
       </div>
-      {setupPhase === 'error' ? (
-        <div className="border-top pt-3 mt-2">
-          <div className="text-danger">Error setting up worktree</div>
-        </div>
-      ) : null}
     </div>
   );
 }
