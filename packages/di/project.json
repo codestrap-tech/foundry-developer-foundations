@@ -5,21 +5,29 @@
   "projectType": "library",
   "release": {
     "version": {
-      "manifestRootsToUpdate": ["dist/{projectRoot}"],
+      "manifestRootsToUpdate": [
+        "dist/{projectRoot}"
+      ],
       "currentVersionResolver": "git-tag",
       "fallbackCurrentVersionResolver": "disk"
     }
   },
-  "tags": ["type:utility"],
+  "tags": [
+    "type:utility"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/packages/di",
         "main": "packages/di/src/index.ts",
         "tsConfig": "packages/di/tsconfig.lib.json",
-        "assets": ["packages/di/*.md"]
+        "assets": [
+          "packages/di/*.md"
+        ]
       }
     },
     "nx-release-publish": {
@@ -29,9 +37,31 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
       "options": {
         "jestConfig": "packages/di/jest.config.ts"
+      }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/di",
+        "commands": [
+          "prettier-package-json --list-different",
+          "prettier --config ../../.prettierrc --ignore-path ../../.prettierignore --check ."
+        ]
+      }
+    },
+    "format:write": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/di",
+        "commands": [
+          "prettier-package-json --write",
+          "prettier --config ../../.prettierrc --ignore-path ../../.prettierignore --write ."
+        ]
       }
     }
   }
