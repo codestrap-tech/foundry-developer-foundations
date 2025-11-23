@@ -41,7 +41,7 @@ export function WorktreeScreen() {
   
   // Find current thread label from threads list
   const currentThread = threadsData?.items?.find(t => t.id === currentThreadId);
-  const sessionLabel = currentThread?.label || 'Session';
+  const sessionLabel = currentThread?.label || 'Session 123';
 
   async function startNewThread() {
     if (!firstMessage.trim()) return;

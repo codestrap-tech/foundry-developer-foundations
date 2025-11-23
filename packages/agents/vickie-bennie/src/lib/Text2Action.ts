@@ -1,6 +1,7 @@
 import { Trace } from '@codestrap/developer-foundations.foundry-tracing-foundations';
 
-import { getState, SupportedEngines, xReasonFactory } from '@codestrap/developer-foundations-x-reason';
+import { getState, xReasonFactory } from '@codestrap/developer-foundations-x-reason';
+import { SupportedEngines } from '@codestrap/developer-foundations-types';
 import { engineV1 as engine } from '@codestrap/developer-foundations-x-reason';
 import { dateTime, recall, requestRfp, userProfile } from '@codestrap/developer-foundations-x-reason';
 import {

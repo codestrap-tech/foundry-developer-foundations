@@ -14,7 +14,8 @@ import {
   MachineDao,
   TYPES,
 } from '@codestrap/developer-foundations-types';
-import { SupportedEngines } from '@codestrap/developer-foundations-x-reason';
+import {SupportedCodingAgents, SupportedEngines } from '@codestrap/developer-foundations-types';
+import { LarryAgentFactory } from '@codestrap/larry-config';
 import 'dotenv/config';
 import { uuidv4 } from '@codestrap/developer-foundations-utils';
 import { applyEdits } from './assets/applyEdits';
@@ -125,6 +126,11 @@ async function main() {
   const whichAgent = await select({ message: 'select the agent', choices: ['googleCodingAgent', 'applyEdits'] })
 
   if (whichAgent === 'googleCodingAgent') {
+    if (container.isBound(TYPES.LarryCodingAgentFactory)) {
+      container.unbind(TYPES.LarryCodingAgentFactory);
+      container.bind(TYPES.LarryCodingAgentFactory).toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
+    }
+
     const file = await input({ message: 'Enter the full file path to your prompt:' });
     if (!fs.existsSync(file)) throw new Error('file not found!');
 

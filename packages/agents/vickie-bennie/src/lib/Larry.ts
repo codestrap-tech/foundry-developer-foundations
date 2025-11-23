@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { Trace } from '@codestrap/developer-foundations.foundry-tracing-foundations';
-import { SupportedEngines } from '@codestrap/developer-foundations-x-reason';
+import { SupportedEngines, LarryAgentFactoryType } from '@codestrap/developer-foundations-types';
 import { Text2Action } from './Text2Action';
 import {
   GeminiService,
@@ -24,6 +24,8 @@ export interface LarryResponse {
 
 // use classes to take advantage of trace decorator
 export class Larry extends Text2Action {
+  private agent = container.get<LarryAgentFactoryType>(TYPES.LarryCodingAgentFactory)({});
+
   @Trace({
     resource: {
       service_name: 'larry',
@@ -96,14 +98,20 @@ export class Larry extends Text2Action {
 
     const readmePath = path.resolve(
       process.cwd(),
-      '../../packages/services/google/src/lib/README.LLM.md'
+      this.agent.readmePath
     );
     if (readmePath && !fs.existsSync(readmePath)) throw new Error(`README file does not exist: ${readmePath}`);
     const readme = await fs.readFileSync(readmePath, 'utf8');
     // save the readme for later so we can retrieve it when creating the design specification
     // we do those so functions like confirmUserIntent are reusable across various coding agents
     const abs = path.resolve(process.env.BASE_FILE_STORAGE || process.cwd(), `readme-${threadId}.md`);
-    await fs.promises.writeFile(abs, readme, 'utf8');
+    try {
+      const dir = abs.substring(0, abs.lastIndexOf('/'));
+      await fs.promises.mkdir(dir, { recursive: true });
+      await fs.promises.writeFile(abs, readme, 'utf8');
+    } catch (error) {
+      console.error('error writing readme:: ', error);
+    }
 
     // if task list is defined and there's no machine where machineExecutionId === threadId, a new solution will be generated
     // else the exiting machine will be rehydrated and the next state sent back
@@ -112,7 +120,7 @@ export class Larry extends Text2Action {
       true,
       threadId,
       JSON.stringify({ initialUserPrompt: query }),
-      SupportedEngines.GOOGLE_SERVICES_CODE_ASSIST,
+      this.agent.xreason,
       true
     );
 
@@ -180,7 +188,7 @@ export class Larry extends Text2Action {
     // if there is an existing thread messages are appended to the existing history
     await threadsDao.upsert(
       JSON.stringify(parsedMessages),
-      'cli-tool',
+      this.agent.name,
       threadId
     );
 

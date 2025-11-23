@@ -1,6 +1,5 @@
 import { Trace } from '@codestrap/developer-foundations.foundry-tracing-foundations';
 
-import { SupportedEngines } from '@codestrap/developer-foundations-x-reason';
 import { Text2Action } from './Text2Action';
 import {
   extractJsonFromBackticks,
@@ -15,6 +14,7 @@ import {
   EmailMessage,
   MachineDao,
   LoggingService,
+  SupportedEngines,
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 

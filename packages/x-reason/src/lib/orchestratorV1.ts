@@ -1,6 +1,7 @@
 import { State } from 'xstate';
 
-import { xReasonFactory, SupportedEngines } from './factory';
+import { xReasonFactory } from './factory';
+import { SupportedEngines } from '@codestrap/developer-foundations-types';
 import {
   headlessInterpreter,
   engineV1 as engine,

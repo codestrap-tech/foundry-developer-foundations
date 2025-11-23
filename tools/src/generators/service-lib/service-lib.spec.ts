@@ -15,7 +15,6 @@ describe('service-lib generator', () => {
     tree = createTreeWithEmptyWorkspace();
   });
 
-  jest.setTimeout(10000);
   it('should configure targets correctly', async () => {
     await serviceLibGenerator(tree, options);
     const config = readProjectConfiguration(tree, expectedFileName);
