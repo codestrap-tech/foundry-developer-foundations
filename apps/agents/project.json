@@ -16,7 +16,9 @@
     },
     "build": {
       "executor": "@nx/next:build",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/agents"
@@ -24,6 +26,26 @@
     },
     "test": {
       "command": "echo 'TODO implement test when needed'"
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/agents",
+        "commands": [
+          "prettier-package-json --list-different",
+          "prettier --config ../../.prettierrc --ignore-path ../../.prettierignore --check ."
+        ]
+      }
+    },
+    "format:write": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/agents",
+        "commands": [
+          "prettier-package-json --write",
+          "prettier --config ../../.prettierrc --ignore-path ../../.prettierignore --write ."
+        ]
+      }
     }
   }
 }

@@ -7,19 +7,45 @@
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/packages/services/sql-lite",
         "main": "packages/services/sql-lite/src/index.ts",
         "tsConfig": "packages/services/sql-lite/tsconfig.lib.json",
-        "assets": ["packages/services/sql-lite/*.md"]
+        "assets": [
+          "packages/services/sql-lite/*.md"
+        ]
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
       "options": {
         "jestConfig": "packages/services/sql-lite/jest.config.ts"
+      }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/services/sql-lite",
+        "commands": [
+          "prettier-package-json --list-different",
+          "prettier --config ../../../.prettierrc --ignore-path ../../../.prettierignore --check ."
+        ]
+      }
+    },
+    "format:write": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/services/sql-lite",
+        "commands": [
+          "prettier-package-json --write",
+          "prettier --config ../../../.prettierrc --ignore-path ../../../.prettierignore --write ."
+        ]
       }
     }
   }

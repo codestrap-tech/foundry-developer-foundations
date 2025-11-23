@@ -5,22 +5,30 @@
   "projectType": "library",
   "release": {
     "version": {
-      "manifestRootsToUpdate": ["dist/{projectRoot}"],
+      "manifestRootsToUpdate": [
+        "dist/{projectRoot}"
+      ],
       "currentVersionResolver": "git-tag",
       "fallbackCurrentVersionResolver": "disk"
     }
   },
-  "tags": ["type:service"],
+  "tags": [
+    "type:service"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/packages/services/github",
         "tsConfig": "packages/services/github/tsconfig.lib.json",
         "packageJson": "packages/services/github/package.json",
         "main": "packages/services/github/src/index.ts",
-        "assets": ["packages/services/github/*.md"]
+        "assets": [
+          "packages/services/github/*.md"
+        ]
       }
     },
     "nx-release-publish": {
@@ -30,9 +38,31 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
       "options": {
         "jestConfig": "packages/services/github/jest.config.ts"
+      }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/services/github",
+        "commands": [
+          "prettier-package-json --list-different",
+          "prettier --config ../../../.prettierrc --ignore-path ../../../.prettierignore --check ."
+        ]
+      }
+    },
+    "format:write": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/services/github",
+        "commands": [
+          "prettier-package-json --write",
+          "prettier --config ../../../.prettierrc --ignore-path ../../../.prettierignore --write ."
+        ]
       }
     }
   }

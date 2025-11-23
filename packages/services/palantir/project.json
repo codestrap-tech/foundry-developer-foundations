@@ -5,21 +5,29 @@
   "projectType": "library",
   "release": {
     "version": {
-      "manifestRootsToUpdate": ["dist/{projectRoot}"],
+      "manifestRootsToUpdate": [
+        "dist/{projectRoot}"
+      ],
       "currentVersionResolver": "git-tag",
       "fallbackCurrentVersionResolver": "disk"
     }
   },
-  "tags": ["type:service"],
+  "tags": [
+    "type:service"
+  ],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/packages/services/palantir",
         "main": "packages/services/palantir/src/index.ts",
         "tsConfig": "packages/services/palantir/tsconfig.lib.json",
-        "assets": ["packages/services/palantir/*.md"]
+        "assets": [
+          "packages/services/palantir/*.md"
+        ]
       }
     },
     "nx-release-publish": {
@@ -29,9 +37,31 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "outputs": [
+        "{workspaceRoot}/coverage/{projectRoot}"
+      ],
       "options": {
         "jestConfig": "packages/services/palantir/jest.config.ts"
+      }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/services/palantir",
+        "commands": [
+          "prettier-package-json --list-different",
+          "prettier --config ../../../.prettierrc --ignore-path ../../../.prettierignore --check ."
+        ]
+      }
+    },
+    "format:write": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/services/palantir",
+        "commands": [
+          "prettier-package-json --write",
+          "prettier --config ../../../.prettierrc --ignore-path ../../../.prettierignore --write ."
+        ]
       }
     }
   }

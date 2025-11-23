@@ -4,7 +4,30 @@
   "projectType": "application",
   "sourceRoot": "apps/agents-e2e/src",
   "tags": [],
-  "implicitDependencies": ["agents"],
+  "implicitDependencies": [
+    "agents"
+  ],
   "// targets": "to see all targets run: nx show project agents-e2e --web",
-  "targets": {}
+  "targets": {
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/agents-e2e",
+        "commands": [
+          "prettier-package-json --list-different",
+          "prettier --config ../../.prettierrc --ignore-path ../../.prettierignore --check ."
+        ]
+      }
+    },
+    "format:write": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "apps/agents-e2e",
+        "commands": [
+          "prettier-package-json --write",
+          "prettier --config ../../.prettierrc --ignore-path ../../.prettierignore --write ."
+        ]
+      }
+    }
+  }
 }
