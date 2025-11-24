@@ -15,6 +15,7 @@ export default function Index() {
               <span> Hello there, </span>
               Welcome agents 👋
             </h1>
+            <a href="/vickie">Go to Vickie</a>
           </div>
 
           <div id="hero" className="rounded">
