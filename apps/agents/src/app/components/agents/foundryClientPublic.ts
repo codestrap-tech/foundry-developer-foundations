@@ -32,7 +32,7 @@ function createFoundryClient(): FoundryClient {
   const clientId: string = process.env['NEXT_PUBLIC_OSDK_CLIENT_ID'];
   const url: string = process.env['NEXT_PUBLIC_FOUNDRY_STACK_URL'];
   const ontologyRid: string = process.env['NEXT_PUBLIC_ONTOLOGY_RID'];
-  const redirectUrl: string = window.location.href.split('?')[0];
+  const redirectUrl: string = process.env['NEXT_PUBLIC_REDIRECT_URL'];
   const scopes: string[] = [
     'api:use-ontologies-read',
     'api:use-ontologies-write',
