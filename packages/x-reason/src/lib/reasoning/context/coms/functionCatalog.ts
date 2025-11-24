@@ -9,6 +9,7 @@ import {
     writeEmail,
     researchReport,
     resolveUnavailableAttendees,
+    proposeMeetingConflictResolutions,
     createTask,
     getAvailableMeetingTimes,
     getProjectFiles,
@@ -199,6 +200,33 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
                     // this will pause the state machine execution
                     dispatch({
                         type: 'pause',
+                        payload,
+                    });
+                },
+            },
+        ],
+        [
+            "proposeMeetingConflictResolutions",
+            {
+                description:
+                    `Use this tool to identify meeting conflicts for specified users and propose rescheduling solutions.
+                    Tool does not execute the resolutions - it only identifies the conflicts and generates proposals for the user to execute on their own.
+                    Ensure to use title from the proposed rescheduling solutions when reporting the conflicts to the user.
+                    Do not propose rescheduling solutions for meetings for users that are not specified in the task.
+                    Example 1:
+                      - User: Please help me to manage meeting conflicts for bob@example.com for today
+                      - Assistant: "I will propose rescheduling solutions for bob@example.com. Shall I proceed?"
+                      - User: Yes
+                      - Assistant: "I have identified 2 meeting conflicts for bob@example.com for today. Here are the proposed rescheduling solutions:
+                        - Reschedule 15 min "Daily Standup" from 10:00 to 10:15
+                        - Reschedule 30 minutes "Project Planning" from 12:00 to 12:30
+                      `,
+                implementation: async (context: Context, event?: MachineEvent, task?: string) => {
+                    const result = await proposeMeetingConflictResolutions(context, event, task);
+                    const payload = getPayload(context, result);
+
+                    dispatch({
+                        type: 'CONTINUE',
                         payload,
                     });
                 },

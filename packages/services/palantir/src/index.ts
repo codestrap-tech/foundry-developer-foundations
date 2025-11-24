@@ -4,6 +4,7 @@ export * from './lib/gpt4oService';
 export * from './lib/geminiService';
 export * from './lib/doa/communications/commsDao';
 export * from './lib/doa/communications/threadsDao';
+export * from './lib/doa/communications/conflictResolutionRulesDao';
 export * from './lib/doa/crm/contactsDao';
 export * from './lib/doa/crm/userDao';
 export * from './lib/doa/hello-world/worldDao';

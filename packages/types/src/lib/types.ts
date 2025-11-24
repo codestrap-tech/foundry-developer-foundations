@@ -29,6 +29,7 @@ export const TYPES = {
   Gpt4oService: Symbol.for('Gpt4oService'),
   GeminiSearchStockMarket: Symbol.for('GeminiSearchStockMarket'),
   OfficeService: Symbol.for('OfficeService'),
+  OfficeServiceV3: Symbol.for('OfficeServiceV3'),
   VersionControlService: Symbol.for('VersionControlService'),
   MessageService: Symbol.for('MessageService'),
   EmbeddingsService: Symbol.for('EmbeddingsService'),
@@ -803,6 +804,15 @@ export type OfficeServiceV2 = {
   getDriveClient: () => drive_v3.Drive;
 } & OfficeServiceV1;
 
+export type OfficeServiceV3 = {
+  identifyMeetingConflicts: (
+    input: IdentifyMeetingConflictsInput
+  ) => Promise<IdentifyMeetingConflictsOutput>;
+  proposeMeetingConflictResolutions: (
+    input: ProposeMeetingConflictResolutionsInput
+  ) => Promise<ProposeMeetingConflictResolutionsOutput>;
+} & OfficeServiceV2;
+
 // V1 Google Workspace service surface (Calendar + Gmail operations and raw clients)
 export type OfficeServiceV1 = {
   getCalendarClient: () => calendar_v3.Calendar;
@@ -1148,3 +1158,144 @@ export type RequestContext = {
   user?: User | null | undefined;
   requestId?: string | null | undefined;
 };
+export interface ResolveMeetingConflictsInput {
+  userEmails: string[];
+  /** optional ISO date string to target a specific day; if omitted use current day in user's tz */
+  targetDayISO?: string;
+  /** optional callback to confirm proposed changes; returns true to proceed */
+  confirm?: (summary: any) => Promise<boolean>;
+}
+export interface MeetingConflictCriteria {
+  timeOverlap: boolean;
+  attendeeOverlap: boolean;
+  meetingType: 'internal' | 'external' | 'unknown';
+  meetingImportance: 'high' | 'medium' | 'low' | 'unknown';
+  meetingPriority: 'high' | 'medium' | 'low' | 'unknown';
+  meetingStatus: 'confirmed' | 'tentative' | 'cancelled' | 'unknown';
+  meetingLocation: string;
+  meetingDuration: number;
+}
+export interface ConflictingMeeting {
+  id: string;
+  title: string;
+  description?: string;
+  organizer: string;
+  attendees: Array<{ email: string; role: string }>;
+  startTime: string;
+  endTime: string;
+  durationMinutes: number;
+  location?: string;
+  type?: 'internal' | 'external';
+  importance?: 'high' | 'medium' | 'low';
+  priority?: 'high' | 'medium' | 'low';
+  status?: 'confirmed' | 'tentative' | 'cancelled';
+}
+export interface LLMRescheduleProposal {
+  meetingsToReschedule: Array<{
+    meetingId: string;
+    newStartTime: string;
+    newEndTime: string;
+  }>;
+}
+export interface ConflictResolutionReport {
+  meetingId: string;
+  originalStartTime: string;
+  originalEndTime: string;
+  proposedNewStartTime?: string;
+  proposedNewEndTime?: string;
+  status:
+    | 'rescheduled'
+    | 'failed_reschedule'
+    | 'no_action_taken'
+    | 'invalid_proposal';
+  reason?: string;
+  llmProposal?: LLMRescheduleProposal;
+}
+export interface ResolveMeetingConflictsOutput {
+  identifiedConflicts: ConflictingMeeting[];
+  resolutionReports: ConflictResolutionReport[];
+  summary: {
+    totalConflicts: number;
+    successfullyRescheduled: number;
+    failedToReschedule: number;
+    noActionTaken: number;
+  };
+  errors?: string[];
+}
+
+export interface IdentifyMeetingConflictsInput {
+  userEmails: string[];
+  /**
+   * @deprecated Use timeFrameStartISO/timeFrameEndISO or timeFrame instead.
+   * Optional ISO date string to target a specific day; if omitted use current day in user's tz.
+   */
+  targetDayISO?: string;
+  /**
+   * Optional ISO date string (YYYY-MM-DD) representing the start of the time frame.
+   * If omitted, defaults to today in the user's timezone.
+   */
+  timeFrameStartISO?: string;
+  /**
+   * Optional ISO date string (YYYY-MM-DD) representing the end of the time frame.
+   * If omitted, defaults to the end of the current working week (e.g. Friday).
+   */
+  timeFrameEndISO?: string;
+  /**
+   * Optional natural language description of the time frame, for example:
+   * - "this week" (interpreted as today through the end of this week)
+   * - "next week"
+   * - "2 weeks"
+   *
+   * Implementations should normalize this to concrete start/end dates when possible.
+   */
+  timeFrame?: string;
+}
+
+export interface IdentifyMeetingConflictsOutput {
+  identifiedConflicts: ConflictingMeeting[];
+  message: string;
+}
+
+export interface ProposeMeetingConflictResolutionsInput {
+  userEmails: string[];
+  /**
+   * @deprecated Use timeFrameStartISO/timeFrameEndISO or timeFrame instead.
+   * Optional ISO date string to target a specific day; if omitted use current day in user's tz.
+   */
+  targetDayISO?: string;
+  /**
+   * Optional ISO date string (YYYY-MM-DD) representing the start of the time frame.
+   * If omitted, defaults to today in the user's timezone.
+   */
+  timeFrameStartISO?: string;
+  /**
+   * Optional ISO date string (YYYY-MM-DD) representing the end of the time frame.
+   * If omitted, defaults to the end of the current working week (e.g. Friday),
+   * or today plus one week when a broader time frame is requested.
+   */
+  timeFrameEndISO?: string;
+  /**
+   * Optional natural language description of the time frame, for example:
+   * - "this week" (interpreted as today through the end of this week)
+   * - "next week"
+   * - "2 weeks"
+   *
+   * Implementations should normalize this to concrete start/end dates when possible.
+   */
+  timeFrame?: string;
+  identifiedConflicts?: ConflictingMeeting[];
+  /** optional full-day calendar summaries from a previous summarizeCalendars call; if provided, skips internal calendar fetch */
+  fullDayCalendars?: CalendarSummary[];
+}
+
+export interface ProposeMeetingConflictResolutionsOutput {
+  identifiedConflicts: ConflictingMeeting[];
+  resolutionReports: ConflictResolutionReport[];
+  summary: {
+    totalConflicts: number;
+    proposalsGenerated: number;
+    invalidProposals: number;
+    validProposals: number;
+  };
+  errors?: string[];
+}
