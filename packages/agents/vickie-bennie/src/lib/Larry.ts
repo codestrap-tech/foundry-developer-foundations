@@ -12,6 +12,7 @@ import {
 } from '@codestrap/developer-foundations-types';
 import type { User } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
+import { findWorkspaceRoot } from '@codestrap/developer-foundations-utils';
 
 export interface LarryResponse {
   status: number;
@@ -96,10 +97,7 @@ export class Larry extends Text2Action {
       generatedTaskList = taskList;
     }
 
-    const readmePath = path.resolve(
-      process.cwd(),
-      this.agent.readmePath
-    );
+    const readmePath = `${findWorkspaceRoot(process.cwd())}${this.agent.readmePath}`;
     if (readmePath && !fs.existsSync(readmePath)) throw new Error(`README file does not exist: ${readmePath}`);
     const readme = await fs.readFileSync(readmePath, 'utf8');
     // save the readme for later so we can retrieve it when creating the design specification
