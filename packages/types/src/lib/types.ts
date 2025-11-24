@@ -289,10 +289,10 @@ export type MeetingRequest = {
   participants: Array<string>;
   subject: string;
   timeframe_context:
-  | 'user defined exact date/time'
-  | 'as soon as possible'
-  | 'this week'
-  | 'next week';
+    | 'user defined exact date/time'
+    | 'as soon as possible'
+    | 'this week'
+    | 'next week';
   localDateString?: string;
   duration_minutes: number;
   working_hours: {
@@ -331,13 +331,13 @@ type GptSpecificToolChoice = {
 
 type GptTool = {
   function?:
-  | {
-    name: string;
-    description?: string | undefined;
-    strict?: boolean | undefined;
-    parameters: Map<string, string>;
-  }
-  | undefined;
+    | {
+        name: string;
+        description?: string | undefined;
+        strict?: boolean | undefined;
+        parameters: Map<string, string>;
+      }
+    | undefined;
 };
 
 type GptToolChoice = {
@@ -760,9 +760,9 @@ export type VersionControlService = {
     repo: string;
     path: string;
     message: string;
-    content: string | Buffer;   // raw content, will be base64-encoded
+    content: string | Buffer; // raw content, will be base64-encoded
     branch?: string;
-    sha?: string;               // required for updates
+    sha?: string; // required for updates
     committer?: { name: string; email: string };
     author?: { name: string; email: string };
   }) => Promise<{
@@ -1147,3 +1147,67 @@ export type RequestContext = {
   user?: User | null | undefined;
   requestId?: string | null | undefined;
 };
+export interface ResolveMeetingConflictsInput {
+  userEmails: string[];
+  /** optional ISO date string to target a specific day; if omitted use current day in user's tz */
+  targetDayISO?: string;
+  /** optional callback to confirm proposed changes; returns true to proceed */
+  confirm?: (summary: any) => Promise<boolean>;
+}
+export interface MeetingConflictCriteria {
+  timeOverlap: boolean;
+  attendeeOverlap: boolean;
+  meetingType: 'internal' | 'external' | 'unknown';
+  meetingImportance: 'high' | 'medium' | 'low' | 'unknown';
+  meetingPriority: 'high' | 'medium' | 'low' | 'unknown';
+  meetingStatus: 'confirmed' | 'tentative' | 'cancelled' | 'unknown';
+  meetingLocation: string;
+  meetingDuration: number;
+}
+export interface ConflictingMeeting {
+  id: string;
+  title: string;
+  description?: string;
+  organizer: string;
+  attendees: Array<{ email: string; role: string }>;
+  startTime: string;
+  endTime: string;
+  durationMinutes: number;
+  location?: string;
+  type?: 'internal' | 'external';
+  importance?: 'high' | 'medium' | 'low';
+  priority?: 'high' | 'medium' | 'low';
+  status?: 'confirmed' | 'tentative' | 'cancelled';
+}
+export interface LLMRescheduleProposal {
+  meetingsToReschedule: Array<{
+    meetingId: string;
+    newStartTime: string;
+    newEndTime: string;
+  }>;
+}
+export interface ConflictResolutionReport {
+  meetingId: string;
+  originalStartTime: string;
+  originalEndTime: string;
+  proposedNewStartTime?: string;
+  proposedNewEndTime?: string;
+  status:
+    | 'rescheduled'
+    | 'failed_reschedule'
+    | 'no_action_taken'
+    | 'invalid_proposal';
+  reason?: string;
+  llmProposal?: LLMRescheduleProposal;
+}
+export interface ResolveMeetingConflictsOutput {
+  identifiedConflicts: ConflictingMeeting[];
+  resolutionReports: ConflictResolutionReport[];
+  summary: {
+    totalConflicts: number;
+    successfullyRescheduled: number;
+    failedToReschedule: number;
+    noActionTaken: number;
+  };
+  errors?: string[];
+}
