@@ -5,11 +5,11 @@ import {
   Larry,
   LarryResponse,
 } from '@codestrap/developer-foundations-agents-vickie-bennie';
-import { container, LarryAgentFactory } from '@codestrap/developer-foundations-di';
+import { container } from '@codestrap/developer-foundations-di';
+import { LarryAgentFactory } from '@codestrap/larry-config';
 import {
   Context,
   MachineDao,
-  ThreadsDao,
   TYPES,
 } from '@codestrap/developer-foundations-types';
 import { SupportedCodingAgents, SupportedEngines } from '@codestrap/developer-foundations-types';
