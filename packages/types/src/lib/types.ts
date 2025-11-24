@@ -29,6 +29,7 @@ export const TYPES = {
   Gpt4oService: Symbol.for('Gpt4oService'),
   GeminiSearchStockMarket: Symbol.for('GeminiSearchStockMarket'),
   OfficeService: Symbol.for('OfficeService'),
+  OfficeServiceV3: Symbol.for('OfficeServiceV3'),
   VersionControlService: Symbol.for('VersionControlService'),
   MessageService: Symbol.for('MessageService'),
   EmbeddingsService: Symbol.for('EmbeddingsService'),
@@ -801,6 +802,12 @@ export type OfficeServiceV2 = {
   searchDriveFiles: (params: DriveSearchParams) => Promise<DriveSearchOutput>;
   getDriveClient: () => drive_v3.Drive;
 } & OfficeServiceV1;
+
+export type OfficeServiceV3 = {
+  resolveMeetingConflicts: (
+    input: ResolveMeetingConflictsInput
+  ) => Promise<ResolveMeetingConflictsOutput>;
+} & OfficeServiceV2;
 
 // V1 Google Workspace service surface (Calendar + Gmail operations and raw clients)
 export type OfficeServiceV1 = {

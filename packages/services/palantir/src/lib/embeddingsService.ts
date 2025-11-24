@@ -1,8 +1,8 @@
-import { SupportedFoundryClients } from "@codestrap/developer-foundations-types";
 import { foundryClientFactory } from "./factory/foundryClientFactory";
+import { getClientType } from "./utils/getClientType";
 
 export async function embeddingsService(input: string): Promise<[number[]]> {
-  const { getToken, url, ontologyRid } = foundryClientFactory(process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE, undefined);
+  const { getToken, url, ontologyRid } = foundryClientFactory(getClientType(), undefined);
 
   const apiKey = await getToken();
 

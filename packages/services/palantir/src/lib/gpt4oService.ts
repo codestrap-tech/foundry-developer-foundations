@@ -1,15 +1,15 @@
 import {
-  SupportedFoundryClients,
   type Gpt40Parameters,
 } from '@codestrap/developer-foundations-types';
 import { foundryClientFactory } from './factory/foundryClientFactory';
+import { getClientType } from './utils/getClientType';
 
 export async function gpt4oService(
   user: string,
   system: string,
   gptParams?: Gpt40Parameters
 ): Promise<string> {
-  const { getToken, url, ontologyRid } = foundryClientFactory(process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE, undefined);
+  const { getToken, url, ontologyRid } = foundryClientFactory(getClientType(), undefined);
 
   const apiKey = await getToken();
 

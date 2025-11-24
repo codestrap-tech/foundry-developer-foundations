@@ -1,13 +1,16 @@
 import {
-  SupportedFoundryClients,
   type ContactsDao,
 } from '@codestrap/developer-foundations-types';
 import { readContact } from './delegates/contacts/read';
 import { searchContacts } from './delegates/contacts/search';
 import { foundryClientFactory } from '../../factory/foundryClientFactory';
+import { getClientType } from '../../utils/getClientType';
+
+function getFoundryClient() {
+  return foundryClientFactory(getClientType(), undefined);
+}
 
 export function makeContactsDao(): ContactsDao {
-  const { getToken, url, ontologyRid } = foundryClientFactory(process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE, undefined);
 
   return {
     // TODO code out all methods using OSDK API calls
@@ -60,12 +63,14 @@ export function makeContactsDao(): ContactsDao {
         `stub delete method called for: ${id}. We do not support deleting RfpRequests but include the method as it is part of the interface.`
       ),
     read: async (id: string) => {
+      const { getToken, url, ontologyRid } = getFoundryClient();
       const token = await getToken();
       const contact = await readContact(id, token, ontologyRid, url);
 
       return contact;
     },
     search: async (fullName: string, company: string, pageSize?: number) => {
+      const { getToken, url, ontologyRid } = getFoundryClient();
       const token = await getToken();
       const result = await searchContacts(fullName, company, token, ontologyRid, url, pageSize);
 
