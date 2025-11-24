@@ -24,6 +24,16 @@ let projectName: string | undefined;
 let defaultMainPort = 4210;
 let defaultWorktreePort = 4220;
 
+/*
+PORT_RANGE - how many CSP ports to allow to communicate with
+Generates all ports in the range dynamically:
+Worktree ports: 4220-4319 (100 ports)
+Main ports: 4210-4309 (100 ports)
+Creates space-separated URLs for all these ports
+Includes them in the connect-src directive of the CSP policy
+*/
+const PORT_RANGE = 100; 
+
 loadLarryConfig().then(async (config) => {
   projectName = config.name;
   dockerImageName = projectName ? `${projectName}-larry-server` : 'larry-server'; 
@@ -408,7 +418,10 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       // Check if main docker is already running
       if (this.mainDockerContainer) {
         try {
-          await execAsync(`docker inspect ${this.mainDockerContainer}`);
+          const { stdout: inspectOutput } = await execAsync(`docker inspect ${this.mainDockerContainer}`);
+          const containerInfo = JSON.parse(inspectOutput);
+          const portKey = Object.keys(containerInfo[0].NetworkSettings.Ports)[0];
+          defaultMainPort = containerInfo[0].NetworkSettings.Ports[portKey][0].HostPort;
           console.log(
             'Main docker container already running:',
             this.mainDockerContainer
@@ -597,6 +610,9 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
           const container = containerInfo[0];
           const isRunning = container.State.Running;
           const containerId = container.Id;
+          
+          const portKey = Object.keys(container.NetworkSettings.Ports)[0];
+          defaultWorktreePort = container.NetworkSettings.Ports[portKey][0].HostPort;
 
           if (!isRunning) {
             await execAsync(`docker start ${containerId}`);
@@ -616,6 +632,8 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       isInWorktree,
       currentThreadId: currentThreadId || undefined,
       worktreeName: worktreeId,
+      worktreePort: defaultWorktreePort,
+      mainPort: defaultMainPort,
     };
 
     console.log('📤 Sending message to webview:', message);
@@ -1169,13 +1187,21 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       vscode.Uri.joinPath(this.context.extensionUri, 'media', 'overrides.css')
     );
     const nonce = String(Date.now());
+    
+    const worktreePorts = Array.from({ length: PORT_RANGE }, (_, i) => 
+      `http://localhost:${defaultWorktreePort + i}`
+    ).join(' ');
+    const mainPorts = Array.from({ length: PORT_RANGE }, (_, i) => 
+      `http://localhost:${defaultMainPort + i}`
+    ).join(' ');
+    
     const csp = [
       "default-src 'none'",
       `img-src ${view.webview.cspSource} https: data:`,
       `style-src ${view.webview.cspSource} 'unsafe-inline'`,
       `font-src ${view.webview.cspSource} https:`,
       `script-src 'nonce-${nonce}' ${view.webview.cspSource}`,
-      `connect-src 'self' ${view.webview.cspSource} http://localhost:${defaultWorktreePort} http://localhost:${defaultMainPort}`,
+      `connect-src 'self' ${view.webview.cspSource} ${worktreePorts} ${mainPorts}`,
     ].join('; ');
 
     view.webview.html = `<!DOCTYPE html>
@@ -1252,6 +1278,8 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         view.webview.postMessage({
           type: 'config_loaded',
           config: this.config,
+          worktreePort: defaultWorktreePort,
+          mainPort: defaultMainPort,
         });
         return;
       }

@@ -30,6 +30,9 @@ export interface ExtensionState {
   isLoadingWorktreeInfo: boolean;
   isLoadingApp: boolean;
 
+  worktreePort: number;
+  mainPort: number;
+
   // Client request ID for tracking requests
   clientRequestId: string;
 }
@@ -42,6 +45,8 @@ export type ExtensionAction =
         isInWorktree: boolean;
         currentThreadId?: string;
         worktreeName?: string;
+        worktreePort?: number;
+        mainPort?: number;
       };
     }
   | {
@@ -63,6 +68,8 @@ export type ExtensionAction =
         agents: Record<string, string>;
         workspaceSetupCommand: string[];
         larryEnvPath: string;
+        worktreePort?: number;
+        mainPort?: number;
       };
     }
   | { type: 'SET_SELECTED_AGENT'; payload: string }
@@ -79,6 +86,8 @@ const initialState: ExtensionState = {
   selectedAgent: '', // Will be set when config is loaded
   workspaceSetupCommand: [],
   larryEnvPath: '',
+  worktreePort: 4220,
+  mainPort: 4210,
   currentThreadArtifacts: {},
   isLoadingWorktreeInfo: true,
   isLoadingApp: true,
@@ -101,9 +110,11 @@ function extensionReducer(
         isInWorktree: action.payload.isInWorktree,
         currentThreadId: action.payload.currentThreadId,
         currentWorktreeName: action.payload.worktreeName,
+        worktreePort: action.payload.worktreePort || state.worktreePort,
+        mainPort: action.payload.mainPort || state.mainPort,
         apiUrl: action.payload.isInWorktree
-          ? `http://localhost:4220${selectedAgentRoute}`
-          : `http://localhost:4210${selectedAgentRoute}`,
+          ? `http://localhost:${action.payload.worktreePort}${selectedAgentRoute}`
+          : `http://localhost:${action.payload.mainPort}${selectedAgentRoute}`,
         isLoadingWorktreeInfo: false,
         isLoadingApp: false, // App is ready when worktree detection is complete
       };
@@ -167,8 +178,8 @@ function extensionReducer(
         workspaceSetupCommand: action.payload.workspaceSetupCommand,
         larryEnvPath: action.payload.larryEnvPath,
         apiUrl: state.isInWorktree
-          ? `http://localhost:4220${firstAgentRoute}`
-          : `http://localhost:4210${firstAgentRoute}`,
+          ? `http://localhost:${action.payload.worktreePort}${firstAgentRoute}`
+          : `http://localhost:${action.payload.mainPort}${firstAgentRoute}`,
       };
 
     case 'SET_SELECTED_AGENT':
@@ -181,8 +192,8 @@ function extensionReducer(
         ...state,
         selectedAgent: action.payload,
         apiUrl: state.isInWorktree
-          ? `http://localhost:4220${agentRoute}`
-          : `http://localhost:4210${agentRoute}`,
+          ? `http://localhost:${state.worktreePort}${agentRoute}`
+          : `http://localhost:${state.mainPort}${agentRoute}`,
       };
 
     case 'RESET_STATE':
