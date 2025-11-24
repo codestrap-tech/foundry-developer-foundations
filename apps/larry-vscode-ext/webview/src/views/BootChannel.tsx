@@ -19,6 +19,8 @@ export function BootChannel() {
             isInWorktree: !!msg.isInWorktree,
             currentThreadId: msg.currentThreadId || undefined,
             worktreeName: msg.worktreeName,
+            worktreePort: Number(msg.worktreePort),
+            mainPort: Number(msg.mainPort),
           },
         });
       }
@@ -48,6 +50,8 @@ export function BootChannel() {
             agents: msg.config.agents,
             workspaceSetupCommand: msg.config.workspaceSetupCommand,
             larryEnvPath: msg.config.larryEnvPath,
+            worktreePort: Number(msg.worktreePort),
+            mainPort: Number(msg.mainPort),
           },
         });
       }
