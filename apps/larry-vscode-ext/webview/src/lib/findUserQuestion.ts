@@ -1,4 +1,4 @@
-import { ThreadMessage } from "./backend-types";
+import type { ThreadMessage } from "./backend-types";
 
 const USER_QUESTION_PREFIX = '# User Question:';
 export function findUserQuestionMessage(messages: ThreadMessage[]) {

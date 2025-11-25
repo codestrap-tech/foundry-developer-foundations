@@ -1,4 +1,4 @@
-import { FoundryClient } from '@codestrap/developer-foundations-types';
+import type { FoundryClient } from '@codestrap/developer-foundations-types';
 import { getRequestContext } from '@codestrap/developer-foundations-utils/src/lib/asyncLocalStorage';
 
 // this is a utility method to manage usage of the Foundry Client and ensure we only get a singleton

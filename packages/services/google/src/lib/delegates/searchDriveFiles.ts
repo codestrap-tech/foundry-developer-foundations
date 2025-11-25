@@ -1,8 +1,9 @@
-import { drive_v3 } from 'googleapis';
-import {
+import type { drive_v3 } from 'googleapis';
+import type {
   DriveSearchParams,
   DriveSearchResult,
-  DriveFile,
+  DriveFile} from '@codestrap/developer-foundations-types';
+import {
   DriveDateField,
 } from '@codestrap/developer-foundations-types';
 

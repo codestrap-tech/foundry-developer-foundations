@@ -1,6 +1,7 @@
+import type {
+  Contacts} from '@codestrap/developer-foundations-types';
 import {
-  FoundryClient,
-  Contacts,
+  FoundryClient
 } from '@codestrap/developer-foundations-types';
 
 export async function readContact(

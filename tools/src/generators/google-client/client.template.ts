@@ -16,7 +16,7 @@
  * - keep the comments to call delegates but return the required types using placeholder (emptry strings/arrays)
  */
 
-import {
+import type {
   OfficeServiceV2,
 } from '@codestrap/developer-foundations-types';
 

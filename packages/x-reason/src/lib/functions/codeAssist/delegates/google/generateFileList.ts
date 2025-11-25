@@ -1,6 +1,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { getTokenomics } from './utils';
-import { AffectedFilesJsonSchema, Tokenomics, FileOp } from '@codestrap/developer-foundations-types';
+import type { Tokenomics, FileOp } from '@codestrap/developer-foundations-types';
+import { AffectedFilesJsonSchema } from '@codestrap/developer-foundations-types';
 
 export async function generateFileList(user: string, system: string): Promise<{ ops: FileOp[], tokenomics: Tokenomics }> {
 

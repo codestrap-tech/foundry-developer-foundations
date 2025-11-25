@@ -1,10 +1,11 @@
-import { createMachine, assign, StateNode, MachineConfig } from 'xstate';
+import type { StateNode, MachineConfig } from 'xstate';
+import { createMachine, assign } from 'xstate';
 import {
   getUniqueStateIds,
   uuidv4,
 } from '@codestrap/developer-foundations-utils';
 
-import {
+import type {
   Context,
   MachineEvent,
   StateConfig,

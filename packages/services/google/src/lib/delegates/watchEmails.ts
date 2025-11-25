@@ -1,5 +1,5 @@
-import { calendar_v3, gmail_v1 } from 'googleapis';
-import {
+import type { calendar_v3, gmail_v1 } from 'googleapis';
+import type {
   WatchEmailsInput,
   WatchEmailsOutput,
 } from '@codestrap/developer-foundations-types';

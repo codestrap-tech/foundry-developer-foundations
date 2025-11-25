@@ -1,7 +1,8 @@
-import { Context, MachineEvent } from '@codestrap/developer-foundations-types';
+import type { Context, MachineEvent } from '@codestrap/developer-foundations-types';
 import { extractJsonFromBackticks } from '@codestrap/developer-foundations-utils';
 import { container } from '@codestrap/developer-foundations-di';
-import { GeminiService, TYPES } from '@codestrap/developer-foundations-types';
+import type { GeminiService} from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 
 export type DraftEmailResponse = {
   message: string;

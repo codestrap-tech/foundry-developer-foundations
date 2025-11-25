@@ -1,4 +1,5 @@
-import { FoundryClient, SupportedFoundryClients } from '@codestrap/developer-foundations-types';
+import type { FoundryClient} from '@codestrap/developer-foundations-types';
+import { SupportedFoundryClients } from '@codestrap/developer-foundations-types';
 import { curry } from 'ramda';
 import { getFoundryClient as getFoundryClientPrivate } from '../foundryClient';
 import { getFoundryClient as getFoundryClientPublic } from '../foundryClientPublic';

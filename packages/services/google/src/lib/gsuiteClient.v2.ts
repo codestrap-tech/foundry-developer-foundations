@@ -1,4 +1,4 @@
-import {
+import type {
   MeetingRequest,
   OfficeServiceV2,
   Summaries,

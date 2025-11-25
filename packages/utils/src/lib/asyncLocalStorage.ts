@@ -1,4 +1,4 @@
-import { RequestContext } from "@codestrap/developer-foundations-types";
+import type { RequestContext } from "@codestrap/developer-foundations-types";
 import { AsyncLocalStorage } from "node:async_hooks";
 
 const als = new AsyncLocalStorage<RequestContext>();

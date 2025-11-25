@@ -1,4 +1,4 @@
-import { WeatherService } from '@codestrap/developer-foundations-types';
+import type { WeatherService } from '@codestrap/developer-foundations-types';
 
 export const openWeatherService: WeatherService = async (city) => {
   const key = process.env['OPEN_WEATHER_API_KEY']!;

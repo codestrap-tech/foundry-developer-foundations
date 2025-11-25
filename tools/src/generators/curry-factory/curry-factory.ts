@@ -1,5 +1,6 @@
+import type {
+  Tree} from '@nx/devkit';
 import {
-  Tree,
   updateJson,
   formatFiles,
   generateFiles,
@@ -9,7 +10,7 @@ import {
 } from '@nx/devkit';
 import * as fs from 'fs';
 import * as path from 'path';
-import { CurryFactoryGeneratorSchema } from './schema';
+import type { CurryFactoryGeneratorSchema } from './schema';
 import { GoogleGenAI } from '@google/genai';
 import * as dotenv from 'dotenv';
 dotenv.config({

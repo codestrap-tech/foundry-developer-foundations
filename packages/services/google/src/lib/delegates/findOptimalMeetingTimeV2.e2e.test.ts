@@ -1,7 +1,7 @@
 import { google } from 'googleapis';
 
 import { partsInTZ } from '@codestrap/developer-foundations-utils';
-import { OfficeServiceV2 } from '@codestrap/developer-foundations-types';
+import type { OfficeServiceV2 } from '@codestrap/developer-foundations-types';
 import { makeGSuiteClientV2 } from '../gsuiteClient.v2';
 
 if (!process.env.E2E) {

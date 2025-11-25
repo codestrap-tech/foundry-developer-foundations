@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer';
-import { OfficeService, TYPES } from '@codestrap/developer-foundations-types';
+import type { OfficeService} from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 
 if (!process.env.E2E) {

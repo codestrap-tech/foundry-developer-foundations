@@ -1,8 +1,9 @@
-import {
+import type {
     Context,
     MachineEvent,
     Task,
-    ActionType,
+    ActionType} from '@codestrap/developer-foundations-types';
+import {
     UserIntent,
     LarryStream,
     TYPES,

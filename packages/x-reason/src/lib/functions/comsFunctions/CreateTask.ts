@@ -1,12 +1,13 @@
-import { Context, MachineEvent } from '@codestrap/developer-foundations-types';
+import type { Context, MachineEvent } from '@codestrap/developer-foundations-types';
 import {
   extractJsonFromBackticks,
   uuidv4,
 } from '@codestrap/developer-foundations-utils';
 import { container } from '@codestrap/developer-foundations-di';
-import {
+import type {
   GeminiService,
-  TicketsDao,
+  TicketsDao} from '@codestrap/developer-foundations-types';
+import {
   TYPES,
 } from '@codestrap/developer-foundations-types';
 

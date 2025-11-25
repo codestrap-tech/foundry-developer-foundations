@@ -1,6 +1,7 @@
-import { drive_v3 } from 'googleapis';
+import type { drive_v3 } from 'googleapis';
 import { searchDriveFiles } from './searchDriveFiles';
-import { DriveSearchParams, DriveDateField } from '@codestrap/developer-foundations-types';
+import type { DriveSearchParams} from '@codestrap/developer-foundations-types';
+import { DriveDateField } from '@codestrap/developer-foundations-types';
 
 // Mock the Google Drive API client
 const mockDriveClient = {

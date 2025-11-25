@@ -1,19 +1,20 @@
 /* tools/codemods/applyEditPlan.ts */
 import * as fs from 'fs';
 import * as path from 'path';
-import {
-    Project,
-    SyntaxKind,
-    QuoteKind,
-    Node,
+import type {
     SourceFile,
     InterfaceDeclaration,
     TypeLiteralNode,
     ObjectLiteralExpression,
-    ArrowFunction,
+    ArrowFunction} from 'ts-morph';
+import {
+    Project,
+    SyntaxKind,
+    QuoteKind,
+    Node
 } from 'ts-morph';
 import * as prettier from 'prettier';
-import { ApplyOptions, ApplyResult, EditOp } from '@codestrap/developer-foundations-types';
+import type { ApplyOptions, ApplyResult, EditOp } from '@codestrap/developer-foundations-types';
 
 /* =========================
    2) MAIN ENTRY

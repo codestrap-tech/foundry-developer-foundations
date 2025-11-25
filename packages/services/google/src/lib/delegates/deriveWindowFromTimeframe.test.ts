@@ -1,6 +1,6 @@
 // src/test/deriveWindowFromTimeframe.test.ts
 import { deriveWindowFromTimeframe } from './deriveWindowFromTimeframe';
-import { MeetingRequest } from '@codestrap/developer-foundations-types';
+import type { MeetingRequest } from '@codestrap/developer-foundations-types';
 import { wallClockToUTC, workingHoursUTCForDate, fridayOfWeek, mondayOfWeek } from '@codestrap/developer-foundations-utils';
 
 describe('deriveWindowFromTimeframe (UTC core, TZ-aware asserts)', () => {

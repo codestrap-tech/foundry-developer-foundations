@@ -1,7 +1,7 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { fetchMachine } from '../lib/http';
 import { queryClient } from '../lib/query';
-import { MachineResponse, MachineStatus } from '../lib/backend-types';
+import type { MachineResponse, MachineStatus } from '../lib/backend-types';
 
 export function useMachineQuery(baseUrl: string, machineId?: string) {
   const query = useQuery(

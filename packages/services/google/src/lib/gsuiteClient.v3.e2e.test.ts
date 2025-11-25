@@ -1,4 +1,4 @@
-import { ProposeMeetingConflictResolutionsOutput } from '@codestrap/developer-foundations-types';
+import type { ProposeMeetingConflictResolutionsOutput } from '@codestrap/developer-foundations-types';
 import { makeGSuiteClientV3 } from './gsuiteClient.v3';
 
 if (!process.env.E2E) {

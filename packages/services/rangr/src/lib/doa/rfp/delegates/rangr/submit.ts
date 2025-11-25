@@ -1,4 +1,4 @@
-import {
+import type {
   RangrClient,
   RfpRequestResponse,
 } from '@codestrap/developer-foundations-types';

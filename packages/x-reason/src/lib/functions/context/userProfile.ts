@@ -1,9 +1,10 @@
-import {
+import type {
   Context,
   MachineEvent,
   UserProfile,
-  TYPES,
-  UserDao,
+  UserDao} from '@codestrap/developer-foundations-types';
+import {
+  TYPES
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 

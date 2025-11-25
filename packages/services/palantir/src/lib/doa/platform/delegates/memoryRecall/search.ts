@@ -1,6 +1,7 @@
+import type {
+  MemoryRecall} from '@codestrap/developer-foundations-types';
 import {
-  FoundryClient,
-  MemoryRecall,
+  FoundryClient
 } from '@codestrap/developer-foundations-types';
 
 // performs a vector search against the MemoryREcall objects using a proxy

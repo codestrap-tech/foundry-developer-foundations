@@ -1,7 +1,8 @@
 import { createClient } from '@osdk/client';
-import { User, Users } from '@osdk/foundry.admin';
+import type { User} from '@osdk/foundry.admin';
+import { Users } from '@osdk/foundry.admin';
 import { createPublicOauthClient } from '@osdk/oauth';
-import { FoundryClient, Token } from '@codestrap/developer-foundations-types';
+import type { FoundryClient, Token } from '@codestrap/developer-foundations-types';
 
 // this is a utility method to manage usage of the Foundry Client and ensure we only get a singleton
 // files in the palantir services package can't use the container to get the foundry client, nor should they really

@@ -1,7 +1,7 @@
 /* JSX */
 /* @jsxImportSource preact */
 import { useState, useEffect, useRef } from "preact/hooks";
-import { MachineResponse, StateComponentProps } from "../../lib/backend-types.ts";
+import type { MachineResponse, StateComponentProps } from "../../lib/backend-types.ts";
 import { ConfirmUserIntent } from "./states/ConfirmUserIntent.tsx";
 import { ChevronRight, CircleUser, RotateCcw, Sparkles } from "lucide-preact";
 import { ChevronDown } from "lucide-preact";
@@ -12,7 +12,8 @@ import { ArchitectureReview } from "./states/ArchitectureReview/ArchitectureRevi
 import { GeneralMessageBubble } from "./GeneralMessageBubble.tsx";
 import { CodeReview } from "./states/CodeReview.tsx";
 import { GenerateEditMachine } from "./states/generateEditMachine.tsx";
-import { LarryUpdateEvent, useLarryStream } from "../../hooks/useLarryStream.ts";
+import type { LarryUpdateEvent} from "../../hooks/useLarryStream.ts";
+import { useLarryStream } from "../../hooks/useLarryStream.ts";
 import WorkingIndicator from "./WorkingIndicator.tsx";
 import { setMachineQuery } from "../../hooks/useMachineQuery.ts";
 

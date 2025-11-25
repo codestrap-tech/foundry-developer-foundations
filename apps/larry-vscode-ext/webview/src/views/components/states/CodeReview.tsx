@@ -2,7 +2,7 @@
 /* @jsxImportSource preact */
 import { useState } from "preact/hooks";
 import { postMessage } from "../../../lib/vscode";
-import { StateComponentProps } from "../../../lib/backend-types";
+import type { StateComponentProps } from "../../../lib/backend-types";
 import { GeneralMessageBubble } from "../GeneralMessageBubble";
 import { FileSymlink } from "lucide-preact";
 

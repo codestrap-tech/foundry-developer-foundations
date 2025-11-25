@@ -1,5 +1,5 @@
-import { drive_v3, slides_v1 } from "googleapis";
-import {
+import type { drive_v3, slides_v1 } from "googleapis";
+import type {
   CreateGoogleSlidesInput,
   CreateGoogleSlidesOutput,
   GoogleSlideCreationFailure,

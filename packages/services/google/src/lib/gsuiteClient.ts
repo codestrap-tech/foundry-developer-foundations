@@ -1,5 +1,5 @@
 import { google } from 'googleapis';
-import {
+import type {
   CalendarContext,
   EmailContext,
   FindOptimalMeetingTimeOutput,

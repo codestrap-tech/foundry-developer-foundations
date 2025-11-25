@@ -1,4 +1,4 @@
-import {
+import type {
   Communications,
   MachineExecutions,
 } from '@codestrap/developer-foundations-types';

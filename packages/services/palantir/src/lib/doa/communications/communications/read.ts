@@ -1,6 +1,7 @@
+import type {
+  Communications} from '@codestrap/developer-foundations-types';
 import {
-  FoundryClient,
-  Communications,
+  FoundryClient
 } from '@codestrap/developer-foundations-types';
 
 export async function readCommunications(

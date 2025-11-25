@@ -1,4 +1,4 @@
-import { User } from "@osdk/foundry.admin";
+import type { User } from "@osdk/foundry.admin";
 
 export async function callAskVickie({
   action,

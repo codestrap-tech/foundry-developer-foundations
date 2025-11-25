@@ -1,9 +1,10 @@
-import {
+import type {
   Context,
   CreateGoogleSlidesOutput,
   GoogleSlideCreationInput,
   MachineEvent,
-  OfficeServiceV3,
+  OfficeServiceV3} from '@codestrap/developer-foundations-types';
+import {
   TYPES,
 } from '@codestrap/developer-foundations-types';
 import { getOpenAIResponse } from '../codeAssist/delegates/openai/getOpenAIResponse';
