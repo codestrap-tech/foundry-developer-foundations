@@ -1,20 +1,11 @@
-import { SupportedFoundryClients } from '@codestrap/developer-foundations-types';
-import { foundryClientFactory } from '../../../factory/foundryClientFactory';
-
 /**
- * Read conflict resolution rules for a user from Foundry.
- * For now this is a thin wrapper around the foundry client. Returns string[].
+ * Low-level function to read conflict resolution rules for a user from Foundry.
  */
 export async function readConflictResolutionRules(
   userEmail: string,
-  clientType: SupportedFoundryClients = SupportedFoundryClients.PRIVATE
+  token: string,
+  url: string
 ): Promise<string[]> {
-  const { getToken, url, ontologyRid } = foundryClientFactory(
-    process.env.FOUNDRY_CLIENT_TYPE || clientType,
-    undefined
-  );
-
-  const apiKey = await getToken();
   const fullUrl = `${url}/api/v1/users/${encodeURIComponent(
     userEmail
   )}/conflict-rules`;
@@ -22,7 +13,7 @@ export async function readConflictResolutionRules(
   const res = await fetch(fullUrl, {
     method: 'GET',
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
   });

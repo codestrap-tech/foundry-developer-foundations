@@ -6,8 +6,7 @@ import {
   ConflictResolutionReport,
 } from "@codestrap/developer-foundations-types";
 import { summarizeCalendars } from "../delegates/summerizeCalanders";
-import { readConflictResolutionRules } from "@codestrap/developer-foundations-palantir/doa/communications/conflictResolutionRules/read";
-import { geminiService } from "@codestrap/developer-foundations-palantir/geminiService";
+import { readConflictResolutionRulesForUser, geminiService } from "@codestrap/developer-foundations-services-palantir";
 import { calendar_v3, google } from "googleapis";
 import { toUTCFromWallClockLocal } from "@codestrap/developer-foundations-utils";
 
