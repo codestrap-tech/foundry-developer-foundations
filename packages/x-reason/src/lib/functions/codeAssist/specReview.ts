@@ -21,11 +21,12 @@ import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
 import { exec } from 'child_process';
 
 async function verifyFilePaths(ops: FileOp[]) {
+    const repoRootFolder = process.env.REPO_ROOT as string;
     const root = process.cwd();
-    const inInLocalDev = root.includes('foundry-developer-foundations');
-    // TODO support an ENV var and fallback to hard coded values
+    const inInLocalDev = root.includes(repoRootFolder);
+
     const repoRoot = inInLocalDev
-        ? root.split('foundry-developer-foundations')[0]
+        ? root.split(repoRootFolder)[0]
         : root.split('workspace')[0];
 
     // TODO we need to check each file and confirm the path exists. If not retry. If still unresolved error out.
@@ -36,7 +37,7 @@ async function verifyFilePaths(ops: FileOp[]) {
                 new Promise((resolve, reject) => {
                     const filePath = path.join(
                         inInLocalDev
-                            ? `${repoRoot}/foundry-developer-foundations`
+                            ? `${repoRoot}/${repoRootFolder}`
                             : `${repoRoot}/workspace`,
                         f.file
                     );

@@ -1,6 +1,7 @@
 import { mockProgrammerResponse1 } from './__fixtures__/Gemini';
 import { getState } from './orchestratorV1';
-import { SupportedEngines, SupportTrainingDataTypes } from './factory';
+import { SupportTrainingDataTypes } from './factory';
+import { SupportedEngines } from '@codestrap/developer-foundations-types';
 
 import {
   machineId,

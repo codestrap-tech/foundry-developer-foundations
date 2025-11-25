@@ -46,6 +46,7 @@
         "packages/foundry-tracing-foundations/src/index.ts"
       ],
       "@codestrap/github": ["packages/services/github/src/index.ts"],
+      "@codestrap/larry-config": ["packages/larry-config/src/index.ts"],
       "@codestrap/sql-lite": ["packages/services/sql-lite/src/index.ts"],
       "@codestrap/tools": ["tools/src/index.ts"]
     }

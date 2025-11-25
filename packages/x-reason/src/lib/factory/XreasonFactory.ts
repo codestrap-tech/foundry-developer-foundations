@@ -22,7 +22,7 @@ import {
   googleServicesEvaluate,
   googleServicesFunctionCatalog,
 } from '../reasoning';
-import { ActionType, Task } from '@codestrap/developer-foundations-types';
+import { ActionType, Task, SupportedEngines } from '@codestrap/developer-foundations-types';
 
 // Define the shape of the clients map
 export type XReasonEngine = (config: Record<string, any>) => {
@@ -33,12 +33,6 @@ export type XReasonEngine = (config: Record<string, any>) => {
   solver: typeof comsSolver;
 };
 
-export enum SupportedEngines {
-  COMS = 'coms',
-  CONTEXT = 'context',
-  SALES = 'sales',
-  GOOGLE_SERVICES_CODE_ASSIST = 'googleServicesCodeAssist',
-}
 
 export enum SupportTrainingDataTypes {
   SOLVER = 'solver',

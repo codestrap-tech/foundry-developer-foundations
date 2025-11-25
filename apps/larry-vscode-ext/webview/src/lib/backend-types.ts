@@ -66,3 +66,14 @@ export interface MachineUpdatedEvent {
   machine: MachineResponse;
   clientRequestId?: string;
 }
+
+export interface LocalWorktree {
+  worktreeName: string;
+  branch: string;
+  path: string;
+}
+
+export interface DockerStatus {
+  isRunning: boolean;
+  containerId?: string;
+}

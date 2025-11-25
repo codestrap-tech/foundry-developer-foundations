@@ -1,6 +1,6 @@
 import { Trace } from '@codestrap/developer-foundations.foundry-tracing-foundations';
 
-import { SupportedEngines } from '@codestrap/developer-foundations-x-reason';
+import { SupportedEngines } from '@codestrap/developer-foundations-types';
 import { Text2Action } from './Text2Action';
 import { extractJsonFromBackticks } from '@codestrap/developer-foundations-utils';
 import {

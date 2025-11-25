@@ -5,8 +5,83 @@ import { findProjectRoot } from './findProjectRoot';
 import path from 'path';
 import * as http from 'http';
 import * as https from 'https';
+import * as fs from 'fs';
+import * as net from 'net';
 
 const execAsync = promisify(exec);
+
+interface LarryConfig {
+  name: string;
+  agents: Record<string, string>;
+  workspaceSetupCommand: string[];
+  larryEnvPath: string;
+}
+
+let dockerImageName = process.env.REPO_ROOT ? `${process.env.REPO_ROOT}-larry-server` : 'larry-server'; 
+
+let projectName: string | undefined;
+
+let defaultMainPort = 4210;
+let defaultWorktreePort = 4220;
+
+loadLarryConfig().then(async (config) => {
+  projectName = config.name;
+  dockerImageName = projectName ? `${projectName}-larry-server` : 'larry-server'; 
+}).catch((error) => {
+  console.error('Error loading larry config:', error);
+});
+
+function isPortAvailable(port: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    const server = net.createServer();
+    server.once('error', () => {
+      resolve(false);
+    });
+    server.once('listening', () => {
+      server.close();
+      resolve(true);
+    });
+    server.listen(port);
+  });
+}
+
+async function findAvailablePort(startPort: number): Promise<number> {
+  let port = startPort;
+  while (!(await isPortAvailable(port))) {
+    console.log(`Port ${port} is taken, trying next port...`);
+    port++;
+  }
+  return port;
+}
+
+async function loadLarryConfig(): Promise<LarryConfig> {
+  const projectRoot = await findProjectRoot();
+  if (!projectRoot) {
+    throw new Error('Project root not found. Cannot load larry.config.json');
+  }
+
+  const configPath = path.join(projectRoot, 'larry.config.json');
+  
+  if (!fs.existsSync(configPath)) {
+    throw new Error(`larry.config.json not found at: ${configPath}`);
+  }
+  
+  try {
+    const configContent = fs.readFileSync(configPath, 'utf-8');
+    const config = JSON.parse(configContent) as LarryConfig;
+    
+    if (!config || !config.agents || Object.keys(config.agents).length === 0) {
+      throw new Error('Invalid larry.config.json: agents configuration is required');
+    }
+    
+    return config;
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('larry.config.json')) {
+      throw error;
+    }
+    throw new Error(`Failed to parse larry.config.json: ${error instanceof Error ? error.message : error}`);
+  }
+}
 
 // --- SSE relay (extension host) ---
 class SSEProxy {
@@ -181,12 +256,23 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
   private runningContainers: Map<string, string> = new Map(); // threadId -> containerId
   private mainDockerContainer: string | undefined; // Main docker container for port 4210
 
-  // NEW: SSE relays
-  private sseMain?: SSEProxy;
   private sseWorktree?: SSEProxy;
 
+  private config?: LarryConfig;
+  private configLoaded: Promise<void>;
+
   constructor(private readonly context: vscode.ExtensionContext) {
-    // No initialization needed for new flow
+    this.configLoaded = loadLarryConfig()
+      .then((config) => {
+        this.config = config;
+        console.log('Larry config initialized:', this.config);
+      })
+      .catch((error) => {
+        vscode.window.showErrorMessage(
+          `Larry Extension: ${error.message}. Please create a larry.config.json file in your project root.`
+        );
+        throw error;
+      });
   }
 
   private startMainSSE() {
@@ -194,9 +280,16 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
     console.log('Main SSE not needed for now...');
   }
 
-  private startWorktreeSSE() {
-    const url =
-      'http://localhost:4220/larry/agents/google/v1/events?topics=thread.created,machine.updated';
+  private startWorktreeSSE(agentKey?: string) {
+    if (!this.config) {
+      console.error('❌ Config not loaded, cannot start SSE');
+      return;
+    }
+    
+    const agent = agentKey || Object.keys(this.config.agents)[0];
+    const agentRoute = this.config.agents[agent];
+    
+    const url = `http://localhost:${defaultWorktreePort}${agentRoute}/events?topics=thread.created,machine.updated`;
     console.log('🚀 Starting worktree SSE connection to:', url);
     this.sseWorktree?.stop();
     this.sseWorktree = new SSEProxy();
@@ -206,7 +299,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         console.log('📤 Forwarding worktree SSE event to webview:', ev);
         this.view?.webview.postMessage({
           type: 'sse_event',
-          baseUrl: 'http://localhost:4220/larry/agents/google/v1',
+          baseUrl: `http://localhost:${defaultWorktreePort}${agentRoute}`,
           event: ev.event || 'message',
           data: ev.data,
         });
@@ -343,7 +436,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         throw new Error('Project root not found.');
       }
 
-      const containerName = 'larry-main-server';
+      const containerName = `${projectName || 'larry'}-main-server`;
 
       // Clean up existing container if any
       try {
@@ -353,14 +446,18 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         // Container doesn't exist, which is fine
       }
 
-      // Start main container on port 4210
+      // Find available port starting from default
+      const port = await findAvailablePort(defaultMainPort);
+      console.log(`Starting main container on port ${port}`);
+
+      // Start main container
       const { stdout } = await execAsync(
         `docker run -d --name ${containerName} \
-   -p 4210:4210 \
-   -e PORT=4210 \
+   -p ${port}:${port} \
+   -e PORT=${port} \
    -v "${foundryProjectRoot}:/workspace:ro" \
    --user 1001:1001 \
-   larry-server`
+   ${dockerImageName}`
       );
 
       const containerId = stdout.trim();
@@ -379,7 +476,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         return;
       }
 
-      const containerName = 'larry-main-server';
+      const containerName = `${projectName || 'larry'}-main-server`;
 
       // Stop and remove container
       await execAsync(`docker stop ${containerName}`);
@@ -487,7 +584,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         console.error('Error reading thread ID for worktree:', error);
       }
 
-      const containerName = `larry-worktree-${worktreeId}`;
+      const containerName = `${projectName || 'larry'}-worktree-${worktreeId}`;
       try {
         const { stdout: inspectOutput } = await execAsync(
           `docker inspect ${containerName}`
@@ -574,7 +671,8 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
   async handleOpenWorktree(
     worktreeName: string,
     threadId: string | undefined,
-    label: string
+    label: string,
+    agentKey?: string
   ) {
     try {
       // Create or ensure worktree exists
@@ -588,6 +686,24 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         throw new Error('Failed to create or find worktree');
       }
 
+      let isRunning = false;
+      try {
+        const containerName = `${projectName || 'larry'}-worktree-${finalWorktreeName}`;
+      const { stdout: inspectOutput } = await execAsync(
+        `docker inspect ${containerName}`
+      );
+
+      const containerInfo = JSON.parse(inspectOutput);
+      if (containerInfo.length > 0) {
+        const container = containerInfo[0];
+        isRunning = container.State.Running;
+      }
+      } catch (e) {
+        isRunning = false;
+      }
+      
+
+      if (!isRunning) {
       // Setup worktree environment
       await this.setupWorktreeEnvironment(finalWorktreeName, threadId);
 
@@ -596,21 +712,13 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         type: 'update_thread_state',
         state: 'creating_container',
       });
-      const { stdout } = await execAsync(
-        `docker ps -q --filter "publish=4220"`
-      );
-      const containerId = stdout.trim();
-      console.log('Container ID:', containerId);
-      if (containerId) {
-        await execAsync(`docker kill ${containerId}`);
-        await execAsync(`docker rm ${containerId}`);
-      }
 
       if (threadId) {
         await this.writeCurrentThreadId(finalWorktreeName, threadId);
       }
 
       await this.startWorktreeDockerContainer(finalWorktreeName, threadId);
+      }
 
       // Notify that worktree is ready
       this.view?.webview.postMessage({
@@ -620,7 +728,8 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       });
 
       setTimeout(() => {
-        this.startWorktreeSSE(); // <— start SSE for worktree events
+        // This one will need to be refactored because user should be able to select agent per thread, not per worktree
+        this.startWorktreeSSE(agentKey); // <— start SSE for worktree events with selected agent
         this.openWorktree(finalWorktreeName);
         this.view?.webview.postMessage({
           type: 'update_thread_state',
@@ -801,6 +910,10 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
   async setupWorktreeEnvironment(worktreeName: string, threadId?: string) {
     try {
+      if (!this.config) {
+        throw new Error('Config not loaded');
+      }
+
       this.view?.webview.postMessage({
         type: 'update_thread_state',
         state: 'setting_up_environment',
@@ -818,22 +931,23 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         worktreeName
       ).fsPath;
 
-      // Run npm install in worktree
-      console.log('Running npm install in worktree...');
+ 
+      if (this.config.larryEnvPath) {
+        console.log(`Copying env file from ${this.config.larryEnvPath}...`);
+        const sourceEnvPath = vscode.Uri.joinPath(
+          workspaceFolder.uri,
+          this.config.larryEnvPath
+        ).fsPath;
+        const targetEnvPath = path.join(worktreePath, this.config.larryEnvPath);
+        
+        await execAsync(`cp ${sourceEnvPath} ${targetEnvPath}`);
+      }
 
-      // TODO this is temporary until we will find a better way to manage .env files
-      // copy apps/cli-tools/.env to worktree apps/cli-tools/.env
-      await execAsync(
-        `cp ${
-          vscode.Uri.joinPath(workspaceFolder.uri, 'apps', 'cli-tools', '.env')
-            .fsPath
-        } ${worktreePath}/apps/cli-tools/.env`
-      );
-      // run custom safe script to run npm install
-      await execAsync('npm install', { cwd: worktreePath });
-
-      // Set environment variables (if needed)
-      // This could be extended to set specific env vars for the worktree
+      // Run workspace setup commands sequentially
+      for (const command of this.config.workspaceSetupCommand) {
+        console.log(`Running workspace setup command: ${command}`);
+        await execAsync(command, { cwd: worktreePath });
+      }
 
       console.log('Worktree environment setup completed');
     } catch (error) {
@@ -856,7 +970,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         throw new Error('No workspace folder found');
       }
 
-      const containerName = `larry-worktree-${worktreeName}`;
+      const containerName = `${projectName || 'larry'}-worktree-${worktreeName}`;
 
       try {
         await execAsync(`docker rm -f ${containerName}`);
@@ -874,17 +988,22 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
           ).fsPath
         : vscode.Uri.joinPath(workspaceFolder.uri, '').fsPath;
       console.log(worktreePath);
-      // Start worktree container on port 4220
+
+      // Find available port starting from default
+      const port = await findAvailablePort(defaultWorktreePort);
+      console.log(`Starting worktree container on port ${port}`);
+
+      // Start worktree container
       const threadIdEnv = threadId ? `-e THREAD_ID=${threadId}` : '';
       const { stdout } = await execAsync(
         `docker run -d --name ${containerName} \
-   -p 4220:4220 \
-   -e PORT=4220 \
+   -p ${port}:${port} \
+   -e PORT=${port} \
    ${threadIdEnv} \
    -e WORKTREE_NAME=${worktreeName} \
    -v "${worktreePath}:/workspace:rw" \
    --user 1001:1001 \
-   larry-server`
+   ${dockerImageName}`
       );
 
       const containerId = stdout.trim();
@@ -1013,19 +1132,20 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
   private async ensureLarryDockerImage(): Promise<void> {
     try {
-      await execAsync('docker image inspect larry-server');
+      console.log(`Checking if Docker image ${dockerImageName} exists...`);
+      await execAsync(`docker image inspect ${dockerImageName}`);
     } catch (error) {
       // Image doesn't exist, build it
-      console.log('Docker image larry-server not found, building...');
+      console.log(`Docker image ${dockerImageName} not found, building...`);
       const foundryProjectRoot = await findProjectRoot();
       if (!foundryProjectRoot) {
         throw new Error('Project root not found for Docker build.');
       }
 
-      await execAsync('docker build -f Larry.Dockerfile -t larry-server .', {
+      await execAsync(`docker build -f Larry.Dockerfile -t ${dockerImageName} .`, {
         cwd: foundryProjectRoot,
       });
-      console.log('Docker image larry-server built successfully');
+      console.log(`Docker image ${dockerImageName} built successfully`);
     }
   }
 
@@ -1055,7 +1175,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       `style-src ${view.webview.cspSource} 'unsafe-inline'`,
       `font-src ${view.webview.cspSource} https:`,
       `script-src 'nonce-${nonce}' ${view.webview.cspSource}`,
-      `connect-src 'self' ${view.webview.cspSource} http://localhost:4220 http://localhost:4210`,
+      `connect-src 'self' ${view.webview.cspSource} http://localhost:${defaultWorktreePort} http://localhost:${defaultMainPort}`,
     ].join('; ');
 
     view.webview.html = `<!DOCTYPE html>
@@ -1084,7 +1204,8 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         await this.handleOpenWorktree(
           msg.worktreeName || '',
           msg.threadId || undefined,
-          msg.label
+          msg.label,
+          msg.agentKey || undefined
         );
         return;
       }
@@ -1127,6 +1248,14 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         return;
       }
 
+      if (msg?.type === 'getConfig') {
+        view.webview.postMessage({
+          type: 'config_loaded',
+          config: this.config,
+        });
+        return;
+      }
+
       if (msg?.type === 'readFile') {
         const content = await this.readFileContent(msg.filePath);
         view.webview.postMessage({
@@ -1136,16 +1265,240 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         });
         return;
       }
+
+      if (msg?.type === 'list_local_worktrees') {
+        try {
+          /*
+            we need to check if we are in workspace (any repo), because
+            without that when extension is being run in empty folder
+            (e.g VS Code start screen) then it will crash
+          */
+          const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+          if (!workspaceFolder) {
+            view.webview.postMessage({
+              type: 'local_worktrees_response',
+              worktrees: [],
+            });
+            return;
+          }
+
+          const { stdout } = await execAsync('git worktree list --porcelain', {
+            cwd: workspaceFolder.uri.fsPath,
+          });
+
+          /* Parse worktree blocks separated by blank lines
+          example out of git worktree list --porcelain:
+          worktree /Users/przemek/Projects/foundry-developer-foundations
+          HEAD eb907726f9838ed37501d33b6973b9646d4603e1
+          branch refs/heads/pn/parametrize-larry-extension
+
+          worktree /Users/przemek/Projects/foundry-developer-foundations/.larry/worktrees/create-sending-email-function-gsf
+          HEAD 234786afcd4c40f6a47a78b7796062891cc591be
+          branch refs/heads/larry/create-sending-email-function-gsf
+          */
+          const worktreeBlocks = stdout.split('\n\n').filter((block) => block.trim());
+          
+          const worktrees = worktreeBlocks
+            .map((block) => {
+              const lines = block.split('\n');
+              const worktreeLine = lines.find((l) => l.startsWith('worktree '));
+              const branchLine = lines.find((l) => l.startsWith('branch '));
+
+              if (!worktreeLine) return null;
+
+              const path = worktreeLine.replace('worktree ', '').trim();
+              
+              let branch = 'detached';
+              if (branchLine) {
+                const branchRef = branchLine.replace('branch ', '').trim();
+                branch = branchRef.replace('refs/heads/', '');
+              }
+              const pathMatch = path.match(/\.larry[/\\]worktrees[/\\]([^/\\]+)$/);
+              if (!pathMatch) return null;
+
+              const worktreeName = pathMatch[1];
+
+              return {
+                worktreeName,
+                branch,
+                path,
+              };
+            })
+            .filter((item) => item !== null);
+
+          view.webview.postMessage({
+            type: 'local_worktrees_response',
+            worktrees,
+          });
+        } catch (error) {
+          console.error('Error listing local worktrees:', error);
+          view.webview.postMessage({
+            type: 'local_worktrees_response',
+            worktrees: [],
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+        return;
+      }
+
+      if (msg?.type === 'get_docker_status') {
+        try {
+          const containerName = `${projectName || 'larry'}-worktree-${msg.worktreeName}`;
+          const { stdout: inspectOutput } = await execAsync(
+            `docker inspect ${containerName}`
+          );
+          const containerInfo = JSON.parse(inspectOutput);
+
+          if (containerInfo.length > 0) {
+            const container = containerInfo[0];
+            const isRunning = container.State.Running;
+            const containerId = container.Id;
+
+            view.webview.postMessage({
+              type: 'docker_status_response',
+              worktreeName: msg.worktreeName,
+              isRunning,
+              containerId,
+            });
+          } else {
+            view.webview.postMessage({
+              type: 'docker_status_response',
+              worktreeName: msg.worktreeName,
+              isRunning: false,
+              containerId: undefined,
+            });
+          }
+        } catch (error) {
+          // Container doesn't exist - this is expected when manually deleted
+          // Return stopped status without logging error
+          view.webview.postMessage({
+            type: 'docker_status_response',
+            worktreeName: msg.worktreeName,
+            isRunning: false,
+            containerId: undefined,
+          });
+        }
+        return;
+      }
+
+      if (msg?.type === 'start_docker_container') {
+        try {
+          await this.startWorktreeDockerContainer(msg.worktreeName, undefined, true);
+          view.webview.postMessage({
+            type: 'docker_action_complete',
+            action: 'start',
+            worktreeName: msg.worktreeName,
+            success: true,
+          });
+        } catch (error) {
+          console.error('Error starting docker container:', error);
+          view.webview.postMessage({
+            type: 'docker_action_complete',
+            action: 'start',
+            worktreeName: msg.worktreeName,
+            success: false,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+        return;
+      }
+
+      if (msg?.type === 'stop_docker_container') {
+        try {
+          const containerName = `${projectName || 'larry'}-worktree-${msg.worktreeName}`;
+          await execAsync(`docker stop ${containerName}`);
+          view.webview.postMessage({
+            type: 'docker_action_complete',
+            action: 'stop',
+            worktreeName: msg.worktreeName,
+            success: true,
+          });
+        } catch (error) {
+          console.error('Error stopping docker container:', error);
+          view.webview.postMessage({
+            type: 'docker_action_complete',
+            action: 'stop',
+            worktreeName: msg.worktreeName,
+            success: false,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+        return;
+      }
+
+      if (msg?.type === 'delete_worktree') {
+        try {
+          const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+          if (!workspaceFolder) {
+            throw new Error('No workspace folder found');
+          }
+
+          const containerName = `${projectName || 'larry'}-worktree-${msg.worktreeName}`;
+
+          // Stop and remove docker container
+          try {
+            await execAsync(`docker stop ${containerName}`);
+          } catch (e) {
+          }
+          try {
+            await execAsync(`docker rm -f ${containerName}`);
+          } catch (e) {
+          }
+
+          // Remove git worktree
+          const worktreePath = vscode.Uri.joinPath(
+            workspaceFolder.uri,
+            '.larry',
+            'worktrees',
+            msg.worktreeName
+          ).fsPath;
+
+          await execAsync(`git worktree remove "${worktreePath}" --force`, {
+            cwd: workspaceFolder.uri.fsPath,
+          });
+
+          try {
+            await vscode.workspace.fs.delete(
+              vscode.Uri.file(worktreePath),
+              { recursive: true }
+            );
+          } catch (e) {
+          }
+
+          await execAsync('git worktree prune', {
+            cwd: workspaceFolder.uri.fsPath,
+          });
+
+          view.webview.postMessage({
+            type: 'worktree_deleted',
+            worktreeName: msg.worktreeName,
+            success: true,
+          });
+        } catch (error) {
+          console.error('Error deleting worktree:', error);
+          view.webview.postMessage({
+            type: 'worktree_deleted',
+            worktreeName: msg.worktreeName,
+            success: false,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+        return;
+      }
     });
 
-    // Initialize worktree detection and Docker when webview is opened
-    console.log('🚀 Starting initial worktree detection and Docker setup...');
+    // Initialize config and worktree detection when webview is opened
+    console.log('🚀 Starting initial config loading and worktree detection...');
 
     // Add a small delay to ensure webview is ready to receive messages
-    setTimeout(() => {
-      this.notifyWorktreeChange().catch((error) => {
-        console.error('❌ Error in initial worktree detection:', error);
-      });
+    setTimeout(async () => {
+      try {
+        this.notifyWorktreeChange().catch((error) => {
+          console.error('❌ Error in initial worktree detection:', error);
+        });
+      } catch (error) {
+        console.error('❌ Failed to initialize extension:', error);
+      }
     }, 100);
   }
 }
