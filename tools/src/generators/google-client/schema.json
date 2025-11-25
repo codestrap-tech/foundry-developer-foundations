@@ -25,6 +25,10 @@
     "promptFile": {
       "type": "string",
       "description": "Additional user instructions or context for AI-assisted client generation.",
+      "$default": {
+        "$source": "argv",
+        "index": 2
+      },
       "x-prompt": "Enter the path to your prompt file. For an example see client.prompt.txt"
     }
   },

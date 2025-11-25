@@ -258,7 +258,8 @@ Response with the prompt as a single string. Do not include any additional comme
 
                 // load the generated file. Generators always send output to the packages src/lib directory for now
                 // if this ever changes we need to capture the output path from the generator
-                const fileContents = await fs.promises.readFile(path.resolve(workspaceRoot, options.name!, 'src/lib', options.fileName), 'utf-8')
+                const pathToGeneratedFile = path.resolve(workspaceRoot, config.sourceRoot!, 'lib', `${names(options.fileName!).fileName}.ts`);
+                const fileContents = await fs.promises.readFile(pathToGeneratedFile, 'utf-8');
                 file.stubCode = fileContents;
                 
                 resolve({file, fileContents});

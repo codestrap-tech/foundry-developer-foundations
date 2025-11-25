@@ -64,12 +64,57 @@ export const templateRegistry: TemplateRegistry = {
     generator: 'google-client',
     projectJson: async () => fs.readFile(path.resolve(workspaceRoot, 'packages/services/google/project.json'), 'utf-8'),
     samplePrompts: [
-      `Generate a new google service client using the provided template to learn the CodeStrap pattern.
-The new client should be able to write files to drive. The new client number should be v3.
-The only method to add is writeFileToDrive. This should take an array of files to write. The file content will be a file Buffer.`
+      `Create packages/services/google/src/lib/gsuiteClient.v3.ts implementing makeGSuiteClientV3 (TypeScript, Node.js 20.x) based on the existing v2 client (packages/services/google/src/lib/gsuiteClient.v2.ts). Use googleapis@149.0.0 and integrate with the new helper packages/services/google/src/lib/helpers/driveAttachmentProcessor.ts and the modified types in packages/types/src/lib/types.ts.
+
+Client version: v3
+
+Required OAuth scopes (must be requested/provided by this client):
+- https://www.googleapis.com/auth/gmail.send
+- https://www.googleapis.com/auth/drive.readonly
+
+Methods to add/modify:
+- sendEmail (modify existing delegate signature to support Drive attachments)
+
+sendEmail inputs (types):
+- EmailContext (from packages/types/src/lib/types.ts) with fields:
+  - from: string
+  - recipients: string | string[]
+  - subject: string
+  - messageHtml: string
+  - messageText?: string
+  - headers?: Record<string, string>
+  - labelIds?: string[]
+  - driveAttachmentIds?: string[] // NEW: array of Google Drive file IDs to attach
+
+sendEmail output (types):
+- SendEmailOutput (from packages/types/src/lib/types.ts) with fields:
+  - id: string
+  - threadId: string
+  - labelIds?: string[]
+  - skippedAttachments?: { fileId: string; reason: string; mimeType?: string; size?: string }[]
+
+Behavioral requirements to implement in sendEmail:
+leave the method implementation blank with a comment //TODO call delegate
+
+Dependencies to import/use in the file:
+- googleapis (Gmail and Drive clients) @149.0.0
+- types from packages/types/src/lib/types.ts (EmailContext, SendEmailOutput)
+- utility/logging from @codestrap/developer-foundations-utils
+- helper driveAttachmentProcessor from packages/services/google/src/lib/helpers/driveAttachmentProcessor.ts (for per-file fetch/export/validation/retry logic)
+
+Files that must remain compatible:
+- packages/services/google/src/lib/gsuiteClient.v2.ts (use or reference to ensure consistency)
+- Modified delegates/sendEmail.ts should align with the new signature
+- New helper driveAttachmentProcessor.ts will be used by this client
+
+Generate the full contents of packages/services/google/src/lib/gsuiteClient.v3.ts implementing makeGSuiteClientV3 with the modified sendEmail behavior and the exact types/inputs/outputs described above.
+      `
     ],
     promptGuide: `The prompt must include the client version to use, required permissions/scopes the method(s) to be added 
-    or modified, and the method inputs such as file arrays, identifiers, etc and their types. Do not ever advise on security policy or design patters.
+    or modified, and the method inputs such as file arrays, identifiers, etc and their types.
+    Do not generate method bodies for functions like sendEmail, etc. We implement a delegate pattern and those implementation will be handled elsewhere.
+    Instead add a comment to the method body liike so: //TODO call delegate
+    Do not ever advise on security policy or design patters.
     Just generate the fucking prompt and nothing else.`,
   },
   [SupportedTemplates.FACTORY]: {
