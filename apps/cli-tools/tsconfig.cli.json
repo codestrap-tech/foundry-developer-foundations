@@ -1,34 +1,35 @@
-{  "extends": "../../tsconfig.base.json",
-"compilerOptions": {
-  "module": "commonjs",
-  "target": "es2020",
-  "esModuleInterop": true,
-  "allowSyntheticDefaultImports": true,
-  "skipLibCheck": true,
-  "strict": false,
-  "noEmitOnError": false,
-  "noImplicitAny": false,
-  "noImplicitReturns": false,
-  "noImplicitThis": false,
-  "strictNullChecks": false,
-  "strictFunctionTypes": false,
-  "strictPropertyInitialization": false,
-  "strictBindCallApply": false,
-  "alwaysStrict": false,
-  "useUnknownInCatchVariables": false,
-  "exactOptionalPropertyTypes": false,
-  "noUncheckedIndexedAccess": false,
-  "noImplicitOverride": false,
-  "allowUnreachableCode": true,
-  "allowUnusedLabels": true,
-  "types": ["node"]
-},
-"include": ["src/**/*.ts"],
-"exclude": [
-  "jest.config.ts", 
-  "src/**/*.spec.ts", 
-  "src/**/*.test.ts",
-  "**/*.test.ts",
-  "**/*.spec.ts"
-]
-} 
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2020",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "noEmitOnError": false,
+    "noImplicitAny": false,
+    "noImplicitReturns": false,
+    "noImplicitThis": false,
+    "strictNullChecks": false,
+    "strictFunctionTypes": false,
+    "strictPropertyInitialization": false,
+    "strictBindCallApply": false,
+    "alwaysStrict": false,
+    "useUnknownInCatchVariables": false,
+    "exactOptionalPropertyTypes": false,
+    "noUncheckedIndexedAccess": false,
+    "noImplicitOverride": false,
+    "allowUnreachableCode": true,
+    "allowUnusedLabels": true,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "jest.config.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "**/*.test.ts",
+    "**/*.spec.ts"
+  ]
+}

@@ -1,16 +1,16 @@
 {
+  "private": true,
   "name": "@codestrap/tools",
   "version": "0.0.1",
-  "private": true,
   "type": "commonjs",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
   "dependencies": {
     "@nx/devkit": "21.6.5",
-    "tslib": "^2.3.0",
+    "@nx/node": "21.6.5",
     "jest": "^29.7.0",
     "jsonc-eslint-parser": "^2.1.0",
-    "@nx/node": "21.6.5"
+    "tslib": "^2.3.0"
   },
   "generators": "./generators.json"
 }

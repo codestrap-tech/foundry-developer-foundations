@@ -19,4 +19,4 @@
   },
   "include": ["src/**/*.ts"],
   "exclude": ["webview", "media", "scripts", "node_modules", "dist"]
-} 
+}

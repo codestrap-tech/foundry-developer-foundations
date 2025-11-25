@@ -46,7 +46,7 @@ export class Bennie extends Text2Action {
   public async askBennie(
     query: string,
     userId: string,
-    threadId?: string
+    threadId?: string,
   ): Promise<BennieResponse> {
     let generatedTaskList: undefined | string = undefined;
     let newThread = !threadId || threadId.length === 0;
@@ -67,7 +67,7 @@ export class Bennie extends Text2Action {
       const { status, taskList, executionId } = await this.createSalesTasksList(
         query,
         userId,
-        threadId
+        threadId,
       );
       // if we get a bad response skip calling execute task list
       if (status !== 200 || !taskList) {
@@ -99,14 +99,14 @@ export class Bennie extends Text2Action {
       true,
       threadId,
       undefined,
-      SupportedEngines.SALES
+      SupportedEngines.SALES,
     );
     // construct the response
     const system = `You are a helpful AI sales assistant named Bennie.
 You are professional in your tone, personable, and always start your messages with the phrase, "Hi, I'm Bennie, Code's AI Sales Associate" or similar. 
 You can get creative on your greeting, taking into account the dat of the week. Today is ${new Date().toLocaleDateString(
       'en-US',
-      { weekday: 'long' }
+      { weekday: 'long' },
     )}. 
 You can also take into account the time of year such as American holidays like Halloween, Thanksgiving, Christmas, etc. 
 You always obey the users instructions and understand the people you work for are busy executives and sometimes need help in their personal lives
@@ -193,7 +193,7 @@ ${result}`;
   public async createSalesTasksList(
     query: string,
     userId: string,
-    threadId?: string
+    threadId?: string,
   ): Promise<BennieResponse> {
     console.log('createSalesTasksList called');
     // if no threadId create one
@@ -204,7 +204,7 @@ ${result}`;
       SupportedEngines.SALES,
       undefined,
       undefined,
-      threadId
+      threadId,
     );
 
     // If incomplete information is provided the solver will return Missing Infromation
@@ -252,7 +252,7 @@ ${result}`;
   public async submitRfpResponse(
     rfpResponse: string,
     vendorId: string,
-    machineExecutionId: string
+    machineExecutionId: string,
   ): Promise<RfpResponseReceipt> {
     // rehydrate the machine
     const machineDao = container.get<MachineDao>(TYPES.MachineDao);
@@ -268,7 +268,7 @@ ${result}`;
 
     if (!machine) {
       throw new Error(
-        `no programmed state machine found for: ${machineExecutionId}`
+        `no programmed state machine found for: ${machineExecutionId}`,
       );
     }
 
@@ -287,7 +287,7 @@ ${result}`;
     // add the response to the requestRftp object.
     if (!vendorRfpRequest) {
       throw new Error(
-        `Could not find matching RFP request for vendorId: ${vendorId}`
+        `Could not find matching RFP request for vendorId: ${vendorId}`,
       );
     }
     // determine if this is a response or a request for missing information or something else
@@ -367,7 +367,7 @@ ${result}`;
       JSON.stringify(stateDefinition),
       execution.logs!,
       '', // we have to send default values for lockOwner and lockUntil or the OSDK will shit a brick. It still can't handle optional params
-      1
+      1,
     );
 
     const threadDao = container.get<ThreadsDao>(TYPES.ThreadsDao);
@@ -378,7 +378,7 @@ ${result}`;
     } catch (e) {
       console.log(e);
       console.log(
-        `thread not found for id: ${machineExecutionId}, creating a new one`
+        `thread not found for id: ${machineExecutionId}, creating a new one`,
       );
     }
 
@@ -388,8 +388,9 @@ ${result}`;
 - Machine and ThreadId: ${machineExecutionId}
 
 ### Summary
-Your RFP for ${vendorRfpRequest.vendorName} using ID: ${vendorRfpRequest.vendorId
-      } was sent and we received the following response from their agent:
+Your RFP for ${vendorRfpRequest.vendorName} using ID: ${
+      vendorRfpRequest.vendorId
+    } was sent and we received the following response from their agent:
 ${vendorRfpRequest.response}
 `;
     const appendedMessage = `${thread?.messages}
@@ -402,7 +403,7 @@ ${threadMessage};
       true,
       machineExecutionId,
       undefined,
-      SupportedEngines.SALES
+      SupportedEngines.SALES,
     );
 
     const rfpDao = container.get<RfpRequestsDao>(TYPES.RfpRequestsDao);
@@ -416,7 +417,7 @@ ${threadMessage};
       vendorId,
       machineExecutionId,
       rfpRequest.id,
-      vendorRfpRequest.status
+      vendorRfpRequest.status,
     );
 
     return {

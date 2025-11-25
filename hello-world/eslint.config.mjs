@@ -53,8 +53,8 @@ export default defineConfig([
         'plugin:@typescript-eslint/recommended',
         'plugin:import/errors',
         'plugin:import/warnings',
-        'plugin:import/typescript'
-      )
+        'plugin:import/typescript',
+      ),
     ),
 
     rules: {

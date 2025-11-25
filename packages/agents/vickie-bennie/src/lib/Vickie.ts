@@ -47,11 +47,11 @@ export class Vickie extends Text2Action {
   })
   public async processEmailEvent(
     data: string,
-    publishTime: string
+    publishTime: string,
   ): Promise<VickieResponse> {
     // get emails since the publish time
     const officeService = await container.getAsync<OfficeService>(
-      TYPES.OfficeService
+      TYPES.OfficeService,
     );
     const decodedJson = Buffer.from(data, 'base64').toString('utf8');
     const { emailAddress } = JSON.parse(decodedJson) as {
@@ -185,7 +185,7 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
 
           log(
             id,
-            `ExecutionId: ${id} is locked by ${lockOwner} until ${lockUntil}`
+            `ExecutionId: ${id} is locked by ${lockOwner} until ${lockUntil}`,
           );
 
           await machineDao.upsert(id, machine!, state!, getLog(id));
@@ -209,7 +209,7 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
             state!,
             logs!,
             lockOwnerId,
-            Date.now() + 15 * 60 * 1000
+            Date.now() + 15 * 60 * 1000,
           );
         } catch (e) {
           console.log(`failed to upsert the machine in order to set lock:
@@ -222,7 +222,7 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
             `failed to upsert the machine in order to set lock:
                         message: ${(e as Error).message}
                         stack: ${(e as Error).stack}
-                    `
+                    `,
           );
 
           await machineDao.upsert(id, machine!, state!, getLog(id));
@@ -247,7 +247,7 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
                     resolutionFound: ${resolutionFound}
                     resolution: ${resolution}
 
-                    `
+                    `,
         );
 
         if (!resolutionFound) {
@@ -259,7 +259,7 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
                     ${messages[0]?.subject}
                     ${resolutionFound}
                     ${resolution}
-                    `
+                    `,
           );
 
           await machineDao.upsert(id, machine!, state!, getLog(id));
@@ -284,7 +284,7 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
                     ${JSON.stringify(context)}
                     currentStateId is:
                     ${currentStateId}
-                    `
+                    `,
           );
 
           await machineDao.upsert(id, machine!, state!, getLog(id));
@@ -298,11 +298,12 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
 
         log(
           id,
-          `Sending updated context for the following email thread ${messages[0]?.subject
+          `Sending updated context for the following email thread ${
+            messages[0]?.subject
           }
                     contextUpdate:
                     ${JSON.stringify(contextUpdate)}
-                    `
+                    `,
         );
 
         // logs will be persisted in the call to getNextState
@@ -312,7 +313,7 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
             true,
             id,
             JSON.stringify(contextUpdate),
-            SupportedEngines.COMS
+            SupportedEngines.COMS,
           );
 
           console.log(getLog(id));
@@ -324,7 +325,7 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
             `getNextState failed with the following error:
                         ${(e as Error).message}
                         ${(e as Error).stack}
-                    `
+                    `,
           );
 
           errorResponse.error = (e as Error).stack || 'ERROR';
@@ -377,7 +378,7 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
       message: `All emails were processed and next state processed for the following machines:\n${JSON.stringify(
         results,
         null,
-        2
+        2,
       )}`,
       // AIP Logic can not handle nullable fields, so we have to include these as empty string to support use cases where logic is used such as our daily reports with automate
       // https://community.palantir.com/t/aip-logic-cant-recognize-optional-output-struct-fileds/4440/3
@@ -406,7 +407,7 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
   public async askVickie(
     query: string,
     userId: string,
-    threadId?: string
+    threadId?: string,
   ): Promise<VickieResponse> {
     const { log } = container.get<LoggingService>(TYPES.LoggingService);
     let generatedTaskList: undefined | string = undefined;
@@ -428,7 +429,7 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
       const { status, taskList, executionId } = await this.createComsTasksList(
         query,
         userId,
-        threadId
+        threadId,
       );
 
       // if we get a bad response skip calling execute task list
@@ -438,7 +439,7 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
           `askVickie failed to create new coms task list. 
                     You are missing required information: 
                     ${taskList}. 
-                    Please fix your shit and resend.`
+                    Please fix your shit and resend.`,
         );
         return {
           status,
@@ -471,22 +472,22 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
       true,
       threadId,
       undefined,
-      SupportedEngines.COMS
+      SupportedEngines.COMS,
     );
     // construct the response
     const system = `You are a helpful AI executive assistant named Vickie.
         You are professional in your tone, personable, and always start your messages with the phrase, "Hi, I'm Vickie, Code's AI Executive Assistant" or similar.
         You can get creative on your greeting, taking into account the dat of the week. Today is ${new Date().toLocaleDateString(
-      'en-US',
-      { weekday: 'long' }
-    )}. 
+          'en-US',
+          { weekday: 'long' },
+        )}. 
         You can also take into account the time of year such as American holidays like Halloween, Thanksgiving, Christmas, etc. 
         You always obey the users instructions and understand the people you work for are busy executives and sometimes need help in their personal lives
         These tasks are not beneath you. At CodeStrap, where you work we adopt the motto made famous by Kim Scott: we move couches.
         It means we all pull together to get things done.
         The current local date/time is ${new Date().toLocaleString('en-US', {
-      timeZone: 'America/Los_Angeles',
-    })}.
+          timeZone: 'America/Los_Angeles',
+        })}.
         The current day/time in your timezone is: ${new Date().toString()}`;
     const user = `
                 Based on the following user query
@@ -565,7 +566,7 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
   public async createComsTasksList(
     query: string,
     userId: string,
-    threadId?: string
+    threadId?: string,
   ): Promise<VickieResponse> {
     console.log('createComsTasksList called');
     // if no threadId create one
@@ -576,7 +577,7 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
       SupportedEngines.COMS,
       undefined,
       undefined,
-      threadId
+      threadId,
     );
 
     // If incomplete information is provided the solver will return Missing Infromation

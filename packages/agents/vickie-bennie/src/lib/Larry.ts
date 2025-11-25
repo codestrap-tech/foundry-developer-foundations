@@ -2,7 +2,10 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { Trace } from '@codestrap/developer-foundations.foundry-tracing-foundations';
-import { SupportedEngines, LarryAgentFactoryType } from '@codestrap/developer-foundations-types';
+import {
+  SupportedEngines,
+  LarryAgentFactoryType,
+} from '@codestrap/developer-foundations-types';
 import { Text2Action } from './Text2Action';
 import {
   GeminiService,
@@ -24,7 +27,9 @@ export interface LarryResponse {
 
 // use classes to take advantage of trace decorator
 export class Larry extends Text2Action {
-  private agent = container.get<LarryAgentFactoryType>(TYPES.LarryCodingAgentFactory)({});
+  private agent = container.get<LarryAgentFactoryType>(
+    TYPES.LarryCodingAgentFactory,
+  )({});
 
   @Trace({
     resource: {
@@ -66,7 +71,7 @@ export class Larry extends Text2Action {
       const { status, taskList, executionId } = await this.createLarryTasksList(
         query,
         userId,
-        threadId
+        threadId,
       );
 
       // if we get a bad response skip calling execute task list
@@ -76,7 +81,7 @@ export class Larry extends Text2Action {
           `askLarry failed to create new coms task list. 
                             You are missing required information: 
                             ${taskList}. 
-                            Please fix your shit and resend.`
+                            Please fix your shit and resend.`,
         );
         return {
           status,
@@ -96,15 +101,16 @@ export class Larry extends Text2Action {
       generatedTaskList = taskList;
     }
 
-    const readmePath = path.resolve(
-      process.cwd(),
-      this.agent.readmePath
-    );
-    if (readmePath && !fs.existsSync(readmePath)) throw new Error(`README file does not exist: ${readmePath}`);
+    const readmePath = path.resolve(process.cwd(), this.agent.readmePath);
+    if (readmePath && !fs.existsSync(readmePath))
+      throw new Error(`README file does not exist: ${readmePath}`);
     const readme = await fs.readFileSync(readmePath, 'utf8');
     // save the readme for later so we can retrieve it when creating the design specification
     // we do those so functions like confirmUserIntent are reusable across various coding agents
-    const abs = path.resolve(process.env.BASE_FILE_STORAGE || process.cwd(), `readme-${threadId}.md`);
+    const abs = path.resolve(
+      process.env.BASE_FILE_STORAGE || process.cwd(),
+      `readme-${threadId}.md`,
+    );
     try {
       const dir = abs.substring(0, abs.lastIndexOf('/'));
       await fs.promises.mkdir(dir, { recursive: true });
@@ -121,7 +127,7 @@ export class Larry extends Text2Action {
       threadId,
       JSON.stringify({ initialUserPrompt: query }),
       this.agent.xreason,
-      true
+      true,
     );
 
     // get thread messages
@@ -136,16 +142,16 @@ export class Larry extends Text2Action {
     const system = `You are a helpful AI coding assistant named Larry.
         You are professional in your tone, personable, and always start your messages with the phrase, "Hi, I'm Larry, Code's AI Coding Assistant" or similar.
         You can get creative on your greeting, taking into account the dat of the week. Today is ${new Date().toLocaleDateString(
-      'en-US',
-      { weekday: 'long' }
-    )}. 
+          'en-US',
+          { weekday: 'long' },
+        )}. 
         You can also take into account the time of year such as American holidays like Halloween, Thanksgiving, Christmas, etc. 
         You always obey the users instructions and understand the people you work for are busy executives and sometimes need help in their personal lives
         These tasks are not beneath you. At CodeStrap, where you work we adopt the motto made famous by Kim Scott: we move couches.
         It means we all pull together to get things done.
         The current local date/time is ${new Date().toLocaleString('en-US', {
-      timeZone: 'America/Los_Angeles',
-    })}.
+          timeZone: 'America/Los_Angeles',
+        })}.
         The current day/time in your timezone is: ${new Date().toString()}`;
     const user = `
                 Based on the following user query
@@ -189,7 +195,7 @@ export class Larry extends Text2Action {
     await threadsDao.upsert(
       JSON.stringify(parsedMessages),
       this.agent.name,
-      threadId
+      threadId,
     );
 
     // return the structured response
@@ -227,7 +233,7 @@ export class Larry extends Text2Action {
   public async createLarryTasksList(
     query: string,
     userId: string,
-    threadId?: string
+    threadId?: string,
   ): Promise<LarryResponse> {
     console.log('createComsTasksList called');
     // if no threadId create one
@@ -238,7 +244,7 @@ export class Larry extends Text2Action {
       SupportedEngines.GOOGLE_SERVICES_CODE_ASSIST,
       undefined,
       undefined,
-      threadId
+      threadId,
     );
 
     // If incomplete information is provided the solver will return Missing Information

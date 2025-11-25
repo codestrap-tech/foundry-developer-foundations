@@ -53,7 +53,12 @@ console.log(result);
 ```ts
 {
   message: string;
-  suggested_times: { start: string; end: string; score: number }[];
+  suggested_times: {
+    start: string;
+    end: string;
+    score: number;
+  }
+  [];
 }
 ```
 
@@ -65,11 +70,15 @@ console.log(result);
 
 ```ts
 type MeetingRequest = {
-  participants: string[];                    // attendee emails (Google Calendar principals)
+  participants: string[]; // attendee emails (Google Calendar principals)
   subject: string;
-  timeframe_context: 'user defined exact date/time' | 'as soon as possible' | 'this week' | 'next week';
-  localDateString?: string;                  // required when timeframe_context is 'user defined exact date/time'
-  duration_minutes: number;                  // e.g., 30
+  timeframe_context:
+    | 'user defined exact date/time'
+    | 'as soon as possible'
+    | 'this week'
+    | 'next week';
+  localDateString?: string; // required when timeframe_context is 'user defined exact date/time'
+  duration_minutes: number; // e.g., 30
   working_hours: { start_hour: number; end_hour: number }; // PT hours, e.g. {8,17}
 };
 ```
@@ -80,19 +89,19 @@ type MeetingRequest = {
 
 We convert your `timeframe_context` into a **PT wall‑clock window**:
 
-* **`'as soon as possible'`**
+- **`'as soon as possible'`**
   From **now (clamped to business hours)** through **Friday 17:00** of the same work week.
-  *Example:* If it’s Tuesday 10:05 PT, search window is `[Tue 10:05, Fri 17:00]`.
+  _Example:_ If it’s Tuesday 10:05 PT, search window is `[Tue 10:05, Fri 17:00]`.
 
-* **`'this week'`**
+- **`'this week'`**
   From **now (clamped)** through **this Friday 17:00**. If you’re **already past Friday 17:00**, it **rolls to next week** (Mon 08:00 → Fri 17:00).
 
-* **`'next week'`**
+- **`'next week'`**
   **Monday 08:00 → Friday 17:00** of the **next** week (PT).
 
-* **`'user defined exact date/time'`**
+- **`'user defined exact date/time'`**
   Build a **narrow window** `[localDateString, localDateString + duration]`, with **minute granularity** (no rounding), then **clamp** to working hours if needed.
-  *Example:* `{ localDateString: "2025-07-22T10:10:00", duration_minutes: 30 }` → `[10:10, 10:40]`.
+  _Example:_ `{ localDateString: "2025-07-22T10:10:00", duration_minutes: 30 }` → `[10:10, 10:40]`.
 
 > **Weekends are excluded**. **Fridays are included** (no “skip Friday” unless you change that flag internally).
 
@@ -115,35 +124,35 @@ You don’t have to call this directly, but here’s what `findOptimalMeetingTim
 
 ## Time zone & DST behavior (Pacific Time)
 
-* All user‑facing strings are **PT ISO datetimes** such as `2025-07-22T16:30:00-07:00`.
-* **No ambiguity** around DST changes:
+- All user‑facing strings are **PT ISO datetimes** such as `2025-07-22T16:30:00-07:00`.
+- **No ambiguity** around DST changes:
+  - **Spring forward**: there is no 02:00–02:59 local hour; we never propose slots in that missing hour.
+  - **Fall back**: the hour repeats; offset changes from `-07:00` to `-08:00` automatically.
 
-  * **Spring forward**: there is no 02:00–02:59 local hour; we never propose slots in that missing hour.
-  * **Fall back**: the hour repeats; offset changes from `-07:00` to `-08:00` automatically.
-* If `Intl` were to fail, we fall back to a safe offset (`fallbackOffsetMinutes`, default `-420`).
+- If `Intl` were to fail, we fall back to a safe offset (`fallbackOffsetMinutes`, default `-420`).
 
 ---
 
 ## What counts as “working hours”
 
-* Provided by you in the request (`working_hours: { start_hour, end_hour }`) and applied **per business day** in PT.
-* **Weekends** are **excluded**.
-* **Fridays are included** by default (we do not set `skipFriday` in v2 client).
+- Provided by you in the request (`working_hours: { start_hour, end_hour }`) and applied **per business day** in PT.
+- **Weekends** are **excluded**.
+- **Fridays are included** by default (we do not set `skipFriday` in v2 client).
 
 ---
 
 ## Scoring
 
-* Each slot gets a **simple heuristic score** that prefers **earlier** times.
-* You can still sort or filter on your side (e.g., take top N) — the response contains a `score` for each.
+- Each slot gets a **simple heuristic score** that prefers **earlier** times.
+- You can still sort or filter on your side (e.g., take top N) — the response contains a `score` for each.
 
 ---
 
 ## Error cases & validation
 
-* If `timeframe_context = 'user defined exact date/time'` but `localDateString` is **missing** or **invalid**, you will get an error.
-* If working hours are inverted (e.g., end ≤ start) or duration is non‑positive, the search yields **no slots**.
-* If participants have all‑day busy events (OOO), those are treated as **busy** by Free/Busy.
+- If `timeframe_context = 'user defined exact date/time'` but `localDateString` is **missing** or **invalid**, you will get an error.
+- If working hours are inverted (e.g., end ≤ start) or duration is non‑positive, the search yields **no slots**.
+- If participants have all‑day busy events (OOO), those are treated as **busy** by Free/Busy.
 
 ---
 
@@ -151,34 +160,34 @@ You don’t have to call this directly, but here’s what `findOptimalMeetingTim
 
 ### 1) ASAP on a weekday, during business hours
 
-* **Request:** Tuesday 10:05 PT, duration 30, 08:00–17:00 PT.
-* **Search window:** Tue 10:05 → Fri 17:00.
-* **Result:** First slot typically `10:30–11:00` (rounded to the next 30‑min boundary), plus additional suggestions.
+- **Request:** Tuesday 10:05 PT, duration 30, 08:00–17:00 PT.
+- **Search window:** Tue 10:05 → Fri 17:00.
+- **Result:** First slot typically `10:30–11:00` (rounded to the next 30‑min boundary), plus additional suggestions.
 
 ### 2) “This week” after Friday close
 
-* **Request:** Friday 18:10 PT.
-* **Behavior:** Rolls forward to **next week** (Mon 08:00 → Fri 17:00).
+- **Request:** Friday 18:10 PT.
+- **Behavior:** Rolls forward to **next week** (Mon 08:00 → Fri 17:00).
 
 ### 3) Exact date/time
 
-* **Request:** `"2025-07-22T10:10:00"` for 30 minutes.
-* **Behavior:** Search just **10:10–10:40** (clamped to business hours if outside).
+- **Request:** `"2025-07-22T10:10:00"` for 30 minutes.
+- **Behavior:** Search just **10:10–10:40** (clamped to business hours if outside).
 
 ---
 
 ## Performance notes
 
-* Free/Busy call is a single batched request for all participants in the window.
-* Interval math uses **merge** + **two‑pointer subtraction** for near **O(N)** traversal.
-* For very long windows, consider limiting to the **first K slots** on your side.
+- Free/Busy call is a single batched request for all participants in the window.
+- Interval math uses **merge** + **two‑pointer subtraction** for near **O(N)** traversal.
+- For very long windows, consider limiting to the **first K slots** on your side.
 
 ---
 
 ## Required Google scopes & auth (unchanged)
 
-* Calendar Free/Busy and Events scopes are used internally; you configure service account credentials via environment variables (same as v1).
-* The v2 client reuses the v1 client’s authenticated `calendar_v3.Calendar` under the hood.
+- Calendar Free/Busy and Events scopes are used internally; you configure service account credentials via environment variables (same as v1).
+- The v2 client reuses the v1 client’s authenticated `calendar_v3.Calendar` under the hood.
 
 ---
 
@@ -186,10 +195,10 @@ You don’t have to call this directly, but here’s what `findOptimalMeetingTim
 
 We ship unit tests that cover:
 
-* **Rounding and step alignment**.
-* **Multi‑day windows**, weekend skipping, and Friday handling.
-* **DST boundaries** (fall‑back and spring‑forward).
-* **Fallback offset** behavior if `Intl` fails.
+- **Rounding and step alignment**.
+- **Multi‑day windows**, weekend skipping, and Friday handling.
+- **DST boundaries** (fall‑back and spring‑forward).
+- **Fallback offset** behavior if `Intl` fails.
 
 ---
 
@@ -208,10 +217,19 @@ A: Lunch/holidays aren’t special‑cased. You can subtract a holiday calendar 
 
 ## Summary
 
-* **Same API**, better reliability: PT timezone correctness, DST‑safe, and robust slot generation across multiple days and attendees.
-* You call `getAvailableMeetingTimes` **exactly like v1**, and receive:
+- **Same API**, better reliability: PT timezone correctness, DST‑safe, and robust slot generation across multiple days and attendees.
+- You call `getAvailableMeetingTimes` **exactly like v1**, and receive:
 
   ```ts
-  { message: string; suggested_times: { start: string; end: string; score: number }[] }
+  {
+    message: string;
+    suggested_times: {
+      start: string;
+      end: string;
+      score: number;
+    }
+    [];
+  }
   ```
-* If you need policy tweaks (buffers, lead time, skip Friday), we can enable them without breaking the API.
+
+- If you need policy tweaks (buffers, lead time, skip Friday), we can enable them without breaking the API.

@@ -91,12 +91,12 @@ const initialState: ExtensionState = {
 // Reducer
 function extensionReducer(
   state: ExtensionState,
-  action: ExtensionAction
+  action: ExtensionAction,
 ): ExtensionState {
   switch (action.type) {
     case 'SET_WORKTREE_DETECTION':
-      // eslint-disable-next-line no-case-declarations
-      const selectedAgentRoute = state.agents[state.selectedAgent] || Object.values(state.agents)[0];
+      const selectedAgentRoute =
+        state.agents[state.selectedAgent] || Object.values(state.agents)[0];
       return {
         ...state,
         isInWorktree: action.payload.isInWorktree,

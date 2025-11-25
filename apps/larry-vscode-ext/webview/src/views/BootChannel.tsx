@@ -11,7 +11,7 @@ export function BootChannel() {
   useEffect(() => {
     const handleMessage = (msg: any) => {
       if (!msg || typeof msg !== 'object') return;
-      
+
       if (msg.type === 'worktree_detection') {
         dispatch({
           type: 'SET_WORKTREE_DETECTION',
@@ -22,7 +22,7 @@ export function BootChannel() {
           },
         });
       }
-      
+
       if (msg.type === 'worktree_ready') {
         dispatch({
           type: 'SET_WORKTREE_READY',
@@ -32,7 +32,7 @@ export function BootChannel() {
           },
         });
       }
-      
+
       if (msg.type === 'worktree_setup_error') {
         dispatch({ type: 'SET_WORKTREE_SETUP_ERROR' });
       }
@@ -54,14 +54,18 @@ export function BootChannel() {
 
       console.log('📨 Webview received message:', msg);
       // NEW: forwarded SSE
-      if (msg.type === 'sse_event' && msg.baseUrl && msg.event && typeof msg.data === 'string') {
+      if (
+        msg.type === 'sse_event' &&
+        msg.baseUrl &&
+        msg.event &&
+        typeof msg.data === 'string'
+      ) {
         console.log('📨 Webview received SSE event:', msg);
         handleForwardedSSE(
           { baseUrl: msg.baseUrl, event: msg.event, data: msg.data },
-          { clientRequestId, dispatch, saveThreadId }
+          { clientRequestId, dispatch, saveThreadId },
         );
       }
-
     };
 
     // Set up message listener

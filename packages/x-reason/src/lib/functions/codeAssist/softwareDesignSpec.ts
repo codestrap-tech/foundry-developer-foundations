@@ -1,12 +1,12 @@
 export async function softwareDesignSpec(
-    userInput: string,
-    num = 5,
-    dateRestrict?: string,
-    siteSearch?: string,
-    siteSearchFilter?: string,
-    searchEngineId?: string
+  userInput: string,
+  num = 5,
+  dateRestrict?: string,
+  siteSearch?: string,
+  siteSearchFilter?: string,
+  searchEngineId?: string,
 ): Promise<string> {
-    const system = `
+  const system = `
 You are a helpful AI engineering architect assistant that specializes in formulating design specification from user input.
 Your job is to search the web and create a clean specification grounded in your search results and knowledge that solves for the user inputs.
 
@@ -23,7 +23,7 @@ You always carefully evaluate user input before crafting your search queries and
 You never under any circumstances ask clarifying questions. Just use best practice and judgement.
   `;
 
-    const user = `
+  const user = `
 Generate a design specification that solves for the user input by searching the web for relevant documentation.
 
 ### Hard Rules for Web Search
@@ -59,80 +59,88 @@ Include optional suggested enhancements over the MVP solution
 ${userInput}
   `;
 
-    const response = await fetch('https://api.openai.com/v1/responses', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${process.env.OPEN_AI_KEY}`,
+  const response = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.OPEN_AI_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'gpt-5-mini',
+      input: [
+        { role: 'system', content: [{ type: 'input_text', text: system }] },
+        { role: 'user', content: [{ type: 'input_text', text: user }] },
+      ],
+      reasoning: { effort: 'low' },
+      text: { verbosity: 'low' },
+      tools: [
+        {
+          type: 'web_search',
+          user_location: { type: 'approximate', country: 'US' },
         },
-        body: JSON.stringify({
-            model: 'gpt-5-mini',
-            input: [
-                { role: 'system', content: [{ type: 'input_text', text: system }] },
-                { role: 'user', content: [{ type: 'input_text', text: user }] },
-            ],
-            reasoning: { "effort": "low" },
-            text: { verbosity: 'low' },
-            tools: [
-                {
-                    type: 'web_search',
-                    user_location: { type: 'approximate', country: 'US' },
-                },
-            ],
-            store: true,
-        }),
-    });
+      ],
+      store: true,
+    }),
+  });
 
-    const data = (await response.json()) as any;
+  const data = (await response.json()) as any;
 
-    // Robustly collect all assistant text from the new Responses API shape
-    const outputItems: any[] = Array.isArray(data?.output) ? data.output : [];
-    const textChunks: string[] = [];
-    const annotations: any[] = [];
+  // Robustly collect all assistant text from the new Responses API shape
+  const outputItems: any[] = Array.isArray(data?.output) ? data.output : [];
+  const textChunks: string[] = [];
+  const annotations: any[] = [];
 
-    for (const item of outputItems) {
-        if (item?.type === 'message' && Array.isArray(item.content)) {
-            for (const c of item.content) {
-                if (typeof c?.text === 'string') textChunks.push(c.text);
-                if (Array.isArray(c?.annotations)) annotations.push(...c.annotations.filter(Boolean));
-            }
-        }
+  for (const item of outputItems) {
+    if (item?.type === 'message' && Array.isArray(item.content)) {
+      for (const c of item.content) {
+        if (typeof c?.text === 'string') textChunks.push(c.text);
+        if (Array.isArray(c?.annotations))
+          annotations.push(...c.annotations.filter(Boolean));
+      }
     }
+  }
 
-    // Some SDKs expose a convenience concatenation; use as a fallback if present
-    const mainText = (typeof data?.output_text === 'string' && data.output_text.trim().length > 0)
-        ? data.output_text
-        : textChunks.join('\n\n').trim();
+  // Some SDKs expose a convenience concatenation; use as a fallback if present
+  const mainText =
+    typeof data?.output_text === 'string' && data.output_text.trim().length > 0
+      ? data.output_text
+      : textChunks.join('\n\n').trim();
 
-    // Extract URL citations from annotations (GPT-5 emits `type: "url_citation"`)
-    type UrlCitation = { type?: string; url?: string; title?: string | null | undefined };
-    const urlCitations: UrlCitation[] = annotations.filter(
-        (a: UrlCitation) => (a?.type ?? '').toLowerCase() === 'url_citation' && a?.url
-    );
+  // Extract URL citations from annotations (GPT-5 emits `type: "url_citation"`)
+  type UrlCitation = {
+    type?: string;
+    url?: string;
+    title?: string | null | undefined;
+  };
+  const urlCitations: UrlCitation[] = annotations.filter(
+    (a: UrlCitation) =>
+      (a?.type ?? '').toLowerCase() === 'url_citation' && a?.url,
+  );
 
-    // Dedupe by URL
-    const deduped = Array.from(new Map(urlCitations.map((c) => [c.url!, c])).values());
+  // Dedupe by URL
+  const deduped = Array.from(
+    new Map(urlCitations.map((c) => [c.url!, c])).values(),
+  );
 
-    // Build "Sources" markdown
-    const sourcesMd =
-        deduped.length > 0
-            ? `\n\n---\n### Sources\n${deduped
-                .map((c, i) => {
-                    const url = c.url!;
-                    let title = (c.title || '').trim();
-                    if (!title) {
-                        try {
-                            const { hostname } = new URL(url);
-                            title = hostname.replace(/^www\./, '');
-                        } catch {
-                            title = url;
-                        }
-                    }
-                    return `${i + 1}. [${title}](${url})`;
-                })
-                .join('\n')}\n`
-            : '';
+  // Build "Sources" markdown
+  const sourcesMd =
+    deduped.length > 0
+      ? `\n\n---\n### Sources\n${deduped
+          .map((c, i) => {
+            const url = c.url!;
+            let title = (c.title || '').trim();
+            if (!title) {
+              try {
+                const { hostname } = new URL(url);
+                title = hostname.replace(/^www\./, '');
+              } catch {
+                title = url;
+              }
+            }
+            return `${i + 1}. [${title}](${url})`;
+          })
+          .join('\n')}\n`
+      : '';
 
-    return `${mainText}${sourcesMd}`;
-
+  return `${mainText}${sourcesMd}`;
 }

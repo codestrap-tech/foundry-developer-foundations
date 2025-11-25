@@ -5,27 +5,35 @@ import {
   Larry,
   LarryResponse,
 } from '@codestrap/developer-foundations-agents-vickie-bennie';
-import { container, LarryAgentFactory } from '@codestrap/developer-foundations-di';
+import {
+  container,
+  LarryAgentFactory,
+} from '@codestrap/developer-foundations-di';
 import {
   Context,
   MachineDao,
   ThreadsDao,
   TYPES,
 } from '@codestrap/developer-foundations-types';
-import { SupportedCodingAgents, SupportedEngines } from '@codestrap/developer-foundations-types';
+import {
+  SupportedCodingAgents,
+  SupportedEngines,
+} from '@codestrap/developer-foundations-types';
 import 'dotenv/config';
 import { uuidv4 } from '@codestrap/developer-foundations-utils';
 
 export async function googleCodingAgent(
   executionId?: string,
   contextUpdateInput?: string,
-  task?: string
+  task?: string,
 ): Promise<{ executionId: string; error?: string }> {
   try {
     // make sure correct LarryCodingAgentFactory is bound
     if (container.isBound(TYPES.LarryCodingAgentFactory)) {
       container.unbind(TYPES.LarryCodingAgentFactory);
-      container.bind(TYPES.LarryCodingAgentFactory).toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
+      container
+        .bind(TYPES.LarryCodingAgentFactory)
+        .toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
     }
 
     const larry = new Larry();
@@ -42,7 +50,7 @@ export async function googleCodingAgent(
         `# User Question
         ${answer}
         `,
-        process.env.FOUNDRY_TEST_USER
+        process.env.FOUNDRY_TEST_USER,
       );
       executionId = result.executionId;
 
@@ -87,7 +95,7 @@ export async function googleCodingAgent(
       console.log('currentStateId:: ', stateId);
       console.log(
         'running next state with contextUpdateInput:: ',
-        contextUpdateInput
+        contextUpdateInput,
       );
       await larry.getNextState(
         undefined,
@@ -95,7 +103,7 @@ export async function googleCodingAgent(
         executionId,
         contextUpdateInput,
         SupportedEngines.GOOGLE_SERVICES_CODE_ASSIST,
-        true
+        true,
       );
     }
 

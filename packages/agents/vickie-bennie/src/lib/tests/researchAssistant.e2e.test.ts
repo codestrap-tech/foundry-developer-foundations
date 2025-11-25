@@ -24,7 +24,7 @@ if (!process.env.E2E) {
           'd1', // restrict to past 24 hours
           undefined, //you can restrict to a specific site if you want: 'finance.yahoo.com',
           undefined, //include or exclude: 'i' = include results from 'finance.yahoo.com',
-          process.env.GOOGLE_SEARCH_ENGINE_MARKETS
+          process.env.GOOGLE_SEARCH_ENGINE_MARKETS,
         );
 
         expect(results).toBeDefined();

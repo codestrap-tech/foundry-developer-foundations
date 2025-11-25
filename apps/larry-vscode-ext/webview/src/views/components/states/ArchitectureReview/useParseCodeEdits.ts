@@ -18,8 +18,8 @@ export function parseCodeEdits(input: string): CodeEdits[] {
       typeWord === 'ADDED'
         ? 'CREATE'
         : typeWord === 'MODIFIED'
-        ? 'MODIFY'
-        : 'DELETE';
+          ? 'MODIFY'
+          : 'DELETE';
     const startIdx = match.index + match[0].length;
     const nextMatch = fileRegex.exec(input);
     const endIdx = nextMatch ? nextMatch.index : input.length;

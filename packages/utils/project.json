@@ -33,6 +33,26 @@
       "options": {
         "jestConfig": "packages/utils/jest.config.ts"
       }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/utils",
+        "commands": [
+          "prettier-package-json --list-different",
+          "prettier --config ../../.prettierrc --ignore-path ../../.prettierignore --check ."
+        ]
+      }
+    },
+    "format:write": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/utils",
+        "commands": [
+          "prettier-package-json --write",
+          "prettier --config ../../.prettierrc --ignore-path ../../.prettierignore --write ."
+        ]
+      }
     }
   }
 }

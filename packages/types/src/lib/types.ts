@@ -43,7 +43,7 @@ export type ResearchAssistant = (
   dateRestrict?: string,
   siteSearch?: string,
   siteSearchFilter?: string,
-  searchEngineId?: string
+  searchEngineId?: string,
 ) => Promise<string>;
 
 export type CodingResearchAssistant = (
@@ -52,7 +52,7 @@ export type CodingResearchAssistant = (
   dateRestrict?: string,
   siteSearch?: string,
   siteSearchFilter?: string,
-  searchEngineId?: string
+  searchEngineId?: string,
 ) => Promise<string>;
 
 export type CodingArchitect = (
@@ -61,7 +61,7 @@ export type CodingArchitect = (
   dateRestrict?: string,
   siteSearch?: string,
   siteSearchFilter?: string,
-  searchEngineId?: string
+  searchEngineId?: string,
 ) => Promise<string>;
 
 // Schema Definitions for compute module
@@ -90,7 +90,7 @@ export const Schemas = {
           body: Type.Optional(Type.String()),
           id: Type.Optional(Type.String()),
           threadId: Type.Optional(Type.String()),
-        })
+        }),
       ),
     }),
   },
@@ -102,7 +102,7 @@ export const Schemas = {
           users: Type.Array(Type.String()),
           labelIds: Type.Array(Type.String()),
           labelFilterBehavior: Type.String(),
-        })
+        }),
       ),
     }),
     output: Type.Object({
@@ -134,7 +134,7 @@ export const Schemas = {
         Type.Object({
           start_hour: Type.Number({ default: 9 }),
           end_hour: Type.Number({ default: 17 }),
-        })
+        }),
       ),
       timezone: Type.String(),
     }),
@@ -144,7 +144,7 @@ export const Schemas = {
           start: Type.String(),
           end: Type.String(),
           score: Type.Number(),
-        })
+        }),
       ),
       message: Type.String(),
     }),
@@ -290,10 +290,10 @@ export type MeetingRequest = {
   participants: Array<string>;
   subject: string;
   timeframe_context:
-  | 'user defined exact date/time'
-  | 'as soon as possible'
-  | 'this week'
-  | 'next week';
+    | 'user defined exact date/time'
+    | 'as soon as possible'
+    | 'this week'
+    | 'next week';
   localDateString?: string;
   duration_minutes: number;
   working_hours: {
@@ -332,13 +332,13 @@ type GptSpecificToolChoice = {
 
 type GptTool = {
   function?:
-  | {
-    name: string;
-    description?: string | undefined;
-    strict?: boolean | undefined;
-    parameters: Map<string, string>;
-  }
-  | undefined;
+    | {
+        name: string;
+        description?: string | undefined;
+        strict?: boolean | undefined;
+        parameters: Map<string, string>;
+      }
+    | undefined;
 };
 
 type GptToolChoice = {
@@ -467,7 +467,7 @@ export type EnergyService = {
     scenarioPrices?: number[],
     caGallonsYearn?: number,
     caGdp?: number,
-    caShareUsGdp?: number
+    caShareUsGdp?: number,
   ) => Promise<GasScenarioResult[]>;
   getVegaChartData: (results: GasScenarioResult[]) => VegaGasTrackerData;
 };
@@ -763,9 +763,9 @@ export type VersionControlService = {
     repo: string;
     path: string;
     message: string;
-    content: string | Buffer;   // raw content, will be base64-encoded
+    content: string | Buffer; // raw content, will be base64-encoded
     branch?: string;
-    sha?: string;               // required for updates
+    sha?: string; // required for updates
     committer?: { name: string; email: string };
     author?: { name: string; email: string };
   }) => Promise<{
@@ -784,12 +784,12 @@ export type VersionControlService = {
 
 export type OfficeService = {
   getAvailableMeetingTimes: (
-    meetingRequest: MeetingRequest
+    meetingRequest: MeetingRequest,
   ) => Promise<FindOptimalMeetingTimeOutput>;
   scheduleMeeting: (meeting: CalendarContext) => Promise<ScheduleMeetingOutput>;
   sendEmail: (email: EmailContext) => Promise<SendEmailOutput>;
   readEmailHistory: (
-    context: ReadEmailHistoryContext
+    context: ReadEmailHistoryContext,
   ) => Promise<ReadEmailOutput>;
   watchEmails: (context: WatchEmailsInput) => Promise<WatchEmailsOutput>;
 };
@@ -1002,7 +1002,7 @@ export type TicketsDao = {
     severity: string,
     status: string,
     points?: number,
-    assignees?: string
+    assignees?: string,
   ) => Promise<Tickets>;
   delete: (id: string) => Promise<void>;
   read: (id: string) => Promise<Tickets>;
@@ -1019,7 +1019,7 @@ export type MachineDao = {
     state: string,
     logs: string,
     lockOwner?: string,
-    lockUntil?: number
+    lockUntil?: number,
   ) => Promise<MachineExecutions>;
   delete: (machineExecutionId: string) => Promise<void>;
   read: (machineExecutionId: string) => Promise<MachineExecutions>;
@@ -1037,7 +1037,7 @@ export type CommsDao = {
     owner: string,
     questionPrompt?: string,
     tokens?: number,
-    id?: string
+    id?: string,
   ) => Promise<Communications>;
   delete: (id: string) => Promise<void>;
   read: (id: string) => Promise<Communications>;
@@ -1057,20 +1057,20 @@ export type RfpRequestsDao = {
     vendorId: string,
     machineExecutionId: string,
     id?: string,
-    rfpResponseStatus?: number
+    rfpResponseStatus?: number,
   ) => Promise<RfpRequests>;
   delete: (id: string) => Promise<void>;
   read: (id: string) => Promise<RfpRequests>;
   search: (
     machineExecutionId: string,
-    vendorId: string
+    vendorId: string,
   ) => Promise<RfpRequests>;
 };
 
 export type RangrRequestsDao = {
   submit: (
     rfp: string,
-    machineExecutionId: string
+    machineExecutionId: string,
   ) => Promise<RfpRequestResponse>;
 };
 
@@ -1079,7 +1079,7 @@ export type MemoryRecallDao = {
     id: string,
     originalText: string,
     source: string,
-    userId?: string
+    userId?: string,
   ) => Promise<MemoryRecall>;
   delete: (id: string) => Promise<void>;
   read: (id: string) => Promise<MemoryRecall>;
@@ -1094,7 +1094,7 @@ export type TrainingDataDao = {
     xReason: string,
     machine?: string,
     solution?: string,
-    humanReview?: string
+    humanReview?: string,
   ) => Promise<TrainingData>;
   delete: (id: string) => Promise<void>;
   read: (id: string) => Promise<TrainingData>;
@@ -1120,14 +1120,14 @@ export type ContactsDao = {
     phoneNumberSecondary?: string,
     relationshipStatus?: string[],
     role?: string,
-    talksTo?: string
+    talksTo?: string,
   ) => Promise<Contacts>;
   delete: (id: string) => Promise<void>;
   read: (id: string) => Promise<Contacts>;
   search: (
     fullName: string,
     company: string,
-    pageSize?: number
+    pageSize?: number,
   ) => Promise<Contacts[]>;
 };
 

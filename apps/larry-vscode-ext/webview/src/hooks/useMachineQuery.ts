@@ -18,7 +18,7 @@ export function useMachineQuery(baseUrl: string, machineId?: string) {
       staleTime: 1000,
       refetchInterval: false,
     },
-    queryClient
+    queryClient,
   );
 
   return query;

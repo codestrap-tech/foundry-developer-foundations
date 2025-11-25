@@ -88,7 +88,7 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
             const { executionId } = await googleCodingAgent(
               undefined,
               undefined,
-              userTask
+              userTask,
             );
 
             const threadId = executionId;
@@ -128,14 +128,14 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
             // Log the error but don't try to send response since it's already sent
             console.error(
               '[threads.routes] Async thread creation failed:',
-              asyncErr
+              asyncErr,
             );
           }
         });
       } catch (err) {
         next(err);
       }
-    }
+    },
   );
 
   return r;

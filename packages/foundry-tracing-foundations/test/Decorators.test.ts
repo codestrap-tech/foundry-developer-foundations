@@ -65,8 +65,8 @@ describe('Tracing', () => {
               expires_in: 3600,
               token_type: 'Bearer',
             }),
-            { status: 200, headers: { 'Content-Type': 'application/json' } }
-          )
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          ),
         );
       }
       return Promise.reject(new Error('URL not matched'));
@@ -89,13 +89,13 @@ describe('Tracing', () => {
 
     // child span
     const foundTelemtryCall = calls.filter((item) =>
-      item[0].match(/\/actions\/collect-telemetry\/apply/)
+      item[0].match(/\/actions\/collect-telemetry\/apply/),
     );
     const [childUrl, childOpts] = foundTelemtryCall[0];
     expect(childUrl).toMatch(/\/actions\/collect-telemetry\/apply/);
     expect(childOpts.method).toBe('POST');
     expect(JSON.parse(JSON.parse(childOpts.body).parameters.inputJSON)).toEqual(
-      childTelemetryPayload
+      childTelemetryPayload,
     );
 
     // parent span

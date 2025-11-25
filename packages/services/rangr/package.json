@@ -4,15 +4,15 @@
   "type": "commonjs",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
-  "publishConfig": {
-    "access": "public"
-  },
   "dependencies": {
     "@codestrap/developer-foundations-types": "*",
+    "@codestrap/developer-foundations-utils": "0.0.1",
     "@osdk/client": "^2.2.1",
     "@osdk/foundry.admin": "^2.22.0",
     "@osdk/oauth": "^1.1.2",
-    "tslib": "^2.3.0",
-    "@codestrap/developer-foundations-utils": "0.0.1"
+    "tslib": "^2.3.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -14,7 +14,7 @@ export function buildApp() {
     // Allow headers you actually use
     res.setHeader(
       'Access-Control-Allow-Headers',
-      'Content-Type, Idempotency-Key, Client-Request-Id'
+      'Content-Type, Idempotency-Key, Client-Request-Id',
     );
     // Allow methods you use
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
@@ -37,7 +37,7 @@ export function buildApp() {
 
         return compression.filter(req, res);
       },
-    })
+    }),
   );
   app.use(express.json()); // per your instruction, no explicit size limit here
   app.use(requestId());

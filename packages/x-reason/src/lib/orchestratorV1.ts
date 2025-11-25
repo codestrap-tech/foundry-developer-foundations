@@ -2,10 +2,7 @@ import { State } from 'xstate';
 
 import { xReasonFactory } from './factory';
 import { SupportedEngines } from '@codestrap/developer-foundations-types';
-import {
-  headlessInterpreter,
-  engineV1 as engine,
-} from '../';
+import { headlessInterpreter, engineV1 as engine } from '../';
 import {
   sanitizeJSONString,
   uuidv4,
@@ -23,7 +20,6 @@ import {
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 
-
 export async function getState(
   solution: Solutions,
   forward = true,
@@ -31,14 +27,15 @@ export async function getState(
   xreason: SupportedEngines = SupportedEngines.COMS,
   persistMachineOnTransition = false,
 ) {
-  const { programmer, aiTransition, evaluate, functionCatalog } = xReasonFactory(xreason)({});
+  const { programmer, aiTransition, evaluate, functionCatalog } =
+    xReasonFactory(xreason)({});
   let currentState: State<Context, MachineEvent> | undefined;
   let pendingAsyncOperationsCount = 0;
 
   const dispatch = (action: ActionType) => {
     console.log(`route dispatch callback called`);
     switch (action.type) {
-      case "SET_STATE":
+      case 'SET_STATE':
         currentState = action.value?.currentState as State<
           Context,
           MachineEvent
@@ -68,12 +65,12 @@ export async function getState(
           jsonState,
           getLog(solution.id) ?? '',
           '', // we have to send default values for lockOwner and lockUntil or the OSDK will shit a brick. It still can't handle optional params
-          1
+          1,
         );
       } catch (e) {
         console.log(e);
       } finally {
-        pendingAsyncOperationsCount--
+        pendingAsyncOperationsCount--;
       }
     }
   };
@@ -93,9 +90,12 @@ export async function getState(
   try {
     execution = await machineDao.read(solution.id);
   } catch (e) {
-    const error = (e as Error);
+    const error = e as Error;
 
-    log(solution.id, `machineDao.read returned the following error:\n${error.message}\n${error.stack}`);
+    log(
+      solution.id,
+      `machineDao.read returned the following error:\n${error.message}\n${error.stack}`,
+    );
     console.log(e);
   }
 
@@ -110,7 +110,7 @@ export async function getState(
     status: 0,
     solution: sanitizeJSONString(solution.plan),
     stack: [],
-    ...workflow,//capture any incoming updates from the UI Layer
+    ...workflow, //capture any incoming updates from the UI Layer
   };
 
   // if a state definition is defined we want to use it and transfer the updated state to it
@@ -121,7 +121,10 @@ export async function getState(
       const keys = Object.keys(workflow);
       keys.forEach((key) => {
         // we use destructing to preserve existing values not in the workflow params
-        stateDefinition.context[key] = { ...stateDefinition.context[key], ...workflow[key] };
+        stateDefinition.context[key] = {
+          ...stateDefinition.context[key],
+          ...workflow[key],
+        };
       });
     }
   }
@@ -130,17 +133,25 @@ export async function getState(
   //stateDefinition?.context?.stack?.[stateDefinition.context.stack.length-1]
   const savePoint =
     stateDefinition?.context?.stack?.[
-    stateDefinition?.context?.stack.length - 1
+      stateDefinition?.context?.stack.length - 1
     ];
   const previousState =
     stateDefinition?.context?.stack?.[
-    stateDefinition?.context?.stack.length - 2
+      stateDefinition?.context?.stack.length - 2
     ];
 
-  if (forward && savePoint && stateDefinition && savePoint !== stateDefinition.value) {
-    log(solution.id, `resetting stateDefinition.value from ${stateDefinition.value} to ${savePoint}`);
+  if (
+    forward &&
+    savePoint &&
+    stateDefinition &&
+    savePoint !== stateDefinition.value
+  ) {
+    log(
+      solution.id,
+      `resetting stateDefinition.value from ${stateDefinition.value} to ${savePoint}`,
+    );
     console.log(
-      `resetting stateDefinition.value from ${stateDefinition.value} to ${savePoint}`
+      `resetting stateDefinition.value from ${stateDefinition.value} to ${savePoint}`,
     );
 
     stateDefinition.value = savePoint;
@@ -151,9 +162,12 @@ export async function getState(
     previousState !== stateDefinition.value
   ) {
     console.log(
-      `resetting stateDefinition.value from ${stateDefinition.value} to ${previousState}`
+      `resetting stateDefinition.value from ${stateDefinition.value} to ${previousState}`,
     );
-    log(solution.id, `resetting stateDefinition.value from ${stateDefinition.value} to ${previousState}`);
+    log(
+      solution.id,
+      `resetting stateDefinition.value from ${stateDefinition.value} to ${previousState}`,
+    );
 
     stateDefinition.value = previousState;
     // remove the last element of the stack
@@ -162,15 +176,23 @@ export async function getState(
 
   if (!forward && stateDefinition) {
     // stateDefinition must be defined in these cases or you should get an error
-    const targetState: State<Context, MachineEvent> = State.create<Context, MachineEvent>(stateDefinition);
+    const targetState: State<Context, MachineEvent> = State.create<
+      Context,
+      MachineEvent
+    >(stateDefinition);
 
     // if we are not moving forward we do not want to rerun the machine or effect its state
     // we just want to return the previous state and let the consumer execute by calling next
     const context = targetState.context;
     const jsonState = JSON.stringify(targetState);
 
-    log(solution.id, `moving backward, returning previous state of ${targetState.value}`);
-    console.log(`moving backward, returning previous state of ${targetState.value}`);
+    log(
+      solution.id,
+      `moving backward, returning previous state of ${targetState.value}`,
+    );
+    console.log(
+      `moving backward, returning previous state of ${targetState.value}`,
+    );
 
     return {
       stateMachine: machine,
@@ -181,14 +203,16 @@ export async function getState(
     };
   }
 
-  let startingState: State<Context, MachineEvent> | undefined = stateDefinition ? State.create<Context, MachineEvent>(stateDefinition) : undefined;
+  let startingState: State<Context, MachineEvent> | undefined = stateDefinition
+    ? State.create<Context, MachineEvent>(stateDefinition)
+    : undefined;
 
   const programmedState = machine?.find(
-    (value) => value.id === startingState?.value
+    (value) => value.id === startingState?.value,
   );
 
   if (stateDefinition && startingState) {
-    startingState = State.create<Context, MachineEvent>(stateDefinition)
+    startingState = State.create<Context, MachineEvent>(stateDefinition);
 
     if (programmedState?.includesLogic) {
       // Use an LLM to figure out what the next state should be based on the login in the last list and the current state of the machine
@@ -199,10 +223,13 @@ export async function getState(
         JSON.stringify(programmedState),
         JSON.stringify(stateDefinition.context),
         aiTransition,
-        solution.id
+        solution.id,
       );
 
-      log(solution.id, `The AI transition returned the target state of: ${nextState}`);
+      log(
+        solution.id,
+        `The AI transition returned the target state of: ${nextState}`,
+      );
       console.log(`resetting the starting state to: ${nextState}`);
       // Create a new State object with the updated value
       startingState = State.create<Context, MachineEvent>({
@@ -229,10 +256,10 @@ export async function getState(
   const result: StateConfig[] = machine
     ? machine
     : await engine.programmer.program(
-      solution.plan,
-      JSON.stringify(Array.from(toolsCatalog.entries())),
-      programmer
-    );
+        solution.plan,
+        JSON.stringify(Array.from(toolsCatalog.entries())),
+        programmer,
+      );
   // evaluate the generated program. Currently, this just checks if the machine compiles
   // in the future we will use specially trained evaluation models
   const evaluationResult = await engine.evaluator.evaluate(
@@ -241,12 +268,12 @@ export async function getState(
       states: result,
       tools: functions,
     },
-    evaluate
+    evaluate,
   );
   if (!evaluationResult.correct) {
     throw (
       evaluationResult.error ||
-      new Error("The provided solution failed evaluation")
+      new Error('The provided solution failed evaluation')
     );
   }
 
@@ -257,34 +284,46 @@ export async function getState(
     inputContext,
     startingState,
     // if the programmed state includes logic we need to manually trigger state execution
-    programmedState?.includesLogic ?? false
+    programmedState?.includesLogic ?? false,
   );
 
-  log(solution.id, `calling start on the machine with starting state of: ${startingState?.value}`);
-  console.log(`calling start on the machine with starting state of: ${startingState?.value}`);
+  log(
+    solution.id,
+    `calling start on the machine with starting state of: ${startingState?.value}`,
+  );
+  console.log(
+    `calling start on the machine with starting state of: ${startingState?.value}`,
+  );
 
   start();
 
-  if (stateDefinition && startingState && (programmedState?.includesLogic ?? false) === false) {
+  if (
+    stateDefinition &&
+    startingState &&
+    (programmedState?.includesLogic ?? false) === false
+  ) {
     // manually advance the machine if we did not use an LLM to advance the machine to a target state
-    // if we don't do this the machine will stay stuck on the current state 
+    // if we don't do this the machine will stay stuck on the current state
     send({ type: 'CONTINUE' });
   }
 
   let iterations = 0;
   // this effectively acts as a timeout. Be sure to adjust if you have long running functions in your states!
   const MAX_ITERATIONS = 300;
-  while (!done() && iterations < MAX_ITERATIONS || pendingAsyncOperationsCount > 0) {
+  while (
+    (!done() && iterations < MAX_ITERATIONS) ||
+    pendingAsyncOperationsCount > 0
+  ) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     log(solution.id, `awaiting results`);
-    console.log("awaiting results");
+    console.log('awaiting results');
 
     iterations++;
   }
 
   if (iterations >= MAX_ITERATIONS) {
-    console.warn("Exceeded maximum iterations while awaiting results.");
+    console.warn('Exceeded maximum iterations while awaiting results.');
   }
 
   const context = getContext();
