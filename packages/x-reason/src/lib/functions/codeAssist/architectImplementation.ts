@@ -7,16 +7,16 @@ import type {
   FileOp,
   MachineEvent,
   ThreadsDao,
-  UserIntent} from '@codestrap/developer-foundations-types';
-import {
-  VersionControlService,
+  UserIntent,
 } from '@codestrap/developer-foundations-types';
+import { VersionControlService } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 import { TYPES } from '@codestrap/developer-foundations-types';
+import { openAiImplementationGenerator } from './delegates';
 import {
-  openAiImplementationGenerator,
-} from './delegates';
-import { saveFileToGithub, writeFileIfNotFoundLocally } from './delegates/github';
+  saveFileToGithub,
+  writeFileIfNotFoundLocally,
+} from './delegates/github';
 
 async function verifyFilePaths(ops: FileOp[]) {
   const repoRootFolder = process.env.REPO_ROOT as string;
@@ -37,7 +37,7 @@ async function verifyFilePaths(ops: FileOp[]) {
             inInLocalDev
               ? `${repoRoot}/${repoRootFolder}`
               : `${repoRoot}/workspace`,
-            f.file
+            f.file,
           );
 
           if (!fs.existsSync(filePath)) {
@@ -46,7 +46,7 @@ async function verifyFilePaths(ops: FileOp[]) {
           } else {
             resolve(f);
           }
-        })
+        }),
     );
 
   const fileContents = await Promise.allSettled(promises);
@@ -65,7 +65,7 @@ export function parseAffectedFilesBlock(fileText: string) {
     const data = JSON.parse(jsonText);
     return data as FileOp[];
   } catch (err) {
-    console.error("Failed to parse affected files block:", err);
+    console.error('Failed to parse affected files block:', err);
     return undefined;
   }
 }
@@ -79,8 +79,8 @@ async function getEffectedFileList(plan: string) {
     if (retriedFailures.length > 0) {
       throw new Error(
         `can not resolve paths for the following files: ${JSON.stringify(
-          retriedFailures
-        )}`
+          retriedFailures,
+        )}`,
       );
     }
   }
@@ -90,7 +90,7 @@ async function getEffectedFileList(plan: string) {
 
 async function getEffectedFileBlocks(ops: FileOp[]) {
   const repoRootFolder = process.env.REPO_ROOT as string;
-  // TODO: for each file block classify the edits to be performed based on file type. 
+  // TODO: for each file block classify the edits to be performed based on file type.
   // Note you need a factory to get the delegate to handle the edits based on the path.
   // the factory can parse known paths like packages/google
   // If no delegate is found for a path just use a generic default delegate
@@ -119,7 +119,7 @@ async function getEffectedFileBlocks(ops: FileOp[]) {
             inInLocalDev
               ? `${repoRoot}/${repoRootFolder}`
               : `${repoRoot}/workspace`,
-            f.file
+            f.file,
           );
 
           if (!fs.existsSync(filePath)) {
@@ -140,7 +140,7 @@ async function getEffectedFileBlocks(ops: FileOp[]) {
             .catch((e) => {
               reject(e);
             });
-        })
+        }),
     );
 
   const fileContents = (
@@ -168,7 +168,7 @@ ${cur.contents}
 export async function architectImplementation(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<Completion> {
   // TODO fix me. the parallel attibute is not appearing on the state but the transitions
   // includes logic is being set to true by default. It should be false
@@ -322,7 +322,7 @@ ${fileBlocks}`;
   // TODO inject this
   const { answer, tokenomics } = await openAiImplementationGenerator(
     prompt,
-    system
+    system,
   );
 
   if (userResponse) {
@@ -341,7 +341,7 @@ ${fileBlocks}`;
   await threadsDao.upsert(
     JSON.stringify(parsedMessages),
     'cli-tool',
-    context.machineExecutionId!
+    context.machineExecutionId!,
   );
 
   const msg = `

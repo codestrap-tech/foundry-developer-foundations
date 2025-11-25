@@ -75,7 +75,7 @@ describe('proposeMeetingConflictResolutionsDelegate', () => {
             { start: optimalMeetingTimeStart, end: optimalMeetingTimeEnd },
           ]),
         }),
-      ])
+      ]),
     );
   });
 
@@ -113,8 +113,8 @@ describe('proposeMeetingConflictResolutionsDelegate', () => {
     // then
     expect(mockConsoleLog).toHaveBeenCalledWith(
       expect.stringContaining(
-        `Error fetching resolution blocks for event ${meetingId}: `
-      )
+        `Error fetching resolution blocks for event ${meetingId}: `,
+      ),
     );
     expect(result).toEqual(
       expect.arrayContaining([
@@ -123,7 +123,7 @@ describe('proposeMeetingConflictResolutionsDelegate', () => {
           email: userEmail,
           resolutionBlocks: [],
         }),
-      ])
+      ]),
     );
   });
 });

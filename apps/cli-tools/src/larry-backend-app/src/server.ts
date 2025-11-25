@@ -18,7 +18,7 @@ const shutdown = (signal: string) => {
     const googleRouter: any = (app as any)._router?.stack?.find(
       (l: any) =>
         l?.route?.path?.startsWith?.('/larry/agents/google/v1') ||
-        l?.name === 'bound dispatch'
+        l?.name === 'bound dispatch',
     );
     // safer: keep a reference when mounting the subapp, but this works for v0 demo
     // If you kept references on mount, call sse.shutdown() and idem.clear() directly

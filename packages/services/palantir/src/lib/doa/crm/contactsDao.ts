@@ -7,7 +7,10 @@ import { searchContacts } from './delegates/contacts/search';
 import { foundryClientFactory } from '../../factory/foundryClientFactory';
 
 export function makeContactsDao(): ContactsDao {
-  const { getToken, url, ontologyRid } = foundryClientFactory(process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE, undefined);
+  const { getToken, url, ontologyRid } = foundryClientFactory(
+    process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
+    undefined,
+  );
 
   return {
     // TODO code out all methods using OSDK API calls
@@ -29,10 +32,10 @@ export function makeContactsDao(): ContactsDao {
       phoneNumberSecondary?: string,
       relationshipStatus?: string[],
       role?: string,
-      talksTo?: string
+      talksTo?: string,
     ) => {
       console.log(
-        `stub upsert method for Contacts. We do not support upsert for this object type.`
+        `stub upsert method for Contacts. We do not support upsert for this object type.`,
       );
       return {
         primaryKey_,
@@ -57,7 +60,7 @@ export function makeContactsDao(): ContactsDao {
     },
     delete: async (id: string) =>
       console.log(
-        `stub delete method called for: ${id}. We do not support deleting RfpRequests but include the method as it is part of the interface.`
+        `stub delete method called for: ${id}. We do not support deleting RfpRequests but include the method as it is part of the interface.`,
       ),
     read: async (id: string) => {
       const token = await getToken();
@@ -67,7 +70,14 @@ export function makeContactsDao(): ContactsDao {
     },
     search: async (fullName: string, company: string, pageSize?: number) => {
       const token = await getToken();
-      const result = await searchContacts(fullName, company, token, ontologyRid, url, pageSize);
+      const result = await searchContacts(
+        fullName,
+        company,
+        token,
+        ontologyRid,
+        url,
+        pageSize,
+      );
 
       return result;
     },

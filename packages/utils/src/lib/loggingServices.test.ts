@@ -133,7 +133,7 @@ describe('createLoggingService', () => {
     const dbg = svc.__debug();
     const sum = dbg.executionIds.reduce(
       (acc, id) => acc + dbg.bufferBytes(id),
-      0
+      0,
     );
     expect(sum).toBe(dbg.totalBytes);
   });

@@ -110,13 +110,13 @@ describe('sendEmail', () => {
   it('throws an error when no email data is found in context', async () => {
     const invalidContext = { stack: [] } as any as Context;
     await expect(sendEmail(invalidContext)).rejects.toThrow(
-      'No email data found in context'
+      'No email data found in context',
     );
   });
 
   it('throws an error when required email fields are missing', async () => {
     await expect(sendEmail(missingRecipientContext)).rejects.toThrow(
-      'Invalid email data format in context'
+      'Invalid email data format in context',
     );
   });
 });

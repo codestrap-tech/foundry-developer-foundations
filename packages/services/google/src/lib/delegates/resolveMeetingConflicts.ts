@@ -12,7 +12,7 @@ export async function proposeMeetingConflictResolutionsDelegate(
   args: ProposeMeetingConflictResolutionsInput & {
     calendar: calendar_v3.Calendar;
     calendarSummaries: CalendarSummary[];
-  }
+  },
 ): Promise<ProposeMeetingConflictResolutionsOutput> {
   const calendarSummariesWithConflicts = args.calendarSummaries.map(
     (summary) => {
@@ -28,14 +28,14 @@ export async function proposeMeetingConflictResolutionsDelegate(
           });
         }),
       };
-    }
+    },
   );
 
   const allEvents = calendarSummariesWithConflicts.flatMap((summary) =>
     summary.events.map((event) => ({
       email: summary.email,
       ...event,
-    }))
+    })),
   );
 
   return await Promise.all(
@@ -48,14 +48,14 @@ export async function proposeMeetingConflictResolutionsDelegate(
         };
       } catch (e) {
         console.error(
-          `Error fetching resolution blocks for event ${event.id}: ${e}`
+          `Error fetching resolution blocks for event ${event.id}: ${e}`,
         );
         return {
           ...event,
           resolutionBlocks: [],
         };
       }
-    })
+    }),
   );
 
   function fetchResolutionBlocks(event: EventSummary) {
@@ -63,7 +63,7 @@ export async function proposeMeetingConflictResolutionsDelegate(
       args.timeFrameFrom,
       args.timezone,
       8,
-      17
+      17,
     );
 
     return findOptimalMeetingTimeV2({

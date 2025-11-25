@@ -18,7 +18,7 @@ export function useNextMachineState(baseUrl: string) {
             ...(prev as MachineResponse),
             status: 'running',
           };
-        }
+        },
       );
 
       return fetch(`${baseUrl}/machines/${machineId}/next`, {

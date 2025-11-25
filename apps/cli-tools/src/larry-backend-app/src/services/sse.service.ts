@@ -66,7 +66,7 @@ export class SSEService {
       set.forEach((res) => {
         try {
           res.write(
-            'event: shutdown\ndata: {"reason":"server_terminating"}\n\n'
+            'event: shutdown\ndata: {"reason":"server_terminating"}\n\n',
           );
           res.end();
         } catch {}
@@ -76,7 +76,7 @@ export class SSEService {
     this.globalClients.forEach((c) => {
       try {
         c.res.write(
-          'event: shutdown\ndata: {"reason":"server_terminating"}\n\n'
+          'event: shutdown\ndata: {"reason":"server_terminating"}\n\n',
         );
         c.res.end();
       } catch {}
@@ -89,7 +89,7 @@ export class SSEService {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader(
       'Access-Control-Allow-Headers',
-      'Content-Type, Idempotency-Key, Client-Request-Id, X-Request-Id'
+      'Content-Type, Idempotency-Key, Client-Request-Id, X-Request-Id',
     );
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS,HEAD');
 
@@ -114,7 +114,7 @@ export class SSEService {
     // comments are valid keep-alives in SSE
     const ping = ': ping\n\n';
     this.machineChannels.forEach((set) =>
-      set.forEach((res) => res.write(ping))
+      set.forEach((res) => res.write(ping)),
     );
     this.globalClients.forEach((c) => c.res.write(ping));
   }

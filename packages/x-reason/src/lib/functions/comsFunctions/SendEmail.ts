@@ -1,12 +1,13 @@
-import type { Context, MachineEvent } from '@codestrap/developer-foundations-types';
+import type {
+  Context,
+  MachineEvent,
+} from '@codestrap/developer-foundations-types';
 import { extractHtmlFromBackticks } from '@codestrap/developer-foundations-utils';
 import type {
   GeminiService,
-  OfficeService} from '@codestrap/developer-foundations-types';
-import {
-  TYPES,
-  MessageService
+  OfficeService,
 } from '@codestrap/developer-foundations-types';
+import { TYPES, MessageService } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 
 // Types for Email functionality
@@ -55,7 +56,7 @@ export function parseEmailContext(context: ContextData): EmailContext | null {
 
 async function parseResearchReport(
   context: Context,
-  task?: string
+  task?: string,
 ): Promise<string | undefined> {
   const user = `
 # Task
@@ -96,7 +97,7 @@ const EMAIL_FOOTER = `
 export async function sendEmail(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<EmailThread> {
   console.log('[EMAIL] Starting email send process...');
   const emailData = parseEmailContext(context as unknown as ContextData);
@@ -117,7 +118,7 @@ export async function sendEmail(
   });
 
   const messageService = await container.getAsync<OfficeService>(
-    TYPES.OfficeService
+    TYPES.OfficeService,
   );
 
   const response = await messageService.sendEmail({

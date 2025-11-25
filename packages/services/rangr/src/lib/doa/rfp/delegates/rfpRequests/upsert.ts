@@ -10,7 +10,7 @@ export async function upsertRfpRequest(
   machineExecutionId: string,
   client: RangrClient,
   id?: string,
-  rfpResponseStatus?: number
+  rfpResponseStatus?: number,
 ): Promise<RfpRequests> {
   console.log(`upsertThread threadId: ${id}`);
 
@@ -50,7 +50,7 @@ export async function upsertRfpRequest(
   }
 
   console.log(
-    `upsert RfpRequest action returned: ${result?.edits?.edits?.[0]}`
+    `upsert RfpRequest action returned: ${result?.edits?.edits?.[0]}`,
   );
 
   const rfpId = result.edits.edits[0].primaryKey as string;
@@ -63,7 +63,7 @@ export async function upsertRfpRequest(
 
   const rfpRequest = (await machineFetchResults.json()) as RfpRequests;
   console.log(
-    `the read RfpRequest request returned: ${JSON.stringify(rfpRequest)}`
+    `the read RfpRequest request returned: ${JSON.stringify(rfpRequest)}`,
   );
 
   return rfpRequest;

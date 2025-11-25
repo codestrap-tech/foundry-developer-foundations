@@ -5,20 +5,13 @@
   "projectType": "library",
   "release": {
     "version": {
-      "manifestRootsToUpdate": [
-        "dist/{projectRoot}"
-      ],
+      "manifestRootsToUpdate": ["dist/{projectRoot}"],
       "currentVersionResolver": "git-tag",
       "fallbackCurrentVersionResolver": "disk"
     }
   },
-  "implicitDependencies": [
-    "foundry-tracing-foundations"
-  ],
-  "tags": [
-    "type:agent",
-    "type:backend-app"
-  ],
+  "implicitDependencies": ["foundry-tracing-foundations"],
+  "tags": ["type:agent", "type:backend-app"],
   "targets": {
     "build": {
       "executor": "@nx/esbuild:esbuild",
@@ -31,9 +24,7 @@
         "tsConfig": "packages/agents/vickie-bennie/tsconfig.lib.json",
         "platform": "node",
         "bundle": true,
-        "format": [
-          "cjs"
-        ]
+        "format": ["cjs"]
       }
     },
     "nx-release-publish": {
@@ -43,18 +34,14 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": [
-        "{workspaceRoot}/coverage/{projectRoot}"
-      ],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "packages/agents/vickie-bennie/jest.config.ts"
       }
     },
     "e2e": {
       "executor": "@nx/jest:jest",
-      "outputs": [
-        "{workspaceRoot}/coverage/{projectRoot}"
-      ],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "packages/agents/vickie-bennie/jest.config.ts"
       },
@@ -68,9 +55,7 @@
     },
     "docker": {
       "executor": "nx:run-commands",
-      "dependsOn": [
-        "build"
-      ],
+      "dependsOn": ["build"],
       "options": {
         "cwd": "{projectRoot}",
         "command": "bash ./buildAndPublish.sh"

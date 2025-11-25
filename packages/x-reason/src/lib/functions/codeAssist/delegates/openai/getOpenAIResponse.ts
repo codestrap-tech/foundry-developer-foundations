@@ -2,7 +2,7 @@ export async function getOpenAIResponse(
   user: string,
   system: string,
   format?: Record<string, unknown>,
-  verbosity = 'low'
+  verbosity = 'low',
 ): Promise<string> {
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
@@ -36,7 +36,7 @@ export async function getOpenAIResponse(
 
   // Find the message block inside the output
   const msg = (resp.output ?? []).find(
-    (o: any) => o.type === 'message' && o.status === 'completed'
+    (o: any) => o.type === 'message' && o.status === 'completed',
   ).content[0].text;
   if (!msg) {
     throw new Error('No message block found in output');

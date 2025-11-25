@@ -6,7 +6,7 @@ import type {
 export async function sendSlackMessage(
   message: Message,
   baseUrl: string,
-  botToken: string
+  botToken: string,
 ): Promise<MessageResponse> {
   try {
     // Make the API call to Slack

@@ -82,7 +82,7 @@ export interface TelemetryPayload {
 }
 
 export async function collectTelemetryFetchWrapper(
-  inputJSON: string
+  inputJSON: string,
 ): Promise<string> {
   const collectTelemetry = container.get<TelemetryDao>(TYPES.TelemetryDao);
   const result = await collectTelemetry(inputJSON);

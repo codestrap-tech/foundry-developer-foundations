@@ -18,9 +18,7 @@ function Root() {
     </ExtensionStoreProvider>
   ) as any;
   return (
-    <QueryClientProvider client={queryClient}>
-      {content}
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{content}</QueryClientProvider>
   );
 }
 

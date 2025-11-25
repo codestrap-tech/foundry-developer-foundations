@@ -7,23 +7,17 @@
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/packages/larry-config",
         "main": "packages/larry-config/src/index.ts",
         "tsConfig": "packages/larry-config/tsconfig.lib.json",
-        "assets": [
-          "packages/larry-config/*.md"
-        ]
+        "assets": ["packages/larry-config/*.md"]
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": [
-        "{workspaceRoot}/coverage/{projectRoot}"
-      ],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "packages/larry-config/jest.config.ts"
       }

@@ -1,7 +1,11 @@
 import { Router, Request, Response } from 'express';
 import { SSEService } from '../../services/sse.service';
 import { container } from '@codestrap/developer-foundations-di';
-import { TYPES, LarryStream, LarryNotification } from '@codestrap/developer-foundations-types';
+import {
+  TYPES,
+  LarryStream,
+  LarryNotification,
+} from '@codestrap/developer-foundations-types';
 
 export function eventsRoutes(sse: SSEService) {
   const r = Router();
@@ -36,10 +40,15 @@ export function eventsRoutes(sse: SSEService) {
     res.flushHeaders?.();
 
     const larryStream = container.get<LarryStream>(TYPES.LarryStream);
-    const subscription = larryStream.subscribe(streamId, (notification: LarryNotification) => {
-      res.write(`event: larry.update\n`);
-      res.write(`data: ${JSON.stringify({ type: 'larry.update', streamId, payload: notification })}\n\n`);
-    });
+    const subscription = larryStream.subscribe(
+      streamId,
+      (notification: LarryNotification) => {
+        res.write(`event: larry.update\n`);
+        res.write(
+          `data: ${JSON.stringify({ type: 'larry.update', streamId, payload: notification })}\n\n`,
+        );
+      },
+    );
 
     res.on('close', () => {
       subscription.unsubscribe();

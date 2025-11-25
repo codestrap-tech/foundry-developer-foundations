@@ -13,7 +13,6 @@ const testModule = computeModule as TestModule;
 
 describe('Compute Module Registration', () => {
   beforeEach(() => {
-
     // Register operations with actual handlers
     testModule.register('Trace', collectTelemetryFetchWrapper);
 
@@ -48,7 +47,7 @@ describe('Compute Module Registration', () => {
 
     // Execute calendar operations
     const result = await testModule.listeners['Trace'].listener(
-      JSON.stringify(mockPayload)
+      JSON.stringify(mockPayload),
     );
 
     expect(result).toBeDefined();

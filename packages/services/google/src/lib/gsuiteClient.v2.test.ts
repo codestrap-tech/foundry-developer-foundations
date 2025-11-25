@@ -1,16 +1,20 @@
 import { makeGSuiteClientV2 } from './gsuiteClient.v2';
 import { makeGSuiteClient } from './gsuiteClient';
 import { searchDriveFiles } from './delegates/searchDriveFiles';
-import type { DriveSearchParams} from '@codestrap/developer-foundations-types';
+import type { DriveSearchParams } from '@codestrap/developer-foundations-types';
 import { DriveDateField } from '@codestrap/developer-foundations-types';
 
 // Mock the v1 client
 jest.mock('./gsuiteClient');
-const mockMakeGSuiteClient = makeGSuiteClient as jest.MockedFunction<typeof makeGSuiteClient>;
+const mockMakeGSuiteClient = makeGSuiteClient as jest.MockedFunction<
+  typeof makeGSuiteClient
+>;
 
 // Mock the searchDriveFiles delegate
 jest.mock('./delegates/searchDriveFiles');
-const mockSearchDriveFiles = searchDriveFiles as jest.MockedFunction<typeof searchDriveFiles>;
+const mockSearchDriveFiles = searchDriveFiles as jest.MockedFunction<
+  typeof searchDriveFiles
+>;
 
 // Mock console methods
 const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation();
@@ -36,10 +40,13 @@ describe('makeGSuiteClientV2', () => {
       auth_uri: 'https://accounts.google.com/o/oauth2/auth',
       token_uri: 'https://oauth2.googleapis.com/token',
       auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
-      client_x509_cert_url: 'https://www.googleapis.com/robot/v1/metadata/x509/service%40test.iam.gserviceaccount.com',
+      client_x509_cert_url:
+        'https://www.googleapis.com/robot/v1/metadata/x509/service%40test.iam.gserviceaccount.com',
       universe_domain: 'googleapis.com',
     };
-    process.env['GSUITE_SERVICE_ACCOUNT'] = Buffer.from(JSON.stringify(fakeCreds)).toString('base64');
+    process.env['GSUITE_SERVICE_ACCOUNT'] = Buffer.from(
+      JSON.stringify(fakeCreds),
+    ).toString('base64');
   });
 
   afterAll(() => {
@@ -70,7 +77,10 @@ describe('makeGSuiteClientV2', () => {
 
       const result = await client.searchDriveFiles(searchParams);
 
-      expect(mockSearchDriveFiles).toHaveBeenCalledWith(expect.any(Object), searchParams);
+      expect(mockSearchDriveFiles).toHaveBeenCalledWith(
+        expect.any(Object),
+        searchParams,
+      );
       expect(result).toEqual({
         message: 'Found 1 files matching your search criteria',
         files: mockSearchResult.files,
@@ -116,12 +126,14 @@ describe('makeGSuiteClientV2', () => {
           {
             id: 'file2',
             name: 'test2.docx',
-            mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            mimeType:
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           },
           {
             id: 'file3',
             name: 'test3.xlsx',
-            mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            mimeType:
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           },
         ],
         nextPageToken: 'next-token',
@@ -155,7 +167,9 @@ describe('makeGSuiteClientV2', () => {
         keywords: ['test'],
       };
 
-      await expect(client.searchDriveFiles(searchParams)).rejects.toThrow('Search failed');
+      await expect(client.searchDriveFiles(searchParams)).rejects.toThrow(
+        'Search failed',
+      );
     });
 
     it('should handle complex search parameters', async () => {
@@ -190,11 +204,15 @@ describe('makeGSuiteClientV2', () => {
 
       const result = await client.searchDriveFiles(searchParams);
 
-      expect(mockSearchDriveFiles).toHaveBeenCalledWith(expect.any(Object), searchParams);
-      expect(result.message).toBe('Found 1 files matching your search criteria');
+      expect(mockSearchDriveFiles).toHaveBeenCalledWith(
+        expect.any(Object),
+        searchParams,
+      );
+      expect(result.message).toBe(
+        'Found 1 files matching your search criteria',
+      );
       expect(result.totalResults).toBe(1);
     });
-    
   });
 
   describe('integration with v1 client', () => {
@@ -228,7 +246,9 @@ describe('makeGSuiteClientV2', () => {
       const error = new Error('Failed to create v1 client');
       mockMakeGSuiteClient.mockRejectedValue(error);
 
-      await expect(makeGSuiteClientV2(mockUser)).rejects.toThrow('Failed to create v1 client');
+      await expect(makeGSuiteClientV2(mockUser)).rejects.toThrow(
+        'Failed to create v1 client',
+      );
     });
   });
 });

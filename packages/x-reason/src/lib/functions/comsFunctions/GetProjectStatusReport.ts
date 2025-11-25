@@ -1,4 +1,7 @@
-import type { Context, MachineEvent } from '@codestrap/developer-foundations-types';
+import type {
+  Context,
+  MachineEvent,
+} from '@codestrap/developer-foundations-types';
 
 // TODO finish this type
 export type ProjectStatusReport = {
@@ -12,7 +15,7 @@ export type ProjectStatusReport = {
 export async function getProjectStatusReport(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<ProjectStatusReport> {
   return new Promise((resolve) => {
     setTimeout(() => {

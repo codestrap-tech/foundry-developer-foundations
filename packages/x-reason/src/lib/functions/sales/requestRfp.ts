@@ -1,12 +1,14 @@
-import type { Context, MachineEvent } from '@codestrap/developer-foundations-types';
+import type {
+  Context,
+  MachineEvent,
+} from '@codestrap/developer-foundations-types';
 import { uuidv4 } from '@codestrap/developer-foundations-utils';
 import type {
   RangrRequestsDao,
   RfpRequestsDao,
-  RfpRequestResponse} from '@codestrap/developer-foundations-types';
-import {
-  TYPES
+  RfpRequestResponse,
 } from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 
 function extractDomain(input: string) {
@@ -23,7 +25,7 @@ function extractVendorName(input: string) {
 export async function requestRfp(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<RfpRequestResponse> {
   const vendorName = extractVendorName(task!);
   const vendorId = extractDomain(task!);
@@ -43,12 +45,12 @@ export async function requestRfp(
   ) {
     // TODO inject ranger dao and execute
     const rangrRfpDao = container.get<RangrRequestsDao>(
-      TYPES.RangrRfpRequestsDao
+      TYPES.RangrRfpRequestsDao,
     );
     // submit to RANGR
     const rangrRfpResult = rangrRfpDao.submit(
       task!,
-      context.machineExecutionId!
+      context.machineExecutionId!,
     );
 
     console.log(`RANGR returned the following response: ${rangrRfpResult}`);

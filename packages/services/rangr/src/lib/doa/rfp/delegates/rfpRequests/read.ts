@@ -5,7 +5,7 @@ import type {
 
 export async function readRfpRequest(
   id: string,
-  client: RangrClient
+  client: RangrClient,
 ): Promise<RfpRequests> {
   console.log(`readRfpRequest id: ${id}`);
 
@@ -26,10 +26,10 @@ export async function readRfpRequest(
 
   if (apiResponse.errorCode) {
     console.log(
-      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`
+      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`,
     );
     throw new Error(
-      `An error occurred while calling read RfpRequest errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`
+      `An error occurred while calling read RfpRequest errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`,
     );
   }
 

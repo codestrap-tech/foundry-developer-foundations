@@ -1,8 +1,11 @@
 {
+  "private": true,
   "name": "@codestrap/foundry-developer-foundations",
   "version": "1.0.0",
   "description": "Foundry Developer Foundations - A reference implementation of the Foundry‑backed / GitHub‑native collaboration pattern",
   "license": "MIT",
+  "author": "Dorian Smiley <dsmiley@codestrap.me>",
+  "homepage": "https://github.com/doriansmiley/foundry-developer-foundations",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/doriansmiley/foundry-developer-foundations.git"
@@ -10,20 +13,18 @@
   "bugs": {
     "url": "https://github.com/doriansmiley/foundry-developer-foundations/issues"
   },
-  "homepage": "https://github.com/doriansmiley/foundry-developer-foundations",
-  "keywords": [
-    "foundry",
-    "palantir",
-    "typescript",
-    "nx",
-    "monorepo",
-    "ai",
-    "reasoning",
-    "tracing",
-    "telemetry"
-  ],
-  "author": "Dorian Smiley <dsmiley@codestrap.me>",
-  "private": true,
+  "scripts": {
+    "prebuild": "nx run-many --target=clean",
+    "build": "nx run-many --target=build",
+    "clean": "nx reset && rm -rf node_modules",
+    "format:check": "nx run-many --target=format:check",
+    "format:write": "nx run-many --target=format:write",
+    "lint": "nx run-many --target=lint",
+    "nx": "nx",
+    "remove-worktree": "node scripts/remove-worktree.js",
+    "remove-worktree-all": "node scripts/remove-worktree.js -- --all",
+    "test": "nx run-many --target=test"
+  },
   "workspaces": {
     "packages": [
       "packages/*",
@@ -33,19 +34,6 @@
     "ignore": [
       ".github/**"
     ]
-  },
-  "packageManager": "npm@10.9.0",
-  "scripts": {
-    "nx": "nx",
-    "build": "nx run-many --target=build",
-    "test": "nx run-many --target=test",
-    "lint": "nx run-many --target=lint",
-    "format:check": "nx run-many --target=format:check",
-    "format:write": "nx run-many --target=format:write",
-    "remove-worktree": "node scripts/remove-worktree.js",
-    "remove-worktree-all": "node scripts/remove-worktree.js -- --all",
-    "clean": "nx reset && rm -rf node_modules",
-    "prebuild": "nx run-many --target=clean"
   },
   "dependencies": {
     "@codestrap/developer-foundations.foundry-tracing-foundations": "^1.2.3",
@@ -174,10 +162,22 @@
     "verdaccio": "^6.0.5",
     "vsce": "^2.15.0"
   },
+  "keywords": [
+    "ai",
+    "foundry",
+    "monorepo",
+    "nx",
+    "palantir",
+    "reasoning",
+    "telemetry",
+    "tracing",
+    "typescript"
+  ],
   "engines": {
     "node": ">=22.13.0"
   },
   "nx": {
     "includedScripts": []
-  }
+  },
+  "packageManager": "npm@10.9.0"
 }

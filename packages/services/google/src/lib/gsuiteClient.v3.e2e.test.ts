@@ -34,7 +34,7 @@ if (!process.env.E2E) {
         timeFrameTo,
       }) => {
         console.log(
-          `Checking conflicts for ${emailForCalendarConflictResolution} from ${timeFrameFrom} to ${timeFrameTo}`
+          `Checking conflicts for ${emailForCalendarConflictResolution} from ${timeFrameFrom} to ${timeFrameTo}`,
         );
 
         const result = await client.proposeMeetingConflictResolutions({
@@ -62,9 +62,9 @@ if (!process.env.E2E) {
                 }),
               ]),
             }),
-          ] as ProposeMeetingConflictResolutionsOutput)
+          ] as ProposeMeetingConflictResolutionsOutput),
         );
-      }
+      },
     );
   });
 }

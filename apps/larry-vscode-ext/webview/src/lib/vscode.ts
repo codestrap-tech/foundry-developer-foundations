@@ -1,5 +1,5 @@
 // VSCode webview bridge
- 
+
 declare const acquireVsCodeApi: any;
 
 const vscode =

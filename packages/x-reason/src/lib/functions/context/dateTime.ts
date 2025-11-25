@@ -1,5 +1,8 @@
 import type { UserProfile } from '@codestrap/developer-foundations-types';
-import type { Context, MachineEvent } from '@codestrap/developer-foundations-types';
+import type {
+  Context,
+  MachineEvent,
+} from '@codestrap/developer-foundations-types';
 
 export type CurrentDateTime = {
   currentLocalDateTime: string;
@@ -10,15 +13,15 @@ export type CurrentDateTime = {
 export async function dateTime(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<CurrentDateTime> {
   console.log(
-    `dateTime called with context ${context} event ${event} task ${task}`
+    `dateTime called with context ${context} event ${event} task ${task}`,
   );
 
   // find the user profile state
   const lastStackKey = context?.stack?.find(
-    (stackItem) => stackItem.indexOf('userProfile') >= 0
+    (stackItem) => stackItem.indexOf('userProfile') >= 0,
   );
   const userDetails: UserProfile = {
     name: undefined,
@@ -43,7 +46,7 @@ export async function dateTime(
 
   const formatter = new Intl.DateTimeFormat(
     'en-US',
-    options as Intl.DateTimeFormatOptions
+    options as Intl.DateTimeFormatOptions,
   );
   const formatted = formatter.format(new Date());
 

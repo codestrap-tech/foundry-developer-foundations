@@ -1,5 +1,4 @@
-import type {
-  Tree} from '@nx/devkit';
+import type { Tree } from '@nx/devkit';
 import {
   formatFiles,
   joinPathFragments,
@@ -12,7 +11,7 @@ import type { GoogleClientGeneratorSchema } from './schema';
 import { GoogleGenAI } from '@google/genai';
 import * as dotenv from 'dotenv';
 dotenv.config({
-  path: path.resolve(process.cwd(), 'tools/src/generators/google-client/.env')
+  path: path.resolve(process.cwd(), 'tools/src/generators/google-client/.env'),
 });
 
 async function generateCode(user: string, system: string): Promise<string> {
@@ -51,7 +50,7 @@ ${user}`,
 
 export async function googleClientGenerator(
   tree: Tree,
-  options: GoogleClientGeneratorSchema
+  options: GoogleClientGeneratorSchema,
 ) {
   const libName = names(options.name);
   const fileName = names(options.fileName);
@@ -76,7 +75,7 @@ ${user}
 # Template
 ${template}
 `,
-    system
+    system,
   );
 
   // Read Nx project configuration
@@ -86,7 +85,7 @@ ${template}
   // Compute output path for generated factory
   const outputFile = joinPathFragments(
     projectRoot,
-    `src/lib/${fileName.fileName}.ts`
+    `src/lib/${fileName.fileName}.ts`,
   );
 
   // Ensure directory exists

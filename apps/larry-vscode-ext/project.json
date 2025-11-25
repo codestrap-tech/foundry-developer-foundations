@@ -32,9 +32,7 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": [
-        "{workspaceRoot}/coverage/apps/larry-vscode-ext"
-      ],
+      "outputs": ["{workspaceRoot}/coverage/apps/larry-vscode-ext"],
       "options": {
         "jestConfig": "apps/larry-vscode-ext/jest.config.ts",
         "passWithNoTests": true

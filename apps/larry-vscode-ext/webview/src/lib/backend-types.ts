@@ -101,7 +101,9 @@ export type FetchNextStatePayload = {
   contextUpdate: Record<string, any>;
 };
 
-export type FetchNextStateFn = (payload: FetchNextStatePayload) => Promise<Response>;
+export type FetchNextStateFn = (
+  payload: FetchNextStatePayload,
+) => Promise<Response>;
 
 /**
  * Common props passed to all state components in StateVisualization2

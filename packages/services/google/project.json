@@ -5,29 +5,21 @@
   "projectType": "library",
   "release": {
     "version": {
-      "manifestRootsToUpdate": [
-        "dist/{projectRoot}"
-      ],
+      "manifestRootsToUpdate": ["dist/{projectRoot}"],
       "currentVersionResolver": "git-tag",
       "fallbackCurrentVersionResolver": "disk"
     }
   },
-  "tags": [
-    "type:service"
-  ],
+  "tags": ["type:service"],
   "targets": {
     "build": {
       "executor": "@nx/js:tsc",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/packages/services/google",
         "main": "packages/services/google/src/index.ts",
         "tsConfig": "packages/services/google/tsconfig.lib.json",
-        "assets": [
-          "packages/services/google/*.md"
-        ]
+        "assets": ["packages/services/google/*.md"]
       }
     },
     "nx-release-publish": {
@@ -37,9 +29,7 @@
     },
     "test": {
       "executor": "@nx/jest:jest",
-      "outputs": [
-        "{workspaceRoot}/coverage/{projectRoot}"
-      ],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "packages/services/google/jest.config.ts"
       }

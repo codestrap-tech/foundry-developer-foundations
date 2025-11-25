@@ -9,7 +9,7 @@ import { foundryClientFactory } from '../../factory/foundryClientFactory';
 export function makeThreadsDao(): ThreadsDao {
   const { getToken, url, ontologyRid } = foundryClientFactory(
     process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
-    undefined
+    undefined,
   );
 
   return {
@@ -23,14 +23,14 @@ export function makeThreadsDao(): ThreadsDao {
         token,
         ontologyRid,
         url,
-        id
+        id,
       );
 
       return machine;
     },
     delete: async (id: string) =>
       console.log(
-        `stub delete method called for: ${id}. We do not support deleting threads but include the method as it is part of the interface.`
+        `stub delete method called for: ${id}. We do not support deleting threads but include the method as it is part of the interface.`,
       ),
     read: async (id: string) => {
       const token = await getToken();

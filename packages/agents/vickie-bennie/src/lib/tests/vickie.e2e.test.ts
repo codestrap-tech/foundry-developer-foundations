@@ -17,7 +17,7 @@ if (!process.env.E2E) {
         `
 What's coming up on my calendar tomorrow
                 `,
-        process.env.FOUNDRY_TEST_USER
+        process.env.FOUNDRY_TEST_USER,
       );
       expect(result.executionId).toBeDefined();
       expect(result.message).toBeDefined();
@@ -31,7 +31,7 @@ What's coming up on my calendar tomorrow
         `
 Get me caught up on my emails.
                 `,
-        process.env.FOUNDRY_TEST_USER
+        process.env.FOUNDRY_TEST_USER,
       );
       expect(result.executionId).toBeDefined();
       expect(result.message).toBeDefined();
@@ -45,7 +45,7 @@ Get me caught up on my emails.
         `
 Vickie, read me the page contents of https://docs.google.com/document/d/12Osa66iz9Z4FCM4fvZwbZGpqFghSMWYaEixYvwrBEns/edit?usp=sharing.
 `,
-        process.env.FOUNDRY_TEST_USER
+        process.env.FOUNDRY_TEST_USER,
       );
       expect(result.executionId).toBeDefined();
       expect(result.message).toBeDefined();
@@ -59,7 +59,7 @@ Vickie, read me the page contents of https://docs.google.com/document/d/12Osa66i
         `
 Schedule a meeting with me for today to discuss progression of Foundry Developer Foundations
                 `,
-        process.env.FOUNDRY_TEST_USER
+        process.env.FOUNDRY_TEST_USER,
       );
       expect(result.executionId).toBeDefined();
       expect(result.message).toBeDefined();
@@ -73,7 +73,7 @@ Schedule a meeting with me for today to discuss progression of Foundry Developer
         `
 Schedule a meeting with me for today at 12 PM to discuss progression of Foundry Developer Foundations
                 `,
-        process.env.FOUNDRY_TEST_USER
+        process.env.FOUNDRY_TEST_USER,
       );
       expect(result.executionId).toBeDefined();
       expect(result.message).toBeDefined();
@@ -87,7 +87,7 @@ Schedule a meeting with me for today at 12 PM to discuss progression of Foundry 
         `
 Schedule a meeting with me and Connor Deeks for today at 3 PM to discuss progression of Foundry Developer Foundations
                 `,
-        process.env.FOUNDRY_TEST_USER
+        process.env.FOUNDRY_TEST_USER,
       );
       expect(result.executionId).toBeDefined();
       expect(result.message).toBeDefined();
@@ -105,7 +105,7 @@ Then schedule a meeting with me for tomorrow 1:30 PM with the subject "Reminder 
 After that send a slack message to the Foundry Devs channel with a joke and include the current day time. Also let them know this is part of a a unit test and to ignore.
 Finally,send an email to me with the subject test and for the message tell me a joke and include the current day time.
                 `,
-        process.env.FOUNDRY_TEST_USER
+        process.env.FOUNDRY_TEST_USER,
       );
       expect(result.executionId).toBeDefined();
       expect(result.message).toBeDefined();

@@ -67,7 +67,14 @@ type TemplateRegistry = {
 export const templateRegistry: TemplateRegistry = {
   [SupportedTemplates.GSUITE_CLIENT]: {
     generator: 'google-client',
-    projectJson: async () => fs.promises.readFile(path.resolve(process.env.WORKSPACE_ROOT!, 'packages/services/google/project.json'), 'utf-8'),
+    projectJson: async () =>
+      fs.promises.readFile(
+        path.resolve(
+          process.env.WORKSPACE_ROOT!,
+          'packages/services/google/project.json',
+        ),
+        'utf-8',
+      ),
     samplePrompts: [
       `Create packages/services/google/src/lib/gsuiteClient.v3.ts implementing makeGSuiteClientV3 (TypeScript, Node.js 20.x) based on the existing v2 client (packages/services/google/src/lib/gsuiteClient.v2.ts). Use googleapis@149.0.0 and integrate with the new helper packages/services/google/src/lib/helpers/driveAttachmentProcessor.ts and the modified types in packages/types/src/lib/types.ts.
 
@@ -113,7 +120,7 @@ Files that must remain compatible:
 - New helper driveAttachmentProcessor.ts will be used by this client
 
 Generate the full contents of packages/services/google/src/lib/gsuiteClient.v3.ts implementing makeGSuiteClientV3 with the modified sendEmail behavior and the exact types/inputs/outputs described above.
-      `
+      `,
     ],
     promptGuide: `The prompt must include the client version to use, required permissions/scopes the method(s) to be added 
     or modified, and the method inputs such as file arrays, identifiers, etc and their types.
@@ -124,7 +131,14 @@ Generate the full contents of packages/services/google/src/lib/gsuiteClient.v3.t
   },
   [SupportedTemplates.FACTORY]: {
     generator: 'curry-factory',
-    projectJson: async () => fs.promises.readFile(path.resolve(process.env.WORKSPACE_ROOT!, 'packages/utils/project.json'), 'utf-8'),
+    projectJson: async () =>
+      fs.promises.readFile(
+        path.resolve(
+          process.env.WORKSPACE_ROOT!,
+          'packages/utils/project.json',
+        ),
+        'utf-8',
+      ),
     samplePrompts: [
       `Create a new factory using the template below that will:
 Manage retrieval of templates based on file paths in the moduleRegistry. 
@@ -134,7 +148,7 @@ The factory should:
 3. Load the file for the associated template using fs.promises as a string and return it 
 Rename all the placeholder variables for moduleRegistry, SupportedModules, etc to something contextually relevant for a template factory. 
 The ModuleInterface should also be renamed and have the property: template: string (path to the template to use)
- `
+ `,
     ],
     promptGuide: `The prompt should clearly outline the factory's purpose and shape of the proposed moduleRegistry.
     It should also include a description of the factory behavior and a propsal for the ModuleInterface shape.
@@ -168,10 +182,12 @@ The ModuleInterface should also be renamed and have the property: template: stri
 export const buildTemplateFactory = curry(
   async (
     registry: TemplateRegistry,
-    filePath: string
+    filePath: string,
   ): Promise<TemplateDefinition> => {
     const normalizedPath = path.normalize(filePath);
-    const entries = Object.entries(registry) as Array<[string, TemplateDefinition]>;
+    const entries = Object.entries(registry) as Array<
+      [string, TemplateDefinition]
+    >;
 
     // Step 1: Evaluate each Grok expression (treated as regex)
     for (const [patternKey, definition] of entries) {
@@ -186,7 +202,7 @@ export const buildTemplateFactory = curry(
 
     // Step 2: Not found
     throw new Error(`No matching template found for path: ${filePath}`);
-  }
+  },
 );
 
 /**
@@ -197,7 +213,9 @@ export const buildTemplateFactory = curry(
  *   const content = await getTemplate('/path/to/gsuite/clientConfig.ts');
  */
 export const templateFactory = () =>
-  buildTemplateFactory(templateRegistry) as (filePath: string) => Promise<TemplateDefinition>;
+  buildTemplateFactory(templateRegistry) as (
+    filePath: string,
+  ) => Promise<TemplateDefinition>;
 
 /**
  * Example Usage

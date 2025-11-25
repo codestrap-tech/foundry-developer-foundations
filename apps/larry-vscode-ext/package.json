@@ -1,25 +1,47 @@
 {
-  "name": "larry-vscode-ext",
-  "displayName": "Larry Coding Assistant",
-  "description": "Chat with Larry inside VS Code",
-  "version": "0.0.2",
-  "publisher": "Codestrap",
   "private": true,
-  "engines": {
-    "vscode": "^1.93.0"
-  },
-  "categories": [
-    "Other"
-  ],
+  "name": "larry-vscode-ext",
+  "version": "0.0.2",
+  "description": "Chat with Larry inside VS Code",
   "main": "./dist/extension.js",
   "files": [
     "dist/**",
     "media/**"
   ],
+  "scripts": {
+    "build": "tsc -p ./ && node scripts/bundle-webview.mjs",
+    "package": "vsce package",
+    "watch": "tsc -w -p ./ & node scripts/bundle-webview.mjs --watch"
+  },
+  "dependencies": {
+    "@mdxeditor/editor": "3.49.0",
+    "@vscode/webview-ui-toolkit": "^1.4.0",
+    "cm6-theme-basic-dark": "0.2.0",
+    "dompurify": "^3.2.7",
+    "highlight.js": "^11.11.1",
+    "marked": "^15.0.12",
+    "marked-highlight": "^2.2.2",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "@types/vscode": "^1.93.0",
+    "esbuild": "^0.19.2",
+    "preact": "^10.22.0",
+    "typescript": "^5.8.3",
+    "vsce": "^2.15.0"
+  },
+  "engines": {
+    "vscode": "^1.93.0"
+  },
   "activationEvents": [
     "onView:larryHome",
     "onStartupFinished",
     "onCustomEditor:larry.artifactEditor"
+  ],
+  "categories": [
+    "Other"
   ],
   "contributes": {
     "configuration": {
@@ -64,28 +86,6 @@
       }
     ]
   },
-  "scripts": {
-    "build": "tsc -p ./ && node scripts/bundle-webview.mjs",
-    "watch": "tsc -w -p ./ & node scripts/bundle-webview.mjs --watch",
-    "package": "vsce package"
-  },
-  "devDependencies": {
-    "@types/node": "^22.15.3",
-    "@types/vscode": "^1.93.0",
-    "esbuild": "^0.19.2",
-    "preact": "^10.22.0",
-    "typescript": "^5.8.3",
-    "vsce": "^2.15.0"
-  },
-  "dependencies": {
-    "@mdxeditor/editor": "3.49.0",
-    "cm6-theme-basic-dark": "0.2.0",
-    "@vscode/webview-ui-toolkit": "^1.4.0",
-    "dompurify": "^3.2.7",
-    "highlight.js": "^11.11.1",
-    "marked": "^15.0.12",
-    "marked-highlight": "^2.2.2",
-    "react": "19.0.0",
-    "react-dom": "19.0.0"
-  }
+  "displayName": "Larry Coding Assistant",
+  "publisher": "Codestrap"
 }

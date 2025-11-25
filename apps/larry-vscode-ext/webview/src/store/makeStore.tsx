@@ -11,7 +11,6 @@ type PropsType<S> = {
 };
 
 export function makeStore<S, A>(initialState: S, reducer: ReducerType<S, A>) {
-   
   const dispatchContext = createContext<DispatchType<A>>((action: A) => {});
   const storeContext = createContext<S>(initialState);
 
@@ -29,8 +28,7 @@ export function makeStore<S, A>(initialState: S, reducer: ReducerType<S, A>) {
         <storeContext.Provider value={store}>{children}</storeContext.Provider>
       </dispatchContext.Provider>
     );
-
-  }
+  };
   function useDispatch(): DispatchType<A> {
     return useContext(dispatchContext);
   }
@@ -38,7 +36,6 @@ export function makeStore<S, A>(initialState: S, reducer: ReducerType<S, A>) {
   function useStore(): S {
     return useContext(storeContext);
   }
-  
 
   return [StoreProvider, useDispatch, useStore] as const;
 }

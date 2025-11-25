@@ -15,7 +15,10 @@ import {
   TYPES,
   CreateGoogleSlidesInput,
 } from '@codestrap/developer-foundations-types';
-import { SupportedCodingAgents, SupportedEngines } from '@codestrap/developer-foundations-types';
+import {
+  SupportedCodingAgents,
+  SupportedEngines,
+} from '@codestrap/developer-foundations-types';
 import { LarryAgentFactory } from '@codestrap/larry-config';
 import 'dotenv/config';
 import { uuidv4 } from '@codestrap/developer-foundations-utils';
@@ -27,7 +30,7 @@ import { generateSlides } from '@codestrap/developer-foundations-x-reason';
 export async function googleCodingAgent(
   executionId?: string,
   contextUpdateInput?: string,
-  task?: string
+  task?: string,
 ) {
   const larry = new Larry();
   let result: LarryResponse | undefined;
@@ -40,7 +43,7 @@ export async function googleCodingAgent(
       `# User Question
       ${task}
       `,
-      process.env.FOUNDRY_TEST_USER
+      process.env.FOUNDRY_TEST_USER,
     );
 
     executionId = result.executionId;
@@ -52,7 +55,7 @@ export async function googleCodingAgent(
       executionId,
       contextUpdateInput,
       SupportedEngines.GOOGLE_SERVICES_CODE_ASSIST,
-      true
+      true,
     );
   }
 
@@ -91,7 +94,9 @@ export async function googleCodingAgent(
     }
 
     // get the system response by grabbing the last instance of system response from the messages array
-    const { messages, reviewRequired } = context[stateId] as AbstractReviewState;
+    const { messages, reviewRequired } = context[
+      stateId
+    ] as AbstractReviewState;
     const lastMessage = messages
       ?.slice()
       .reverse()
@@ -99,7 +104,8 @@ export async function googleCodingAgent(
 
     if (reviewRequired) {
       const approved =
-        (await select({ message: 'Approved', choices: ['yes', 'no'] })) === 'yes';
+        (await select({ message: 'Approved', choices: ['yes', 'no'] })) ===
+        'yes';
 
       if (!approved) {
         const userResponse = await input({
@@ -122,7 +128,6 @@ export async function googleCodingAgent(
 }
 
 async function runCreateGoogleSlides() {
-
   const filePath = await input({
     message: 'Enter the full file path to your conversation file',
   });
@@ -133,8 +138,11 @@ async function runCreateGoogleSlides() {
 
   const raw = await fs.promises.readFile(filePath, 'utf8');
 
-
-  const result = await generateSlides({requestId: 'cli-context', status:0}, undefined, raw);
+  const result = await generateSlides(
+    { requestId: 'cli-context', status: 0 },
+    undefined,
+    raw,
+  );
 
   console.log('\n=== Google Slides Creation Result ===\n');
   console.log('Successes:\n', JSON.stringify(result.successes, null, 2));

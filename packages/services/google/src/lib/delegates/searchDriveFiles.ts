@@ -2,10 +2,9 @@ import type { drive_v3 } from 'googleapis';
 import type {
   DriveSearchParams,
   DriveSearchResult,
-  DriveFile} from '@codestrap/developer-foundations-types';
-import {
-  DriveDateField,
+  DriveFile,
 } from '@codestrap/developer-foundations-types';
+import { DriveDateField } from '@codestrap/developer-foundations-types';
 
 /**
  * Builds a Google Drive search query from the provided parameters
@@ -49,15 +48,16 @@ function buildSearchQuery(params: DriveSearchParams): string {
           .join(' or ')})`
       : undefined;
 
-  const dateRangeField = params.dateRange?.field ?? DriveDateField.MODIFIED_TIME;
+  const dateRangeField =
+    params.dateRange?.field ?? DriveDateField.MODIFIED_TIME;
   const dateClause =
     params.dateRange?.startDate && params.dateRange?.endDate
       ? `${dateRangeField} >= '${params.dateRange.startDate.toISOString()}' and ${dateRangeField} <= '${params.dateRange.endDate.toISOString()}'`
       : params.dateRange?.startDate
-      ? `${dateRangeField} >= '${params.dateRange.startDate.toISOString()}'`
-      : params.dateRange?.endDate
-      ? `${dateRangeField} <= '${params.dateRange.endDate.toISOString()}'`
-      : undefined;
+        ? `${dateRangeField} >= '${params.dateRange.startDate.toISOString()}'`
+        : params.dateRange?.endDate
+          ? `${dateRangeField} <= '${params.dateRange.endDate.toISOString()}'`
+          : undefined;
 
   const mimeClause = params.mimeType?.trim()
     ? `mimeType = '${escapeKeywords(params.mimeType.trim())}'`
@@ -127,7 +127,7 @@ function convertDriveFile(driveApiFile: drive_v3.Schema$File): DriveFile {
  */
 export async function searchDriveFiles(
   driveClient: drive_v3.Drive,
-  params: DriveSearchParams
+  params: DriveSearchParams,
 ): Promise<DriveSearchResult> {
   const searchQuery = buildSearchQuery(params);
 
@@ -146,7 +146,7 @@ export async function searchDriveFiles(
   const driveApiResponse = await driveClient.files.list(driveApiRequestParams);
 
   const convertedFiles: DriveFile[] = (driveApiResponse.data.files || []).map(
-    convertDriveFile
+    convertDriveFile,
   );
 
   return {

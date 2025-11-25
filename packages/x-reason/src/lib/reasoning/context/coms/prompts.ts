@@ -1,10 +1,8 @@
-import {
-  xReasonFactory,
-  SupportTrainingDataTypes,
-} from '../../../factory';
+import { xReasonFactory, SupportTrainingDataTypes } from '../../../factory';
 import type {
   ActionType,
-  TrainingDataDao} from '@codestrap/developer-foundations-types';
+  TrainingDataDao,
+} from '@codestrap/developer-foundations-types';
 import {
   TYPES,
   SupportedEngines,
@@ -14,10 +12,12 @@ import { container } from '@codestrap/developer-foundations-di';
 // TODO get this data from the ontology
 async function getProgrammingTrainingData() {
   const trainingDataDao = container.get<TrainingDataDao>(TYPES.TrainingDataDao);
-  const searchResults = await trainingDataDao.search(SupportedEngines.COMS, SupportTrainingDataTypes.PROGRAMMER);
-  const trainingExamples = searchResults
-    .reduce((acc, cur) => {
-      acc = `${acc}
+  const searchResults = await trainingDataDao.search(
+    SupportedEngines.COMS,
+    SupportTrainingDataTypes.PROGRAMMER,
+  );
+  const trainingExamples = searchResults.reduce((acc, cur) => {
+    acc = `${acc}
       If the task list is:
       ${cur.solution}
 
@@ -28,8 +28,8 @@ async function getProgrammingTrainingData() {
       ${cur.humanReview}
       `;
 
-      return acc;
-    }, '');
+    return acc;
+  }, '');
 
   const data = `
   ${trainingExamples}
@@ -91,10 +91,12 @@ async function getEvaluationTrainingData() {
 
 async function getSolverTrainingData() {
   const trainingDataDao = container.get<TrainingDataDao>(TYPES.TrainingDataDao);
-  const searchResults = await trainingDataDao.search(SupportedEngines.COMS, SupportTrainingDataTypes.SOLVER);
-  const trainingExamples = searchResults
-    .reduce((acc, cur) => {
-      acc = `${acc}
+  const searchResults = await trainingDataDao.search(
+    SupportedEngines.COMS,
+    SupportTrainingDataTypes.SOLVER,
+  );
+  const trainingExamples = searchResults.reduce((acc, cur) => {
+    acc = `${acc}
       If the user query is:
       ${cur.solution}
 
@@ -105,8 +107,8 @@ async function getSolverTrainingData() {
       ${cur.humanReview}
       `;
 
-      return acc;
-    }, '');
+    return acc;
+  }, '');
 
   const data = `
   ${trainingExamples}
@@ -124,30 +126,38 @@ export async function solver(query: string) {
     return `
       action: ${item[0]}
       description: ${item[1].description}
-    `
+    `;
   });
 
   const options = {
-    timeZone: "America/Los_Angeles",
-    timeZoneName: "short" // This will produce "PST" or "PDT"
+    timeZone: 'America/Los_Angeles',
+    timeZoneName: 'short', // This will produce "PST" or "PDT"
   };
 
-  const formatter = new Intl.DateTimeFormat("en-US", options as Intl.DateTimeFormatOptions);
+  const formatter = new Intl.DateTimeFormat(
+    'en-US',
+    options as Intl.DateTimeFormatOptions,
+  );
   const formatted = formatter.format(new Date());
 
   console.log(`formatted int date: ${formatted}`);
-  const isPDT = formatted.includes("PDT");
+  const isPDT = formatted.includes('PDT');
 
   const trainingData = await getSolverTrainingData();
 
   const system = `You are a helpful AI assistant tasked with ensuring tasks lists are properly defined with all required identifying information such as email addresses, meeting day and time, slack channel IDs, etc.
 You are professional in your tone, personable, and always start your messages with the phrase, "Hi, I'm Vickie, Code's AI EA" or similar. 
-You can get creative on your greeting, taking into account the dat of the week. Today is ${new Date().toLocaleDateString('en-US', { weekday: 'long' })}. 
+You can get creative on your greeting, taking into account the dat of the week. Today is ${new Date().toLocaleDateString(
+    'en-US',
+    { weekday: 'long' },
+  )}. 
 You can also take into account the time of year such as American holidays like Halloween, Thanksgiving, Christmas, etc. 
 You always obey the users instructions and understand the people you work for are busy executives and sometimes need help in their personal lives
 These tasks are not beneath you. At CodeStrap, where you work we adopt the motto made famous by Kim Scott: we move couches.
 It means we all pull together to get things done.
-The current local date/time is ${new Date().toLocaleString("en-US", { timeZone: "America/Los_Angeles" })}.
+The current local date/time is ${new Date().toLocaleString('en-US', {
+    timeZone: 'America/Los_Angeles',
+  })}.
 The current day/time in your timezone is: ${new Date().toString()}
 PDT in effect (indicated if Pacific Daylight Time is in effect): ${isPDT}
   `;
@@ -292,7 +302,7 @@ The state machine is?
 export async function aiTransition(
   taskList: string,
   currentState: string,
-  context: string
+  context: string,
 ) {
   const system = `
   You are an AI based reasoning engine called Transit. Transit determines if state machine transitions should take place.

@@ -9,9 +9,7 @@ import { queryClient } from './lib/query';
 function EditorRoot() {
   const content = (<EditorModule />) as any;
   return (
-    <QueryClientProvider client={queryClient}>
-      {content}
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{content}</QueryClientProvider>
   );
 }
 

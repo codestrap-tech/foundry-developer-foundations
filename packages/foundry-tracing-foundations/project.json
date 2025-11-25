@@ -5,20 +5,13 @@
   "projectType": "library",
   "release": {
     "version": {
-      "manifestRootsToUpdate": [
-        "dist/{projectRoot}"
-      ],
+      "manifestRootsToUpdate": ["dist/{projectRoot}"],
       "currentVersionResolver": "git-tag",
       "fallbackCurrentVersionResolver": "disk"
     }
   },
-  "implicitDependencies": [
-    "foundry-tracing-foundations"
-  ],
-  "tags": [
-    "type:agent",
-    "type:backend-app"
-  ],
+  "implicitDependencies": ["foundry-tracing-foundations"],
+  "tags": ["type:agent", "type:backend-app"],
   "targets": {
     "build": {
       "executor": "@nx/esbuild:esbuild",
@@ -28,9 +21,7 @@
         "tsConfig": "packages/foundry-tracing-foundations/tsconfig.json",
         "platform": "node",
         "bundle": true,
-        "format": [
-          "cjs"
-        ]
+        "format": ["cjs"]
       }
     },
     "nx-release-publish": {

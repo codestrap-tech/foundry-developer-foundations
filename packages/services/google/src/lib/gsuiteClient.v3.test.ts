@@ -100,7 +100,7 @@ describe('makeGSuiteClientV3', () => {
             }),
           ]),
         }),
-      ])
+      ]),
     );
   });
 
@@ -121,8 +121,8 @@ describe('makeGSuiteClientV3', () => {
                 targetType: 'PLACEHOLDER',
                 placeholder: '{{TITLE}}',
                 text: 'Hello Slides',
-              }
-            ]
+              },
+            ],
           },
         ],
       },

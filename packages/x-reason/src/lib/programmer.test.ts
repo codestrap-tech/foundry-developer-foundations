@@ -16,7 +16,7 @@ let counter = 0;
 // Mock the uuid utility to prevent issues with uuid generation
 jest.mock('@codestrap/developer-foundations-utils', () => {
   const actualUtils = jest.requireActual(
-    '@codestrap/developer-foundations-utils'
+    '@codestrap/developer-foundations-utils',
   );
   return {
     ...actualUtils,
@@ -295,12 +295,12 @@ describe('Testing Programmer', () => {
               ['Bee Wax 1234 Special Proprietary', '30%', 'A'],
             ]);
             expect(state.context.FormulationSimulation).toBe(
-              'no available simulations were found'
+              'no available simulations were found',
             );
 
             // Verify that stack contains expected state names (ignoring UUIDs)
             const stackStateNames = state.context.stack?.map(
-              (item) => item.split('|')[0]
+              (item) => item.split('|')[0],
             );
             expect(stackStateNames).toEqual([
               'RecallSolutions',
@@ -360,7 +360,7 @@ describe('Testing Programmer', () => {
 
             // Verify that stack contains expected state names (ignoring UUIDs)
             const stackStateNames = state.context.stack?.map(
-              (item) => item.split('|')[0]
+              (item) => item.split('|')[0],
             );
             expect(stackStateNames).toEqual([
               'getAvailableMeetingTimes',

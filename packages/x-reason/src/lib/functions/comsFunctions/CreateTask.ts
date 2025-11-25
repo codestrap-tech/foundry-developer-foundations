@@ -1,4 +1,7 @@
-import type { Context, MachineEvent } from '@codestrap/developer-foundations-types';
+import type {
+  Context,
+  MachineEvent,
+} from '@codestrap/developer-foundations-types';
 import {
   extractJsonFromBackticks,
   uuidv4,
@@ -6,10 +9,9 @@ import {
 import { container } from '@codestrap/developer-foundations-di';
 import type {
   GeminiService,
-  TicketsDao} from '@codestrap/developer-foundations-types';
-import {
-  TYPES,
+  TicketsDao,
 } from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 
 enum Users {
   Connor_Deeks = '147c63f3-69c1-4576-88a2-49e2cb6421c7',
@@ -31,18 +33,18 @@ export type TaskDetails = {
 export async function createTask(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<TaskDetails> {
   const system = `You are a helpful virtual project manager in charge of task creation and assignments.
     You are professional in your tone, personable, and always start your messages with the phrase, "Hi, I'm Viki, Code's AI EA" or similar. 
     You can get creative on your greeting, taking into account the day of the week. Today is ${new Date().toLocaleDateString(
-    'en-US',
-    { weekday: 'long' }
-  )}. 
+      'en-US',
+      { weekday: 'long' },
+    )}. 
     You can also take into account the time of year such as American holidays like Halloween, Thanksgiving, Christmas, etc. 
     The current month is ${new Date().toLocaleDateString('en-US', {
-    month: 'long',
-  })}. 
+      month: 'long',
+    })}. 
     When creating a task you always create a task title, description, and point estimation.
     You also careful decide on the severity based on the ask from the end user.`;
 
@@ -127,7 +129,7 @@ export async function createTask(
     severity,
     'Open',
     points,
-    assignee
+    assignee,
   );
 
   const parameters: TaskDetails = {

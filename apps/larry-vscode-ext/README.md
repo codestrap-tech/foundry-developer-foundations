@@ -9,12 +9,14 @@ A VSCode extension for AI-assisted development with worktree management.
 The extension requires a backend Express app that exposes Larry AI coding assistant agent endpoints. An example implementation can be found in `apps/cli-tools/src/larry-backend-app`.
 
 The backend app:
+
 - Runs on configurable ports (default: 4220 for worktree, 4210 for main)
 - Exposes agent routes (e.g., `/larry/agents/google/v1`)
 - Provides SSE (Server-Sent Events) for real-time updates
 - Consumes the custom x-reason Larry AI coding assistant agent
 
 Example backend structure:
+
 ```
 apps/cli-tools/src/larry-backend-app/
 ├── src/
@@ -31,6 +33,7 @@ apps/cli-tools/src/larry-backend-app/
 The extension uses Docker to run isolated backend instances for each worktree. You need a `Larry.Dockerfile` in your project root.
 
 Example Dockerfile:
+
 ```dockerfile
 FROM node:22.13.0-alpine
 RUN apk add --no-cache git python3 make g++
@@ -68,9 +71,11 @@ Create a `larry.config.json` file with the following structure:
 ### Configuration Options
 
 #### `agents` (Required)
+
 An object mapping agent keys to their API routes. At least one agent must be defined.
 
 Example:
+
 ```json
 {
   "agents": {
@@ -83,9 +88,11 @@ Example:
 Agent names will be automatically formatted in the UI (e.g., `openSearch` → "Open Search").
 
 #### `workspaceSetupCommand` (Required)
+
 An array of shell commands to execute when setting up a new worktree. Commands are executed sequentially.
 
 Examples:
+
 ```json
 {
   "workspaceSetupCommand": ["npm install"]
@@ -105,9 +112,11 @@ Examples:
 ```
 
 #### `larryEnvPath` (Required)
+
 Path to the environment file that should be copied to new worktrees, relative to the project root.
 
 Example:
+
 ```json
 {
   "larryEnvPath": "apps/cli-tools/.env"
@@ -132,30 +141,27 @@ Example:
 4. Click "Start" to create a worktree and begin working
 
 The extension will automatically:
+
 - Create a git worktree
 - Set up a Docker container
 - Run your configured setup commands
 - Copy environment files
 - Open the worktree in a new VSCode window
 
-
-
-
-
 ## Larry stream extension bridge
 
-Webview                    Extension                   Backend
-   │                          │                           │
-   │ start_larry_stream       │                           │
-   │─────────────────────────>│                           │
-   │                          │ SSEProxy connects         │
-   │                          │──────────────────────────>│
-   │                          │                           │
-   │                          │    larry.update event     │
-   │                          │<──────────────────────────│
-   │  larry_stream_event      │                           │
-   │<─────────────────────────│                           │
-   │                          │                           │
-   │ stop_larry_stream        │                           │
-   │─────────────────────────>│                           │
-   │                          │ proxy.stop()              │
+Webview Extension Backend
+│ │ │
+│ start_larry_stream │ │
+│─────────────────────────>│ │
+│ │ SSEProxy connects │
+│ │──────────────────────────>│
+│ │ │
+│ │ larry.update event │
+│ │<──────────────────────────│
+│ larry_stream_event │ │
+│<─────────────────────────│ │
+│ │ │
+│ stop_larry_stream │ │
+│─────────────────────────>│ │
+│ │ proxy.stop() │

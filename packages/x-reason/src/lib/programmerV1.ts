@@ -16,7 +16,7 @@ import type {
 function getTransition(
   transition: { target: string; cond?: string; actions?: string },
   task: Task,
-  transitionEvent: 'CONTINUE' | 'ERROR'
+  transitionEvent: 'CONTINUE' | 'ERROR',
 ) {
   const transitionConfig: any = {
     target: transition.target,
@@ -33,7 +33,7 @@ function getTransition(
       // a classical algorithm or a call to an LLM that returns true or false
       return (task.transitions as Transition).get(transitionEvent)!(
         context,
-        event
+        event,
       );
     };
   } else if (task.transitions?.get(`${transitionEvent}|${genericStateId}`)) {
@@ -41,7 +41,7 @@ function getTransition(
       // TODO improve this by using a function supplied by the function catalog which can either be
       // a classical algorithm or a call to an LLM that returns true or false
       return (task.transitions as Transition).get(
-        `${transitionEvent}|${genericStateId}`
+        `${transitionEvent}|${genericStateId}`,
       )!(context, event);
     };
   }
@@ -54,7 +54,7 @@ function generateStateConfig(
   functionCatalog: Map<string, Task>,
   context: Context,
   parallel = false,
-  isNestedState = false
+  isNestedState = false,
 ): Partial<StateNode<Context, any, MachineEvent>> {
   if (parallel) {
     const stateConfig: any = {};
@@ -77,7 +77,7 @@ function generateStateConfig(
               functionCatalog,
               context,
               false,
-              true
+              true,
             ),
             success: {
               type: 'final',
@@ -119,7 +119,7 @@ function generateStateConfig(
   const retrievedFunction = functionCatalog.get(functionName);
   if (!retrievedFunction) {
     throw new Error(
-      `function implementation for stateId: ${state.id} functionName: ${functionName} not found`
+      `function implementation for stateId: ${state.id} functionName: ${functionName} not found`,
     );
   }
 
@@ -134,7 +134,7 @@ function generateStateConfig(
           console.log('Executing function:', functionName);
           try {
             Promise.resolve(
-              retrievedFunction.implementation(context, event, state.task)
+              retrievedFunction.implementation(context, event, state.task),
             ).catch((error) => {
               console.error(`Async error in ${functionName}:`, error);
               context.machineError = error;
@@ -157,10 +157,10 @@ function generateStateConfig(
             const result = await retrievedFunction.implementation(
               context,
               event,
-              state.task
+              state.task,
             );
             console.log(
-              `received result from nested state function: ${result}`
+              `received result from nested state function: ${result}`,
             );
             const returnValue = {
               stateId: state.id,
@@ -214,12 +214,12 @@ function generateStateConfig(
     stateConfig.on.CONTINUE = state.transitions
       .filter((transition) => transition.on === 'CONTINUE')
       .map((transition) =>
-        getTransition(transition, retrievedFunction, 'CONTINUE')
+        getTransition(transition, retrievedFunction, 'CONTINUE'),
       );
     stateConfig.on.ERROR = state.transitions
       .filter((transition) => transition.on === 'ERROR')
       .map((transition) =>
-        getTransition(transition, retrievedFunction, 'ERROR')
+        getTransition(transition, retrievedFunction, 'ERROR'),
       );
   }
 
@@ -239,7 +239,7 @@ function generateStateConfig(
 
 function generateStateMachineConfig(
   statesArray: StateConfig[],
-  functionCatalog: Map<string, Task>
+  functionCatalog: Map<string, Task>,
 ) {
   const states: {
     [key: string]: Partial<StateNode<Context, any, MachineEvent>>;
@@ -264,7 +264,7 @@ function generateStateMachineConfig(
       state,
       functionCatalog,
       context,
-      state.type === 'parallel'
+      state.type === 'parallel',
     );
   });
 
@@ -279,11 +279,11 @@ function generateStateMachineConfig(
 
 function program(
   statesArray: StateConfig[],
-  functionCatalog: Map<string, Task>
+  functionCatalog: Map<string, Task>,
 ) {
   const states = generateStateMachineConfig(
     statesArray,
-    functionCatalog
+    functionCatalog,
   ) as MachineConfig<Context, any, MachineEvent>;
   return createMachine<Context, MachineEvent>(states, {
     actions: {

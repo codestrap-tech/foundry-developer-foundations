@@ -1,8 +1,11 @@
 import { createClient } from '@osdk/client';
-import type { User} from '@osdk/foundry.admin';
+import type { User } from '@osdk/foundry.admin';
 import { Users } from '@osdk/foundry.admin';
 import { createConfidentialOauthClient } from '@osdk/oauth';
-import type { FoundryClient, Token } from '@codestrap/developer-foundations-types';
+import type {
+  FoundryClient,
+  Token,
+} from '@codestrap/developer-foundations-types';
 import { getRequestContext } from '@codestrap/developer-foundations-utils/src/lib/asyncLocalStorage';
 
 // this is a utility method to manage usage of the Foundry Client and ensure we only get a singleton
@@ -21,7 +24,7 @@ export function getFoundryClient(): FoundryClient {
 function createFoundryClient(): FoundryClient {
   if (!process.env['OSDK_CLIENT_ID'] || !process.env['OSDK_CLIENT_SECRET']) {
     throw new Error(
-      'missing required env vars: OSDK_CLIENT_ID, OSDK_CLIENT_SECRET'
+      'missing required env vars: OSDK_CLIENT_ID, OSDK_CLIENT_SECRET',
     );
   }
 
@@ -45,7 +48,7 @@ function createFoundryClient(): FoundryClient {
     clientId,
     clientSecret,
     url,
-    scopes
+    scopes,
   );
 
   const client = createClient(url, ontologyRid, auth);

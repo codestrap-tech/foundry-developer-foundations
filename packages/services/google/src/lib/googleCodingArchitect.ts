@@ -4,7 +4,7 @@ export async function googleCodingArchitect(
   dateRestrict?: string,
   siteSearch?: string,
   siteSearchFilter?: string,
-  searchEngineId?: string
+  searchEngineId?: string,
 ): Promise<string> {
   const system = `
   You are a Google Service Architect.
@@ -175,12 +175,12 @@ ${userInput}
   };
   const urlCitations: UrlCitation[] = annotations.filter(
     (a: UrlCitation) =>
-      (a?.type ?? '').toLowerCase() === 'url_citation' && a?.url
+      (a?.type ?? '').toLowerCase() === 'url_citation' && a?.url,
   );
 
   // Dedupe by URL
   const deduped = Array.from(
-    new Map(urlCitations.map((c) => [c.url!, c])).values()
+    new Map(urlCitations.map((c) => [c.url!, c])).values(),
   );
 
   // Build "Sources" markdown

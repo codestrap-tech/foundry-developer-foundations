@@ -41,7 +41,7 @@ export function Trace(opts: TraceOptions) {
   return function (
     _target: any,
     _prop: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     const original = descriptor.value;
     descriptor.value = async function (...args: any[]) {
@@ -102,7 +102,7 @@ export function Trace(opts: TraceOptions) {
           // One day we should support background processing and batching
           collectTelemetryFetchWrapper(telemtryPayload).catch((e) => {
             // Silently fail to prevent unhandled rejections
-            // Added this catch as because of the fire and forget we had 
+            // Added this catch as because of the fire and forget we had
             // side effect of server crashes when we had unhandled rejections
             console.error('Failed to collect telemetry:', e);
           });
@@ -127,14 +127,14 @@ export function TraceSpan(opts: ChildTraceOptions) {
   return function (
     _target: any,
     _prop: string,
-    descriptor: PropertyDescriptor
+    descriptor: PropertyDescriptor,
   ) {
     const original = descriptor.value;
     descriptor.value = async function (...args: any[]) {
       const ctx: TraceContext | undefined = (this as any)[TRACE_CONTEXT];
       if (!ctx)
         throw new Error(
-          '@TraceSpan requires a preceding @Trace on the instance'
+          '@TraceSpan requires a preceding @Trace on the instance',
         );
       //OTLP‑compliant trace_id (32 hex digits) and span_id (16 hex digits)
       const childSpanId = getRandomBytes(8).toString('hex'); // 16 hex chars
@@ -176,7 +176,7 @@ export function TraceSpan(opts: ChildTraceOptions) {
         };
         try {
           const result = await collectTelemetryFetchWrapper(
-            JSON.stringify(payload)
+            JSON.stringify(payload),
           );
           console.log(`traced: ${result}`);
         } catch (e) {

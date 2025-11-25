@@ -1,8 +1,5 @@
-import type {
-  MemoryRecall} from '@codestrap/developer-foundations-types';
-import {
-  FoundryClient
-} from '@codestrap/developer-foundations-types';
+import type { MemoryRecall } from '@codestrap/developer-foundations-types';
+import { FoundryClient } from '@codestrap/developer-foundations-types';
 
 // performs a vector search against the MemoryREcall objects using a proxy
 // The OSDK does not support vector types yet.
@@ -42,10 +39,10 @@ export async function searchMemoryRecall(
 
   if (apiResponse.errorCode) {
     console.log(
-      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`
+      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`,
     );
     throw new Error(
-      `An error occurred while calling memory recall search errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`
+      `An error occurred while calling memory recall search errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`,
     );
   }
 

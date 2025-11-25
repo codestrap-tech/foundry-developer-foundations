@@ -22,7 +22,7 @@ export class SSEProxy {
 
   /**
    * Starts an SSE connection to the given URL
-   * 
+   *
    * @param url - The SSE endpoint URL
    * @param onEvent - Callback for received events
    * @param onError - Callback for errors (called after all retries exhausted)
@@ -30,7 +30,7 @@ export class SSEProxy {
   start(
     url: string,
     onEvent: (evt: SSEEvent) => void,
-    onError: (e: Error) => void
+    onError: (e: Error) => void,
   ): void {
     this.stopped = false;
     this.connect(url, onEvent, onError);
@@ -42,7 +42,7 @@ export class SSEProxy {
   private connect(
     url: string,
     onEvent: (evt: SSEEvent) => void,
-    onError: (e: Error) => void
+    onError: (e: Error) => void,
   ): void {
     if (this.stopped) return;
 
@@ -84,9 +84,9 @@ export class SSEProxy {
         });
 
         res.on('end', () =>
-          this.handleError(new Error('SSE ended'), url, onEvent, onError)
+          this.handleError(new Error('SSE ended'), url, onEvent, onError),
         );
-      }
+      },
     );
 
     this.req.on('error', (err) => this.handleError(err, url, onEvent, onError));
@@ -100,7 +100,7 @@ export class SSEProxy {
     error: Error,
     url: string,
     onEvent: (evt: SSEEvent) => void,
-    onError: (e: Error) => void
+    onError: (e: Error) => void,
   ): void {
     if (this.stopped) return;
 
@@ -108,13 +108,13 @@ export class SSEProxy {
       `❌ SSE connection error (attempt ${this.retryCount + 1}/${
         this.maxRetries + 1
       }):`,
-      error
+      error,
     );
 
     if (this.retryCount < this.maxRetries) {
       this.retryCount++;
       console.log(
-        `🔄 Retrying SSE connection in ${this.retryDelay}ms... (${this.retryCount}/${this.maxRetries})`
+        `🔄 Retrying SSE connection in ${this.retryDelay}ms... (${this.retryCount}/${this.maxRetries})`,
       );
 
       this.retryTimeout = setTimeout(() => {
@@ -146,4 +146,3 @@ export class SSEProxy {
     } catch {}
   }
 }
-

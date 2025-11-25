@@ -1,7 +1,7 @@
 /* JSX */
 /* @jsxImportSource preact */
-import type { StateComponentProps } from "../../../lib/backend-types";
-import { GeneralMessageBubble } from "../GeneralMessageBubble";
+import type { StateComponentProps } from '../../../lib/backend-types';
+import { GeneralMessageBubble } from '../GeneralMessageBubble';
 
 type ConfirmUserIntentData = {
   confirmationPrompt: string;
@@ -11,7 +11,6 @@ type ConfirmUserIntentData = {
 export function ConfirmUserIntent({
   data,
 }: StateComponentProps<ConfirmUserIntentData>) {
-
   return (
     <div className="confirm-user-intent">
       <GeneralMessageBubble
@@ -21,4 +20,3 @@ export function ConfirmUserIntent({
     </div>
   );
 }
-

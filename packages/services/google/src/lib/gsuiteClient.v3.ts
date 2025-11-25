@@ -17,7 +17,7 @@ import {
 } from './helpers/googleAuth';
 
 export async function makeGSuiteClientV3(
-  user: string
+  user: string,
 ): Promise<OfficeServiceV3> {
   const v2Client = await makeGSuiteClientV2(user);
 
@@ -48,7 +48,7 @@ export async function makeGSuiteClientV3(
   return {
     ...v2Client,
     proposeMeetingConflictResolutions: async (
-      args: ProposeMeetingConflictResolutionsInput
+      args: ProposeMeetingConflictResolutionsInput,
     ): Promise<ProposeMeetingConflictResolutionsOutput> => {
       const calendarSummaries = await v2Client.summarizeCalendars({
         emails: args.userEmails,
@@ -66,7 +66,7 @@ export async function makeGSuiteClientV3(
       return result;
     },
     createGoogleSlides: async (
-      input: CreateGoogleSlidesInput
+      input: CreateGoogleSlidesInput,
     ): Promise<CreateGoogleSlidesOutput> => {
       return createGoogleSlidesDelegate({
         input,
