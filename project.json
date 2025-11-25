@@ -9,6 +9,26 @@
         "config": ".verdaccio/config.yml",
         "storage": "tmp/local-registry/storage"
       }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": ".",
+        "commands": [
+          "prettier-package-json --list-different",
+          "prettier --config .prettierrc --ignore-path .prettierignore --check ."
+        ]
+      }
+    },
+    "format:write": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": ".",
+        "commands": [
+          "prettier-package-json --write",
+          "prettier --config .prettierrc --ignore-path .prettierignore --write ."
+        ]
+      }
     }
   }
 }

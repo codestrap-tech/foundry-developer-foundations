@@ -23,6 +23,23 @@
     "lint": {
       "cache": true
     },
+    "format:check": {
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/.prettierrc",
+        "{workspaceRoot}/.prettierignore"
+      ],
+      "cache": true
+    },
+    "format:write": {
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/.prettierrc",
+        "{workspaceRoot}/.prettierignore"
+      ]
+    },
     "build": {
       "cache": true
     },
