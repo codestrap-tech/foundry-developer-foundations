@@ -12,6 +12,7 @@ let initPromise: Promise<void> | null = null;
 // Note: In VSCode extension context, the DB path should be set via environment variable
 // by the extension.ts file using proper VSCode workspace APIs
 const DEFAULT_DB_PATH = path.resolve(
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   require('os').homedir(),
   'larry-db/developer-foundations-threads.sqlite'
 );
