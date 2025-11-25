@@ -136,11 +136,12 @@ export async function resolveMeetingConflictsDelegate(args: {
   );
   const rulesMap = new Map(
     await Promise.all(
-      involvedUsers.map(async (u) => {
+      involvedUsers.map(async (u): Promise<[string, string[]]> => {
         try {
-          const r = await readConflictResolutionRules(u);
+          const r = await readConflictResolutionRulesForUser(u);
           return [u, r] as const;
         } catch (err) {
+          console.error(`Error reading conflict resolution rules for user ${u}: ${err}`);
           return [u, []] as const;
         }
       })
