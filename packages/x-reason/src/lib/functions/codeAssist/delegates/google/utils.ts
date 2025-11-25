@@ -1,4 +1,4 @@
-import { GenerateContentResponse } from '@google/genai';
+import type { GenerateContentResponse } from '@google/genai';
 
 export function getTokenomics(response: GenerateContentResponse, model: string) {
     // Extract token counts from the response

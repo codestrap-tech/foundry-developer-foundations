@@ -1,7 +1,8 @@
 import { createClient } from '@osdk/client';
-import { User, Users } from '@osdk/foundry.admin';
+import type { User} from '@osdk/foundry.admin';
+import { Users } from '@osdk/foundry.admin';
 import { createConfidentialOauthClient } from '@osdk/oauth';
-import { RangrClient, Token } from '@codestrap/developer-foundations-types';
+import type { RangrClient, Token } from '@codestrap/developer-foundations-types';
 
 let client: RangrClient | undefined = undefined;
 

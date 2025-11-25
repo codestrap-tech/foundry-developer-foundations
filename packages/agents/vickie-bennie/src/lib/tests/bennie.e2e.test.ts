@@ -1,15 +1,16 @@
 import { Bennie } from '../Bennie';
 import { container } from '@codestrap/developer-foundations-di';
-import {
+import type {
   Context,
   MachineEvent,
   StateConfig,
   MachineDao,
   RfpRequestResponse,
-  RfpRequestsDao,
+  RfpRequestsDao} from '@codestrap/developer-foundations-types';
+import {
   TYPES,
 } from '@codestrap/developer-foundations-types';
-import { State } from 'xstate';
+import type { State } from 'xstate';
 
 if (!process.env.E2E) {
   test.skip('e2e test skipped in default run', () => {

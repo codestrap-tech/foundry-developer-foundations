@@ -1,4 +1,4 @@
-import { Tokenomics } from "@codestrap/developer-foundations-types";
+import type { Tokenomics } from "@codestrap/developer-foundations-types";
 import { extractCitationsMarkdown, getTokenomics } from "./utils";
 
 export async function generateImplementation(

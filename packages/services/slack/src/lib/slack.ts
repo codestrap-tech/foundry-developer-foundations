@@ -1,5 +1,5 @@
 import { sendSlackMessage } from './delegates/sendMessage';
-import {
+import type {
   Message,
   MessageService,
 } from '@codestrap/developer-foundations-types';

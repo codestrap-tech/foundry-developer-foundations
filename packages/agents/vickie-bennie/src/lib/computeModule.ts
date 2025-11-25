@@ -6,7 +6,7 @@ import { withRequestContext } from '@codestrap/developer-foundations-utils/src/l
 import { Type } from '@sinclair/typebox';
 import { Vickie } from './Vickie';
 import * as dotenv from 'dotenv';
-import {
+import type {
   ComputeModuleType,
   ModuleConfig,
 } from '@codestrap/developer-foundations-types';

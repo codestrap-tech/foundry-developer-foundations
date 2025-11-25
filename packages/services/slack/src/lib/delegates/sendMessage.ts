@@ -1,4 +1,4 @@
-import {
+import type {
   Message,
   MessageResponse,
 } from '@codestrap/developer-foundations-types';

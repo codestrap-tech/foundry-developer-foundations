@@ -1,9 +1,9 @@
 import { randomUUID } from 'crypto';
-import {
+import type {
   CalendarContext,
   ScheduleMeetingOutput,
 } from '@codestrap/developer-foundations-types';
-import { calendar_v3 } from 'googleapis';
+import type { calendar_v3 } from 'googleapis';
 
 const LOG_PREFIX = 'GSUITE - scheduleMeeting - ';
 

@@ -1,6 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { addCitations, getTokenomics } from './utils';
-import { Tokenomics } from '@codestrap/developer-foundations-types';
+import type { Tokenomics } from '@codestrap/developer-foundations-types';
 
 export async function generateImplementation(user: string, system: string): Promise<{ answer: string, tokenomics: Tokenomics }> {
 

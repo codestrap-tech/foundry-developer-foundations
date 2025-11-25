@@ -6,7 +6,7 @@ import {
 import { google } from 'googleapis';
 
 import { sendEmail } from './SendEmail';
-import { Context } from '@codestrap/developer-foundations-types';
+import type { Context } from '@codestrap/developer-foundations-types';
 
 jest.mock('googleapis', () => ({
   ...jest.requireActual('googleapis'), // Keep other actual exports

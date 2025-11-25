@@ -1,4 +1,4 @@
-import { Context } from '@codestrap/developer-foundations-types';
+import type { Context } from '@codestrap/developer-foundations-types';
 
 const date = new Date();
 // get tomorrow

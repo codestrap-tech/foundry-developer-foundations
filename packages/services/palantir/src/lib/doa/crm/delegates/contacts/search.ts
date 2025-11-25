@@ -1,5 +1,6 @@
+import type {
+  Contacts} from '@codestrap/developer-foundations-types';
 import {
-  Contacts,
   FoundryClient,
 } from '@codestrap/developer-foundations-types';
 

@@ -1,4 +1,4 @@
-import { Tokenomics } from "../x-reason/types";
+import type { Tokenomics } from "../x-reason/types";
 
 // src/types.ts
 export type FilePath = string;

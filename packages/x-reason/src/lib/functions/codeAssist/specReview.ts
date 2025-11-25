@@ -1,15 +1,16 @@
 import * as path from 'path';
 import * as fs from 'fs';
 
-import {
+import type {
     AbstractReviewState,
     Context,
     FileOp,
     MachineEvent,
     SpecReviewState,
     ThreadsDao,
+    UserIntent} from '@codestrap/developer-foundations-types';
+import {
     TYPES,
-    UserIntent,
     VersionControlService,
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';

@@ -1,4 +1,4 @@
-import { Context, MachineEvent } from '@codestrap/developer-foundations-types';
+import type { Context, MachineEvent } from '@codestrap/developer-foundations-types';
 
 // TODO finish this type
 export type ProjectStatusReport = {

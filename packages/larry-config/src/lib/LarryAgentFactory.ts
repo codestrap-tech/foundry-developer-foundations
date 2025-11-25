@@ -1,5 +1,6 @@
 import { curry } from "ramda";
-import { SupportedCodingAgents, LarryAgentFactoryType, SupportedEngines, LarryAgent } from "@codestrap/developer-foundations-types";
+import type { LarryAgentFactoryType, LarryAgent } from "@codestrap/developer-foundations-types";
+import { SupportedCodingAgents, SupportedEngines } from "@codestrap/developer-foundations-types";
 
 const factory = curry((map, key, config) => {
     const supportedKeys = Object.keys(SupportedCodingAgents).map((item) =>

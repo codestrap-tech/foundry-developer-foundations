@@ -1,4 +1,5 @@
-import { EditOp, EditOpsJsonSchema, Tokenomics } from "@codestrap/developer-foundations-types";
+import type { EditOp, Tokenomics } from "@codestrap/developer-foundations-types";
+import { EditOpsJsonSchema } from "@codestrap/developer-foundations-types";
 import { getTokenomics } from "./utils";
 
 export async function generateEditOps(
