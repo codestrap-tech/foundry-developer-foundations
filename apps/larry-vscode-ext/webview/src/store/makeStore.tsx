@@ -11,7 +11,7 @@ type PropsType<S> = {
 };
 
 export function makeStore<S, A>(initialState: S, reducer: ReducerType<S, A>) {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+   
   const dispatchContext = createContext<DispatchType<A>>((action: A) => {});
   const storeContext = createContext<S>(initialState);
 

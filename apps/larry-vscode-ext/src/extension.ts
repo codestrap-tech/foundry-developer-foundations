@@ -21,8 +21,8 @@ let dockerImageName = process.env.REPO_ROOT ? `${process.env.REPO_ROOT}-larry-se
 
 let projectName: string | undefined;
 
-let defaultMainPort = 4210;
-let defaultWorktreePort = 4220;
+const defaultMainPort = 4210;
+const defaultWorktreePort = 4220;
 
 loadLarryConfig().then(async (config) => {
   projectName = config.name;
@@ -220,6 +220,7 @@ export function activate(context: vscode.ExtensionContext) {
     const workspaceWatcher = vscode.workspace.onDidChangeWorkspaceFolders(
       () => {
         try {
+          // eslint-disable-next-line @typescript-eslint/no-floating-promises
           provider.notifyWorktreeChange();
         } catch (error) {
           console.error('❌ Error in worktree change handler:', error);
@@ -524,7 +525,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
           const gitDir = gitContent.toString().trim();
           console.log('Git dir content:', gitDir);
 
-          const worktreeMatch = gitDir.match(/worktrees\/([^\/]+)/);
+          const worktreeMatch = gitDir.match(/worktrees\/([^/]+)/);
           if (worktreeMatch) {
             return worktreeMatch[1]; // Return the actual worktree name
           } else {
@@ -730,6 +731,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       setTimeout(() => {
         // This one will need to be refactored because user should be able to select agent per thread, not per worktree
         this.startWorktreeSSE(agentKey); // <— start SSE for worktree events with selected agent
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         this.openWorktree(finalWorktreeName);
         this.view?.webview.postMessage({
           type: 'update_thread_state',

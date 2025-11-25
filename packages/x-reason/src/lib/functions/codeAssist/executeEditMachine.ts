@@ -337,7 +337,7 @@ function insertInterfaceProperty(
 ) {
     const i: InterfaceDeclaration = sf.getInterfaceOrThrow(op.interfaceName);
     // simple parser: "<name>[?]: <type>"
-    const m = op.propertySig.match(/^\s*([A-Za-z_$][\w$]*)(\?)?\s*:\s*(.+?)\s*$/);
+    const m = op.propertySig.match(/^\s*([A-Z_$][\w$]*)(\?)?\s*:\s*(.+?)\s*$/i);
     if (!m) throw new Error(`propertySig must be "name?: type" — got: ${op.propertySig}`);
     const [, rawName, qmark, typeText] = m;
     if (i.getProperty(rawName)) return;
@@ -437,7 +437,7 @@ function upsertObjectProperty(
         if (normalizeWS(current) === normalizeWS(op.valueExpr)) return;
         existing.setInitializer(op.valueExpr);
     } else {
-        const validIdent = /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(keyId);
+        const validIdent = /^[A-Z_$][\w$]*$/i.test(keyId);
         obj.addPropertyAssignment({
             name: validIdent ? keyId : JSON.stringify(keyId),
             initializer: op.valueExpr,

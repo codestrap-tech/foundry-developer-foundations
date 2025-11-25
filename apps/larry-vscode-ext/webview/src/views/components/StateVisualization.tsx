@@ -188,6 +188,7 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
   };
 
   const continueToNextState = () => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     fetchGetNextState({ machineId: data.id, contextUpdate: {} });
   }
 
@@ -208,6 +209,7 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
         .reverse()
         .find((item) => item.user === undefined);
       lastMessage.user = input.value;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       fetchGetNextState({ machineId: data.id, contextUpdate: { [data.currentState]: { approved: false, messages } } });
       setSpecReviewRejected(false);
 
@@ -222,12 +224,14 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
         .reverse()
         .find((item) => item.user === undefined);
       lastMessage.user = `${architectureReviewPayload}\n\n${input.value}`;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       fetchGetNextState({ machineId: data.id, contextUpdate: { [data.currentState]: { approved: false, messages } } });
       setArchitectureReviewRejected(false);
       setArchitectureReviewPayload(null);
       return;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     fetchGetNextState({ machineId: data.id, contextUpdate: { [data.currentState]: { userResponse: input.value } } });
 
     setInput(curr => ({...curr, value: '', placeholder: 'Tell me more...'}));
@@ -253,6 +257,7 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
         .find((item) => item.user === undefined);
       lastMessage.user = 'Looks good, approved.';
 
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       fetchGetNextState({ machineId: data.id, contextUpdate: { [data.currentState]: { approved: true,  messages} } });
     } else if (action === 'rejectSpec') {
 
@@ -270,6 +275,7 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
         .reverse()
         .find((item) => item.user === undefined);
       lastMessage.user = payload;
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       fetchGetNextState({ machineId: data.id, contextUpdate: { [data.currentState]: { approved: false,  messages} } });
     } else if (action === 'rejectCodeReview') {
       if (!data?.currentState) {
@@ -283,6 +289,7 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
         .reverse()
         .find((item) => item.user === undefined);
       lastMessage.user = 'Rejected.';
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       fetchGetNextState({ machineId: data.id, contextUpdate: { [data.currentState]: { approved: false,  messages} } });
     }
   }

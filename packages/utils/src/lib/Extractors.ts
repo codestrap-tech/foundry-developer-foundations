@@ -41,6 +41,7 @@ export function cleanJsonString(src: string): string {
   s = s.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
 
   // 3) Strip // and /* */ comments (note: this is not string-aware)
+  // eslint-disable-next-line regexp/no-unused-capturing-group
   s = s.replace(/(^|\s)\/\/.*$/gm, "").replace(/\/\*[\s\S]*?\*\//g, "");
 
   // 4) Remove trailing commas before } or ]

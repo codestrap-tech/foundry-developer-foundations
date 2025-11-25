@@ -6,7 +6,8 @@ buildAndPublish.sh
 .DS_Store/
 .DS_Store
 testGitWorklows.sh
-.vscode
+.vscode/*
+!.vscode/extensions.json
 .nx/installation
 .nx/cache
 .nx/workspace-data

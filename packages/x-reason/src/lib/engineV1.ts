@@ -240,7 +240,7 @@ Do not be chatty!
   value = value.trim();
   // check that there is a | followed by a GUID
   // https://regex101.com/r/D5Dq4R/1
-  const matchGuid = value.match(/\|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/)?.[0]
+  const matchGuid = value.match(/\|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i)?.[0]
 
   // TODO improve retry mechanism
   if (!currentState.includes(value) || !matchGuid) {
