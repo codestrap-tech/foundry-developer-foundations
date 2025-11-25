@@ -1,6 +1,7 @@
+import type {
+  MachineExecutions} from '@codestrap/developer-foundations-types';
 import {
-  FoundryClient,
-  MachineExecutions,
+  FoundryClient
 } from '@codestrap/developer-foundations-types';
 
 // Per-id queue state

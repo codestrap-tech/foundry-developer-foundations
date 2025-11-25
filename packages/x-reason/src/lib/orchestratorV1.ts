@@ -10,7 +10,7 @@ import {
   sanitizeJSONString,
   uuidv4,
 } from '@codestrap/developer-foundations-utils';
-import {
+import type {
   Solutions,
   ActionType,
   Context,
@@ -18,8 +18,9 @@ import {
   LoggingService,
   MachineDao,
   MachineExecutions,
-  TYPES,
-  StateConfig,
+  StateConfig} from '@codestrap/developer-foundations-types';
+import {
+  TYPES
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 

@@ -2,11 +2,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { container } from '@codestrap/developer-foundations-di';
-import {
+import type {
   Context,
   EditOp,
   MachineEvent,
-  ThreadsDao,
+  ThreadsDao} from '@codestrap/developer-foundations-types';
+import {
   TYPES,
   VersionControlService,
 } from '@codestrap/developer-foundations-types';

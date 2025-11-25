@@ -1,10 +1,11 @@
-import { Context, MachineEvent } from '@codestrap/developer-foundations-types';
+import type { Context, MachineEvent } from '@codestrap/developer-foundations-types';
 import { extractHtmlFromBackticks } from '@codestrap/developer-foundations-utils';
+import type {
+  GeminiService,
+  OfficeService} from '@codestrap/developer-foundations-types';
 import {
   TYPES,
-  GeminiService,
-  MessageService,
-  OfficeService,
+  MessageService
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 

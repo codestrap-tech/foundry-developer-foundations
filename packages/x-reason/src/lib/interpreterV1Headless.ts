@@ -1,6 +1,7 @@
-import { StateMachine, interpret, State } from 'xstate';
+import type { StateMachine, State } from 'xstate';
+import { interpret } from 'xstate';
 
-import {
+import type {
   ActionType,
   MachineEvent,
   Context,

@@ -1,4 +1,4 @@
-import {
+import type {
   Context,
   MachineEvent,
   OfficeServiceV2,
@@ -6,7 +6,8 @@ import {
 } from '@codestrap/developer-foundations-types';
 import { extractJsonFromBackticks } from '@codestrap/developer-foundations-utils';
 import { container } from '@codestrap/developer-foundations-di';
-import { GeminiService, TYPES } from '@codestrap/developer-foundations-types';
+import type { GeminiService} from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 
 function nowInTZ(tz: string, ref: Date): Date {
   const dtf = new Intl.DateTimeFormat('en-US', {

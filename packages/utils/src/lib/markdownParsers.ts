@@ -1,4 +1,4 @@
-import { CodeEdits } from "@codestrap/developer-foundations-types";
+import type { CodeEdits } from "@codestrap/developer-foundations-types";
 
 export function parseCodeEdits(input: string): CodeEdits[] {
     const fileRegex = /^File:\s+(.+?)\s+\((ADDED|MODIFIED|DELETED)\)$/gm;

@@ -1,4 +1,5 @@
-import { FoundryClient, Threads } from '@codestrap/developer-foundations-types';
+import type { Threads } from '@codestrap/developer-foundations-types';
+import { FoundryClient } from '@codestrap/developer-foundations-types';
 
 export async function readThread(
   id: string,

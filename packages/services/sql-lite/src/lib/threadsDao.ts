@@ -2,7 +2,7 @@ import initSqlJs from 'sql.js';
 import * as path from 'path';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import { randomUUID } from 'crypto';
-import { Threads, ThreadsDao } from '@codestrap/developer-foundations-types';
+import type { Threads, ThreadsDao } from '@codestrap/developer-foundations-types';
 
 let SQL: any = null;
 let db: any = null;

@@ -1,5 +1,5 @@
 // VSCode webview bridge
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 declare const acquireVsCodeApi: any;
 
 const vscode =

@@ -1,7 +1,7 @@
 /* JSX */
 /* @jsxImportSource preact */
 import { useState, useEffect, useRef, useMemo } from "preact/hooks";
-import { MachineResponse, MachineStatus } from "../../lib/backend-types";
+import type { MachineResponse, MachineStatus } from "../../lib/backend-types";
 import { ConfirmUserIntent } from "./states/ConfirmUserIntent.tsx";
 import { ChevronRight, SendIcon } from "lucide-preact";
 import { ChevronDown } from "lucide-preact";

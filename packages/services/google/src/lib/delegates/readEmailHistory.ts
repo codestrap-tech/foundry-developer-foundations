@@ -1,5 +1,5 @@
-import { gmail_v1 } from 'googleapis';
-import {
+import type { gmail_v1 } from 'googleapis';
+import type {
   EmailMessage,
   ReadEmailHistoryContext,
 } from '@codestrap/developer-foundations-types';

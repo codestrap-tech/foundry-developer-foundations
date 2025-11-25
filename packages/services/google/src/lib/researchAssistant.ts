@@ -1,7 +1,8 @@
 import { google } from 'googleapis';
 import { GoogleGenAI } from '@google/genai';
 import { extractJsonFromBackticks } from '@codestrap/developer-foundations-utils';
-import FirecrawlApp, { ScrapeResponse } from '@mendable/firecrawl-js';
+import type { ScrapeResponse } from '@mendable/firecrawl-js';
+import FirecrawlApp from '@mendable/firecrawl-js';
 
 // import playwright from 'playwright';
 

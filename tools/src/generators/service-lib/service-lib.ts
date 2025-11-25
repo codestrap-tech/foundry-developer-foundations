@@ -1,5 +1,6 @@
+import type {
+  Tree} from '@nx/devkit';
 import {
-  Tree,
   updateJson,
   formatFiles,
   generateFiles,
@@ -9,7 +10,7 @@ import {
 } from '@nx/devkit';
 import { libraryGenerator as nodeLibraryGenerator } from '@nx/node';
 import * as path from 'node:path';
-import { ServiceLibGeneratorSchema } from './schema';
+import type { ServiceLibGeneratorSchema } from './schema';
 
 export async function serviceLibGenerator(
   tree: Tree,

@@ -1,4 +1,4 @@
-import { VersionControlService } from "@codestrap/developer-foundations-types";
+import type { VersionControlService } from "@codestrap/developer-foundations-types";
 import { checkinFile, getFile, getGithubAuth } from "./github";
 
 export async function makeGithubClient(): Promise<VersionControlService> {

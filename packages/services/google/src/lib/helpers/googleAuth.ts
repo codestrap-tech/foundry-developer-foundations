@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import { Buffer } from 'buffer';
-import { ServiceAccountCredentials } from '@codestrap/developer-foundations-types';
+import type { ServiceAccountCredentials } from '@codestrap/developer-foundations-types';
 
 export async function loadServiceAccountFromEnv(): Promise<ServiceAccountCredentials> {
   if (!process.env['GSUITE_SERVICE_ACCOUNT']) {

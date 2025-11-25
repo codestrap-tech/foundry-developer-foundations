@@ -7,7 +7,8 @@ import {
   fbDSTCalendars,
 } from '../__fixtures__/schedule';
 
-import { findOptimalMeetingTimeV2, Slot } from './findOptimalMeetingTime.v2';
+import type { Slot } from './findOptimalMeetingTime.v2';
+import { findOptimalMeetingTimeV2 } from './findOptimalMeetingTime.v2';
 import {
   dayInTZ,
   wallClockToUTC,
