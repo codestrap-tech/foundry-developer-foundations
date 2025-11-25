@@ -1148,3 +1148,32 @@ export type RequestContext = {
   user?: User | null | undefined;
   requestId?: string | null | undefined;
 };
+
+// Meeting Search Types
+export type MeetingSearchContext = {
+  attendees: string[]; // ['dsmiley@codestrap.me', 'ryan@codestrap.me']
+  operator: 'and' | 'or'; // Logic for attendee matching
+  timeframe: 'next' | 'previous'; // Search direction
+  timeRangeDays?: number; // Days to search (default 30)
+};
+
+export type MeetingSearchResult = {
+  meeting: MeetingDetails | null;
+  transcript?: string;
+  summary?: string;
+  found: boolean;
+  message: string;
+};
+
+export type MeetingDetails = {
+  id: string;
+  subject: string;
+  description?: string;
+  start: string; // UTC ISO string
+  end: string; // UTC ISO string
+  durationMinutes: number;
+  participants: string[];
+  meetingLink?: string;
+  location?: string;
+};
+
