@@ -95,6 +95,7 @@ function extensionReducer(
 ): ExtensionState {
   switch (action.type) {
     case 'SET_WORKTREE_DETECTION':
+      // eslint-disable-next-line no-case-declarations
       const selectedAgentRoute = state.agents[state.selectedAgent] || Object.values(state.agents)[0];
       return {
         ...state,
@@ -158,7 +159,9 @@ function extensionReducer(
       };
 
     case 'SET_CONFIG':
+      // eslint-disable-next-line no-case-declarations
       const firstAgentKey = Object.keys(action.payload.agents)[0] || 'google';
+      // eslint-disable-next-line no-case-declarations
       const firstAgentRoute = action.payload.agents[firstAgentKey];
       return {
         ...state,
@@ -172,6 +175,7 @@ function extensionReducer(
       };
 
     case 'SET_SELECTED_AGENT':
+      // eslint-disable-next-line no-case-declarations
       const agentRoute = state.agents[action.payload];
       if (!agentRoute) {
         console.warn(`Agent ${action.payload} not found in config`);
