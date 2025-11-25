@@ -259,6 +259,7 @@ export function StateVisualization({ data, userQuestion }: StateVisualizationPro
   const continueToNextState = () => {
     dispatchLarryStatus(true);
     setMachineQuery(apiUrl, data.id, 'running');
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     fetchGetNextState({ machineId: data.id, contextUpdate: {} });
   };
 

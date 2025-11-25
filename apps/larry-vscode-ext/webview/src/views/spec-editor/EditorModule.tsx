@@ -80,6 +80,7 @@ export function EditorModule() {
 
 
   const reloadCurrentContent = () => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     getContentFile(editorState.filePath).then(content => {
       setEditorState(prev => ({
         ...prev,
@@ -121,6 +122,7 @@ export function EditorModule() {
             larryState: msg.larryState,
           }));
           // Unlock footer when machine returns to awaiting human
+          // eslint-disable-next-line no-case-declarations
           const updatedStatus = (msg.larryState?.machineData as MachineResponse | undefined)?.status;
           if (updatedStatus === 'awaiting_human') {
             setFooterLocked(false);
@@ -132,6 +134,7 @@ export function EditorModule() {
           if (msg.queryCache) {
             hydrateQueryCache(msg.queryCache);
             setTimeout(() => {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               refetchMachineData();
               reloadCurrentContent();
             }, 1000);

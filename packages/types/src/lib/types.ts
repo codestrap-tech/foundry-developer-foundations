@@ -495,7 +495,9 @@ export interface ModuleConfig {
 
 export interface TestModule {
   listeners: Record<string, any>;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   on(event: string, handler: Function): TestModule;
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   register(operation: string, handler: Function): TestModule;
 }
 

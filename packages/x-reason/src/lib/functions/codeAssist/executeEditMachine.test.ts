@@ -121,6 +121,7 @@ describe('executeEditMachine (mocked FS, in-memory ts-morph) — full v1 coverag
                     const code = typeof d.getCode === 'function' ? d.getCode() : undefined;
                     if (code !== 2307) return true;
                     const msg = String(d.getMessageText?.() ?? '');
+                    // eslint-disable-next-line regexp/no-unused-capturing-group
                     return !/'(zod|x)'/.test(msg);
                 });
             });

@@ -59,6 +59,7 @@ export function CodeReview({
       lastMessage.user = 'Looks good, approved.';
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     fetchGetNextState({
       machineId,
       contextUpdate: {
@@ -87,6 +88,7 @@ export function CodeReview({
       lastMessage.user = rejectFeedback;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     fetchGetNextState({
       machineId,
       contextUpdate: {

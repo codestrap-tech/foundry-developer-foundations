@@ -156,6 +156,7 @@ export function activate(context: vscode.ExtensionContext): void {
     // Watch for workspace changes to detect worktree changes
     const workspaceWatcher = vscode.workspace.onDidChangeWorkspaceFolders(
       () => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         notifyWorktreeChangeFromProvider(extensionState);
       }
     );

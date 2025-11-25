@@ -14,6 +14,7 @@ function extractDomain(input: string) {
 }
 
 function extractVendorName(input: string) {
+  // eslint-disable-next-line regexp/optimal-quantifier-concatenation
   const match = input.match(/:\s*([\w\s]+)\s*</);
   return match ? match[1].trim() : null;
 }

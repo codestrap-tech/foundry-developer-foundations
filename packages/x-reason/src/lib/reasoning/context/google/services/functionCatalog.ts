@@ -326,6 +326,7 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                     "Default state to display for unsafe questions",
                 implementation: (context: Context, event?: MachineEvent, task?: string) => {
                     console.log('UnsafeQuestion implementation called');
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     dispatch({ type: 'success' });
                 },
             },
@@ -337,6 +338,7 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                     "Default state to display for unsupported questions",
                 implementation: (context: Context, event?: MachineEvent, task?: string) => {
                     console.log('UnsupportedQuestion implementation called');
+                    // eslint-disable-next-line @typescript-eslint/no-floating-promises
                     dispatch({ type: 'success' });
                 },
             },

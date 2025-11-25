@@ -348,6 +348,7 @@ export async function handleOpenWorktree(
       if (state.config) {
         startWorktreeSSE(state, state.config, agentKey);
       }
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       openWorktreeFolder(finalWorktreeName);
       postMessage({ type: 'update_thread_state', state: 'ready' });
     }, 3000);

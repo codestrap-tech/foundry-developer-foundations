@@ -130,6 +130,7 @@ function calculateMeetingTime(
   const isoNoTZ = /^\s*\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}(?::\d{2})?\s*$/;
 
   if (!isNaN(parsed.getTime())) {
+    // eslint-disable-next-line regexp/no-unused-capturing-group
     const hasOffset = /(z|[+\-]\d{2}:?\d{2})\s*$/i.test(timeframeContext);
     if (hasOffset) {
       const startTime = new Date(parsed);

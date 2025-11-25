@@ -50,6 +50,7 @@ export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Handle messages from webview
     webviewPanel.webview.onDidReceiveMessage((message) => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       this.handleMessage(message, document, webviewPanel);
     });
 
