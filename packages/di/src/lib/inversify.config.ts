@@ -30,6 +30,7 @@ import {
 } from '@codestrap/developer-foundations-services-palantir';
 import {
   makeGSuiteClientV2,
+  makeGSuiteClientV3,
   researchAssistant,
 } from '@codestrap/developer-foundations-services-google';
 import {
@@ -112,9 +113,11 @@ container
   .bind(TYPES.OfficeService)
   .toConstantValue(makeGSuiteClientV2(process.env.OFFICE_SERVICE_ACCOUNT));
 
-  container
-  .bind(TYPES.VersionControlService)
-  .toConstantValue(makeGithubClient());
+container
+  .bind(TYPES.OfficeServiceV3)
+  .toConstantValue(makeGSuiteClientV3(process.env.OFFICE_SERVICE_ACCOUNT));
+
+container.bind(TYPES.VersionControlService).toConstantValue(makeGithubClient());
 
 container
   .bind(TYPES.MessageService)

@@ -1,5 +1,5 @@
-import type { SupportedFoundryClients } from "@codestrap/developer-foundations-types";
-import { foundryClientFactory } from "../../factory/foundryClientFactory";
+import { SupportedFoundryClients } from '@codestrap/developer-foundations-types';
+import { foundryClientFactory } from '../../../factory/foundryClientFactory';
 
 /**
  * Read conflict resolution rules for a user from Foundry.
@@ -20,10 +20,10 @@ export async function readConflictResolutionRules(
   )}/conflict-rules`;
 
   const res = await fetch(fullUrl, {
-    method: "GET",
+    method: 'GET',
     headers: {
       Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
