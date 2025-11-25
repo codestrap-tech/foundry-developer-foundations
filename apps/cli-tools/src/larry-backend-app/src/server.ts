@@ -6,8 +6,8 @@ const PORT = Number(process.env.PORT || 4220);
 const app = buildApp();
 const server = createServer(app);
 
-server.listen(PORT, () => {
-  console.log(`[api] listening on http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`[api] listening on http://0.0.0.0:${PORT}`);
 });
 
 // Graceful shutdown
