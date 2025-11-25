@@ -115,7 +115,7 @@ or they don't have the required permissions.
     Files added/modified
     - Modified: packages/services/google/src/lib/delegates/sendEmail.ts
     - Added: packages/services/google/src/lib/delegates/driveHelpers.ts
-    - Modified: packages/services/google/src/lib/types.ts (EmailContext, SendEmailOutput)
+    - Modified: packages/services/google/src/lib/types.ts
     - Added: packages/services/google/src/lib/delegates/sendEmail.test.ts
   Or
   Files added/modified
