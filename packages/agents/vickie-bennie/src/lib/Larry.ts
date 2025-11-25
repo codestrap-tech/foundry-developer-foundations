@@ -12,7 +12,6 @@ import {
 } from '@codestrap/developer-foundations-types';
 import type { User } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
-import { workspaceRoot } from '@nx/devkit';
 
 export interface LarryResponse {
   status: number;
@@ -96,7 +95,7 @@ export class Larry extends Text2Action {
       threadId = executionId;
       generatedTaskList = taskList;
     }
-
+    const workspaceRoot = await import('@nx/devkit').then(m => m.workspaceRoot);
     const readmePath = `${workspaceRoot}${this.agent.readmePath}`;
     if (readmePath && !fs.existsSync(readmePath)) throw new Error(`README file does not exist: ${readmePath}`);
     const readme = await fs.readFileSync(readmePath, 'utf8');
