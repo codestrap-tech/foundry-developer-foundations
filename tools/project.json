@@ -44,6 +44,26 @@
         "jestConfig": "tools/jest.config.ts",
         "forceExit": true
       }
+    },
+    "format:check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "tools",
+        "commands": [
+          "prettier-package-json --list-different",
+          "prettier --config ../.prettierrc --ignore-path ../.prettierignore --check ."
+        ]
+      }
+    },
+    "format:write": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "tools",
+        "commands": [
+          "prettier-package-json --write",
+          "prettier --config ../.prettierrc --ignore-path ../.prettierignore --write ."
+        ]
+      }
     }
   }
 }
