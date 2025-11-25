@@ -30,7 +30,7 @@ if (!process.env.E2E) {
             const localDateString = `${p.year}-${pad(p.month)}-${pad(p.day + 7)}T10:30:00`;
 
             const slots = await client.getAvailableMeetingTimes({
-                participants: ['dsmiley@codestrap.me'],
+                participants: ['igor@codestrap.me'],
                 subject: 'Circle Up',
                 timeframe_context: 'user defined exact date/time',
                 localDateString,

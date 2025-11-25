@@ -4,11 +4,14 @@ import {
   ConflictingMeeting,
   LLMRescheduleProposal,
   ConflictResolutionReport,
-} from "@codestrap/developer-foundations-types";
-import { summarizeCalendars } from "../delegates/summerizeCalanders";
-import { readConflictResolutionRulesForUser, geminiService } from "@codestrap/developer-foundations-services-palantir";
-import { calendar_v3, google } from "googleapis";
-import { toUTCFromWallClockLocal } from "@codestrap/developer-foundations-utils";
+} from '@codestrap/developer-foundations-types';
+import { summarizeCalendars } from '../delegates/summerizeCalanders';
+import {
+  readConflictResolutionRulesForUser,
+  geminiService,
+} from '@codestrap/developer-foundations-services-palantir';
+import { calendar_v3, google } from 'googleapis';
+import { toUTCFromWallClockLocal } from '@codestrap/developer-foundations-utils';
 
 /**
  * Minimal conflict detection (time overlap + attendee overlap) and orchestration:
@@ -50,10 +53,10 @@ function toConflictingMeeting(evt: any): ConflictingMeeting {
     id: evt.id,
     title: evt.subject,
     description: evt.description,
-    organizer: evt.participants?.[0] ?? "unknown",
+    organizer: evt.participants?.[0] ?? 'unknown',
     attendees: (evt.participants ?? []).map((e: string) => ({
       email: e,
-      role: "required",
+      role: 'required',
     })),
     startTime: evt.start,
     endTime: evt.end,
@@ -117,7 +120,7 @@ export async function resolveMeetingConflictsDelegate(args: {
       );
 
     if (conflicts.length > 0) {
-      const key = [evt.id, ...conflicts.map((c) => c.id)].sort().join("|");
+      const key = [evt.id, ...conflicts.map((c) => c.id)].sort().join('|');
       const set = [evt, ...conflicts].map(toConflictingMeeting);
       conflictSets.set(key, set);
     }
@@ -141,7 +144,9 @@ export async function resolveMeetingConflictsDelegate(args: {
           const r = await readConflictResolutionRulesForUser(u);
           return [u, r] as const;
         } catch (err) {
-          console.error(`Error reading conflict resolution rules for user ${u}: ${err}`);
+          console.error(
+            `Error reading conflict resolution rules for user ${u}: ${err}`
+          );
           return [u, []] as const;
         }
       })
@@ -159,10 +164,10 @@ export async function resolveMeetingConflictsDelegate(args: {
     };
 
     // call LLM (geminiService) - expect JSON string back
-    const llmRaw = await geminiService("system", JSON.stringify(payload), {
+    const llmRaw = await geminiService('system', JSON.stringify(payload), {
       extractJsonString: true,
     } as any).catch((e) => {
-      throw new Error("LLMProcessingError: " + (e?.message ?? String(e)));
+      throw new Error('LLMProcessingError: ' + (e?.message ?? String(e)));
     });
 
     // try parse as JSON
@@ -176,7 +181,7 @@ export async function resolveMeetingConflictsDelegate(args: {
         proposal = JSON.parse(m[0]) as LLMRescheduleProposal;
       }
     }
-    if (!proposal) throw new Error("LLMProcessingError: invalid response");
+    if (!proposal) throw new Error('LLMProcessingError: invalid response');
 
     return { set, proposal };
   });
@@ -194,8 +199,8 @@ export async function resolveMeetingConflictsDelegate(args: {
   }> = [];
 
   llmResults.forEach((res) => {
-    if (res.status === "rejected") {
-      errors.push(res.reason?.message ?? "LLM failed");
+    if (res.status === 'rejected') {
+      errors.push(res.reason?.message ?? 'LLM failed');
       return;
     }
     const { set, proposal } = res.value!;
@@ -205,10 +210,10 @@ export async function resolveMeetingConflictsDelegate(args: {
       if (!original) {
         resolutionReports.push({
           meetingId: m.meetingId,
-          originalStartTime: "",
-          originalEndTime: "",
-          status: "invalid_proposal",
-          reason: "Meeting id not found in conflict set",
+          originalStartTime: '',
+          originalEndTime: '',
+          status: 'invalid_proposal',
+          reason: 'Meeting id not found in conflict set',
           llmProposal: proposal,
         });
         return;
@@ -227,8 +232,8 @@ export async function resolveMeetingConflictsDelegate(args: {
           meetingId: original.id,
           originalStartTime: original.startTime,
           originalEndTime: original.endTime,
-          status: "invalid_proposal",
-          reason: "Duration change too large",
+          status: 'invalid_proposal',
+          reason: 'Duration change too large',
           llmProposal: proposal,
         });
         return;
@@ -266,10 +271,10 @@ export async function resolveMeetingConflictsDelegate(args: {
         totalConflicts: conflictArrays.flat().length,
         successfullyRescheduled: 0,
         failedToReschedule: resolutionReports.filter(
-          (r) => r.status === "failed_reschedule"
+          (r) => r.status === 'failed_reschedule'
         ).length,
         noActionTaken: resolutionReports.filter(
-          (r) => r.status === "no_action_taken"
+          (r) => r.status === 'no_action_taken'
         ).length,
       },
       errors: errors.length ? errors : undefined,
@@ -286,7 +291,7 @@ export async function resolveMeetingConflictsDelegate(args: {
       },
     })
     .catch((e) => {
-      throw new Error("GoogleCalendarAPIError: freebusy query failed");
+      throw new Error('GoogleCalendarAPIError: freebusy query failed');
     });
 
   const busyMap = new Map(
@@ -312,8 +317,8 @@ export async function resolveMeetingConflictsDelegate(args: {
         meetingId: u.originalEvent.id,
         originalStartTime: u.originalEvent.startTime,
         originalEndTime: u.originalEvent.endTime,
-        status: "invalid_proposal",
-        reason: "Proposed time introduces conflicts for attendees",
+        status: 'invalid_proposal',
+        reason: 'Proposed time introduces conflicts for attendees',
         llmProposal: u.proposalRaw,
       });
       return;
@@ -325,14 +330,14 @@ export async function resolveMeetingConflictsDelegate(args: {
       originalEndTime: u.originalEvent.endTime,
       proposedNewStartTime: u.proposed.start,
       proposedNewEndTime: u.proposed.end,
-      status: "no_action_taken", // will change if user confirms & update succeeds
+      status: 'no_action_taken', // will change if user confirms & update succeeds
       llmProposal: u.proposalRaw,
     });
   });
 
   // Ask user confirmation if provided
   const candidates = resolutionReports.filter(
-    (r) => r.status === "no_action_taken"
+    (r) => r.status === 'no_action_taken'
   );
   let userConfirmed = true;
   if (confirm && candidates.length) {
@@ -351,9 +356,9 @@ export async function resolveMeetingConflictsDelegate(args: {
   if (!userConfirmed) {
     // mark as no action taken
     resolutionReports.forEach((r) => {
-      if (r.status === "no_action_taken") {
-        r.status = "no_action_taken";
-        r.reason = "User declined proposed reschedule";
+      if (r.status === 'no_action_taken') {
+        r.status = 'no_action_taken';
+        r.reason = 'User declined proposed reschedule';
       }
     });
 
@@ -365,7 +370,7 @@ export async function resolveMeetingConflictsDelegate(args: {
         successfullyRescheduled: 0,
         failedToReschedule: 0,
         noActionTaken: resolutionReports.filter(
-          (r) => r.status === "no_action_taken"
+          (r) => r.status === 'no_action_taken'
         ).length,
       },
       errors: errors.length ? errors : undefined,
@@ -374,56 +379,68 @@ export async function resolveMeetingConflictsDelegate(args: {
 
   // perform calendar updates in parallel with retry/backoff (up to 3)
   const updatePromises = resolutionReports
-    .filter((r) => r.status === "no_action_taken" && r.proposedNewStartTime)
+    .filter((r) => r.status === 'no_action_taken' && r.proposedNewStartTime)
     .map(async (r) => {
-      const original = toUpdate.find(
-        (t) => t.originalEvent.id === r.meetingId
-      )!;
-      const maxRetries = 3;
-      let attempt = 0;
-      while (attempt < maxRetries) {
-        try {
-          await calendarClient.events.update({
-            calendarId:
-              original.originalEvent?.organizer ??
-              original.originalEvent.attendees[0]?.email ??
-              "primary",
-            eventId: original.originalEvent.id,
-            sendUpdates: "all",
-            requestBody: {
-              start: { dateTime: r.proposedNewStartTime },
-              end: { dateTime: r.proposedNewEndTime },
-            },
-          } as any);
-          r.status = "rescheduled";
-          r.reason = "LLM proposed new time, validated and updated.";
-          return r;
-        } catch (err) {
-          attempt += 1;
-          // simple exponential backoff
-          await new Promise((res) =>
-            setTimeout(res, 250 * Math.pow(2, attempt))
-          );
-          if (attempt >= maxRetries) {
-            r.status = "failed_reschedule";
-            r.reason = `Calendar update failed after ${maxRetries} attempts`;
-            return r;
+      const original = toUpdate.find((t) => t.originalEvent.id === r.meetingId);
+      if (!original) {
+        r.status = 'failed_reschedule';
+        r.reason = 'Original event not found in update queue';
+      } else {
+        const maxRetries = 3;
+        let attempt = 0;
+        let updateSucceeded = false;
+
+        while (attempt < maxRetries && !updateSucceeded) {
+          try {
+            await calendarClient.events.update({
+              calendarId:
+                original.originalEvent?.organizer ??
+                original.originalEvent.attendees[0]?.email ??
+                'primary',
+              eventId: original.originalEvent.id,
+              sendUpdates: 'all',
+              requestBody: {
+                start: { dateTime: r.proposedNewStartTime },
+                end: { dateTime: r.proposedNewEndTime },
+              },
+            } as any);
+            r.status = 'rescheduled';
+            r.reason = 'LLM proposed new time, validated and updated.';
+            updateSucceeded = true;
+          } catch (err) {
+            attempt += 1;
+            // simple exponential backoff
+            await new Promise((res) =>
+              setTimeout(res, 250 * Math.pow(2, attempt))
+            );
+            if (attempt >= maxRetries) {
+              r.status = 'failed_reschedule';
+              r.reason = `Calendar update failed after ${maxRetries} attempts`;
+            }
           }
         }
+
+        // Fallback: if we exited the loop without success and status wasn't set
+        if (!updateSucceeded && r.status === 'no_action_taken') {
+          r.status = 'failed_reschedule';
+          r.reason = `Calendar update failed after ${maxRetries} attempts`;
+        }
       }
+
+      return r;
     });
 
   const finalResults = await Promise.allSettled(updatePromises);
   // ensure resolutionReports reflect any updates from promises (they mutate r)
   // compile final summary
   const successfullyRescheduled = resolutionReports.filter(
-    (r) => r.status === "rescheduled"
+    (r) => r.status === 'rescheduled'
   ).length;
   const failedToReschedule = resolutionReports.filter(
-    (r) => r.status === "failed_reschedule"
+    (r) => r.status === 'failed_reschedule'
   ).length;
   const noActionTaken = resolutionReports.filter(
-    (r) => r.status === "no_action_taken"
+    (r) => r.status === 'no_action_taken'
   ).length;
 
   return {
