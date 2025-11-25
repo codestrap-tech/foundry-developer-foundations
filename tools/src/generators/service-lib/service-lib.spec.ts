@@ -82,25 +82,28 @@ describe('service-lib generator', () => {
 
     // content checks: eslint uses JSONC parser
     const eslintCfg = tree.read(`${root}/eslint.config.mjs`, 'utf-8')!;
-    expect(eslintCfg.trim())
-      .toBe(`import baseConfig from '../../../eslint.config.mjs';
+    expect(eslintCfg.trim()).toMatchInlineSnapshot(`
+      "// @ts-check
+      import baseConfig from '../../../eslint.config.mjs';
 
-export default [
-  ...baseConfig,
-  {
-    files: ['**/*.json'],
-    rules: {
-      '@nx/dependency-checks': [
-        'error',
+      /** @type {import('eslint').Linter.Config[]} */
+      export default [
+        ...baseConfig,
         {
-          ignoredFiles: ['{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}'],
+          files: ['**/*.json'],
+          rules: {
+            '@nx/dependency-checks': [
+              'error',
+              {
+                ignoredFiles: ['{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}'],
+              },
+            ],
+          },
+          languageOptions: {
+            parser: await import('jsonc-eslint-parser'),
+          },
         },
-      ],
-    },
-    languageOptions: {
-      parser: await import('jsonc-eslint-parser'),
-    },
-  },
-];`);
+      ];"
+    `);
   });
 });
