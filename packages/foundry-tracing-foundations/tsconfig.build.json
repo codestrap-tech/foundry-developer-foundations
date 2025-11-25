@@ -16,14 +16,14 @@
     "types": ["jest", "node"],
     "baseUrl": ".",
     "paths": {
-        "@tracing/*": ["src/*"]
+      "@tracing/*": ["src/*"]
     },
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "include": ["src/**/*", "src/**/*.d.ts",  "jest.config.js"],
+  "include": ["src/**/*", "src/**/*.d.ts", "jest.config.js"],
   "exclude": ["node_modules", "dist", "ops", "config"],
   "ts-node": {
     "files": true
   }
-} 
+}

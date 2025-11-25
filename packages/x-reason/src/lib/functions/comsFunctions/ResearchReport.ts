@@ -10,7 +10,7 @@ export type ResearchReport = {
 export async function researchReport(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<ResearchReport> {
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
@@ -65,7 +65,7 @@ export async function researchReport(
 
   const data = (await response.json()) as any;
   const content = data.output?.filter(
-    (message: { type: string }) => message.type === 'message'
+    (message: { type: string }) => message.type === 'message',
   )?.[0]?.content?.[0]?.text;
 
   return {

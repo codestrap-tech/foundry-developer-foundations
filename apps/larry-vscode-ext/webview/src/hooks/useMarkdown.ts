@@ -15,12 +15,12 @@ export function useMarkdown() {
               normalized === 'ts'
                 ? 'typescript'
                 : normalized === 'tsx'
-                ? 'typescript'
-                : normalized === 'js'
-                ? 'javascript'
-                : normalized === 'jsx'
-                ? 'javascript'
-                : normalized;
+                  ? 'typescript'
+                  : normalized === 'js'
+                    ? 'javascript'
+                    : normalized === 'jsx'
+                      ? 'javascript'
+                      : normalized;
 
             try {
               if (language && hljs.getLanguage(language)) {
@@ -31,7 +31,7 @@ export function useMarkdown() {
             }
             return hljs.highlightAuto(code, ['typescript', 'javascript']).value;
           },
-        })
+        }),
       );
       markedInstance.setOptions({
         breaks: true,

@@ -14,13 +14,20 @@ import {
   MachineDao,
   TYPES,
 } from '@codestrap/developer-foundations-types';
-import {SupportedCodingAgents, SupportedEngines } from '@codestrap/developer-foundations-types';
+import {
+  SupportedCodingAgents,
+  SupportedEngines,
+} from '@codestrap/developer-foundations-types';
 import { LarryAgentFactory } from '@codestrap/larry-config';
 import 'dotenv/config';
 import { uuidv4 } from '@codestrap/developer-foundations-utils';
 import { applyEdits } from './assets/applyEdits';
 
-export async function googleCodingAgent(executionId?: string, contextUpdateInput?: string, task?: string) {
+export async function googleCodingAgent(
+  executionId?: string,
+  contextUpdateInput?: string,
+  task?: string,
+) {
   const larry = new Larry();
   let result: LarryResponse | undefined;
 
@@ -32,7 +39,7 @@ export async function googleCodingAgent(executionId?: string, contextUpdateInput
       `# User Question
       ${task}
       `,
-      process.env.FOUNDRY_TEST_USER
+      process.env.FOUNDRY_TEST_USER,
     );
 
     executionId = result.executionId;
@@ -53,7 +60,8 @@ export async function googleCodingAgent(executionId?: string, contextUpdateInput
   const { context } = JSON.parse(state!) as { context: Context };
 
   // handle human review states
-  if (context.stateId.includes('specReview') ||
+  if (
+    context.stateId.includes('specReview') ||
     context.stateId.includes('architectureReview') ||
     context.stateId.includes('codeReview') ||
     context.stateId.includes('pause')
@@ -62,17 +70,19 @@ export async function googleCodingAgent(executionId?: string, contextUpdateInput
     // sometimes we land on pause due to race conditions. I need to track them down. Once fixed we should be able to remove this
     if (context.stateId.includes('pause')) {
       // reset to the first state that is not pause
-      stateId = context.stack
-        ?.slice()
-        .reverse()
-        .find((item) => !item.includes('pause')) || '';
+      stateId =
+        context.stack
+          ?.slice()
+          .reverse()
+          .find((item) => !item.includes('pause')) || '';
     }
 
     if (!stateId) {
-      throw new Error('unable to resolve stateID')
+      throw new Error('unable to resolve stateID');
     }
 
-    if (!stateId.includes('specReview') &&
+    if (
+      !stateId.includes('specReview') &&
       !stateId.includes('architectureReview') &&
       !stateId.includes('codeReview')
     ) {
@@ -80,15 +90,18 @@ export async function googleCodingAgent(executionId?: string, contextUpdateInput
     }
 
     // get the system response by grabbing the last instance of system response from the messages array
-    const { messages, reviewRequired } = context[stateId] as AbstractReviewState;
-    const lastMessage =
-      messages
-        ?.slice()
-        .reverse()
-        .find((item) => item.user === undefined);
+    const { messages, reviewRequired } = context[
+      stateId
+    ] as AbstractReviewState;
+    const lastMessage = messages
+      ?.slice()
+      .reverse()
+      .find((item) => item.user === undefined);
 
     if (reviewRequired) {
-      const approved = (await select({ message: 'Approved', choices: ['yes', 'no'] })) === 'yes';
+      const approved =
+        (await select({ message: 'Approved', choices: ['yes', 'no'] })) ===
+        'yes';
 
       if (!approved) {
         const userResponse = await input({
@@ -100,7 +113,6 @@ export async function googleCodingAgent(executionId?: string, contextUpdateInput
         lastMessage.user = 'Looks good, approved.';
       }
 
-
       // get the target stateId to apply the contextual update to, in this case where we left off
       const contextUpdate = {
         [context.stateId]: { messages, approved }, // messages will be destructured onto the rest of the context values
@@ -109,7 +121,6 @@ export async function googleCodingAgent(executionId?: string, contextUpdateInput
       await googleCodingAgent(executionId, JSON.stringify(contextUpdate));
     }
   }
-
 }
 
 async function main() {
@@ -118,20 +129,27 @@ async function main() {
 
   if (executionIdArg) {
     // TODO figure out how to resolve the coding agent from the executionIdArg
-    // likely need to add an attribute to the machine execution object to track the agent 
+    // likely need to add an attribute to the machine execution object to track the agent
     // or maintain a separate lookup table
     await googleCodingAgent(executionIdArg);
   }
 
-  const whichAgent = await select({ message: 'select the agent', choices: ['googleCodingAgent', 'applyEdits'] })
+  const whichAgent = await select({
+    message: 'select the agent',
+    choices: ['googleCodingAgent', 'applyEdits'],
+  });
 
   if (whichAgent === 'googleCodingAgent') {
     if (container.isBound(TYPES.LarryCodingAgentFactory)) {
       container.unbind(TYPES.LarryCodingAgentFactory);
-      container.bind(TYPES.LarryCodingAgentFactory).toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
+      container
+        .bind(TYPES.LarryCodingAgentFactory)
+        .toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
     }
 
-    const file = await input({ message: 'Enter the full file path to your prompt:' });
+    const file = await input({
+      message: 'Enter the full file path to your prompt:',
+    });
     if (!fs.existsSync(file)) throw new Error('file not found!');
 
     const prompt = await fs.promises.readFile(file, 'utf8');
@@ -139,7 +157,9 @@ async function main() {
   }
 
   if (whichAgent === 'applyEdits') {
-    const file = await input({ message: 'Enter the full file path to the edits file:' });
+    const file = await input({
+      message: 'Enter the full file path to the edits file:',
+    });
     await applyEdits(file);
   }
 }

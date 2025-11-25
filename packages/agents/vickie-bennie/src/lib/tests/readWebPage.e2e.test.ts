@@ -20,7 +20,7 @@ if (!process.env.E2E) {
             status: 1,
           },
           { type: 'test' },
-          query
+          query,
         );
 
         expect(results).toBeDefined();

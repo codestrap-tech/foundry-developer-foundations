@@ -27,10 +27,10 @@ jest.mock('@codestrap/developer-foundations-services-palantir', () => ({
         state: string,
         logs: string,
         lockOwner?: string,
-        lockUntil?: number
+        lockUntil?: number,
       ) => {
         return mockProcessEmailEventExecution;
-      }
+      },
     ),
     delete: jest.fn(),
     read: jest.fn((machineExecutionId: string) => {
@@ -138,7 +138,7 @@ jest.mock('googleapis', () => ({
           }),
           list: jest.fn((params: any) => {
             console.log(
-              `Calendar mock events.list called with: ${JSON.stringify(params)}`
+              `Calendar mock events.list called with: ${JSON.stringify(params)}`,
             );
             return Promise.resolve(mockCalendarList);
           }),
@@ -148,8 +148,8 @@ jest.mock('googleapis', () => ({
           query: jest.fn((params: any) => {
             console.log(
               `Calendar mock freebusy.query called with: ${JSON.stringify(
-                params
-              )}`
+                params,
+              )}`,
             );
             return Promise.resolve({
               data: {
@@ -225,11 +225,11 @@ describe('testing Vickie', () => {
     const vickie = new Vickie();
     const result = await vickie.processEmailEvent(
       'eyJlbWFpbEFkZHJlc3MiOiJkc21pbGV5QGNvZGVzdHJhcC5tZSIsImhpc3RvcnlJZCI6MTc5MDUxMn0=',
-      '2025-07-22T20:43:55.184Z'
+      '2025-07-22T20:43:55.184Z',
     );
     expect(result).toBeDefined();
     expect(result.message).toBe(
-      'Some threads failed to resolve:\n {"status":"fulfilled","value":{"status":400,"executionId":"1","message":"ERROR","error":"No resolution found","taskList":"ERROR"}}'
+      'Some threads failed to resolve:\n {"status":"fulfilled","value":{"status":400,"executionId":"1","message":"ERROR","error":"No resolution found","taskList":"ERROR"}}',
     );
     expect(result.status).toBe(400);
   }, 120000);

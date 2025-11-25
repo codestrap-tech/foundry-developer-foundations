@@ -7,7 +7,7 @@ function removeDockerContainer(containerName) {
   try {
     // Check if the container exists
     const existingContainers = execSync(
-      `docker ps -a --filter "name=${containerName}" --format "{{.Names}}"`
+      `docker ps -a --filter "name=${containerName}" --format "{{.Names}}"`,
     ).toString();
     if (existingContainers.includes(containerName)) {
       console.log(`Removing Docker container: ${containerName}`);
@@ -112,7 +112,7 @@ function promptForWorktreeSelection() {
 
             const selectedWorktrees = [];
             const allSelected = selections.includes(
-              String(availableWorktrees.length + 1)
+              String(availableWorktrees.length + 1),
             );
 
             if (allSelected) {
@@ -140,7 +140,7 @@ function promptForWorktreeSelection() {
           } catch (error) {
             reject(error);
           }
-        }
+        },
       );
     } catch (error) {
       reject(error);

@@ -101,7 +101,7 @@ const Schemas = {
         Type.Object({
           taskName: Type.String(),
           taskOutput: Type.String(),
-        })
+        }),
       ),
       orderTheTasksWereExecutedIn: Type.Array(Type.String()),
     }),
@@ -121,7 +121,7 @@ const Schemas = {
         Type.Object({
           id: Type.String(),
           timestamp: Type.Integer(),
-        })
+        }),
       ),
     }),
   },
@@ -240,7 +240,7 @@ function createComputeModule(): ComputeModuleType {
             const result = await bennie.sendThreadMessage(
               message,
               userId,
-              machineExecutionId
+              machineExecutionId,
             );
             return result;
           });
@@ -253,7 +253,7 @@ function createComputeModule(): ComputeModuleType {
             userId: 'error',
           };
         }
-      }
+      },
     )
     .register(
       'submitRfpResponse',
@@ -262,7 +262,7 @@ function createComputeModule(): ComputeModuleType {
           const result = await bennie.submitRfpResponse(
             rfpResponse,
             vendorId,
-            machineExecutionId
+            machineExecutionId,
           );
           return result;
         } catch (e) {
@@ -278,7 +278,7 @@ function createComputeModule(): ComputeModuleType {
             },
           };
         }
-      }
+      },
     )
     .register(
       'getNextState',
@@ -289,7 +289,7 @@ function createComputeModule(): ComputeModuleType {
             forward,
             executionId,
             inputs,
-            xreason
+            xreason,
           );
 
           if (typeof result.value !== 'string') {
@@ -303,7 +303,7 @@ function createComputeModule(): ComputeModuleType {
           });
 
           console.log(
-            `getNextState returned: ${JSON.stringify(result, null, 2)}`
+            `getNextState returned: ${JSON.stringify(result, null, 2)}`,
           );
 
           return {
@@ -319,7 +319,7 @@ function createComputeModule(): ComputeModuleType {
             orderTheTasksWereExecutedIn: [],
           };
         }
-      }
+      },
     )
     .register('createVickieTasks', async ({ query, userId, threadId }) => {
       try {
@@ -334,7 +334,7 @@ function createComputeModule(): ComputeModuleType {
           const result = await vickie.createComsTasksList(
             query,
             userId,
-            threadId
+            threadId,
           );
           return result;
         });
@@ -362,7 +362,7 @@ function createComputeModule(): ComputeModuleType {
           const result = await bennie.createSalesTasksList(
             query,
             userId,
-            threadId
+            threadId,
           );
           return result;
         });
@@ -453,7 +453,7 @@ function createComputeModule(): ComputeModuleType {
 
   module.on('responsive', () => {
     console.log(
-      `${process.env.LOG_PREFIX} Foundry Developer Foundations X-Reason module is now responsive`
+      `${process.env.LOG_PREFIX} Foundry Developer Foundations X-Reason module is now responsive`,
     );
   });
 

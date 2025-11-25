@@ -9,7 +9,7 @@
     "allowJs": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noPropertyAccessFromIndexSignature": false,
+    "noPropertyAccessFromIndexSignature": false
   },
   "files": [],
   "include": [],

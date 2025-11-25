@@ -37,4 +37,3 @@ export function useDockerStatus(worktreeName: string) {
 
   return { ...status, isLoading, error, refetch };
 }
-

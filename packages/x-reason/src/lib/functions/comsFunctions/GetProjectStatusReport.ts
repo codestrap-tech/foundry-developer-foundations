@@ -12,7 +12,7 @@ export type ProjectStatusReport = {
 export async function getProjectStatusReport(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<ProjectStatusReport> {
   return new Promise((resolve) => {
     setTimeout(() => {

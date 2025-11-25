@@ -22,9 +22,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.13.0"
-          cache: "npm"
-          cache-dependency-path: "package-lock.json"
+          node-version: '22.13.0'
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Configure npm
         run: |
@@ -74,7 +74,7 @@ jobs:
           RANGR_OSDK_CLIENT_SECRET: ${{ secrets.RANGR_OSDK_CLIENT_SECRET }}
           RANGR_FOUNDRY_STACK_URL: https://axis-data.palantirfoundry.com
           RANGR_ONTOLOGY_RID: ${{ secrets.RANGR_ONTOLOGY_RID }}
-          OFFICE_SERVICE_ACCOUNT: "vici@codestrap.me"
+          OFFICE_SERVICE_ACCOUNT: 'vici@codestrap.me'
           OPEN_AI_KEY: ${{ secrets.OPEN_AI_KEY }}
           SLACK_CLIENT_ID: ${{ secrets.SLACK_CLIENT_ID }}
           SLACK_CLIENT_SECRET: ${{ secrets.SLACK_CLIENT_SECRET }}

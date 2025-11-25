@@ -28,15 +28,15 @@ export async function readContact(
 
   if (apiResponse.errorCode) {
     console.log(
-      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`
+      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`,
     );
     throw new Error(
-      `An error occurred while calling read machine errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`
+      `An error occurred while calling read machine errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`,
     );
   }
 
   console.log(
-    `the machine execution ontology returned: ${JSON.stringify(apiResponse)}`
+    `the machine execution ontology returned: ${JSON.stringify(apiResponse)}`,
   );
 
   return apiResponse as Contacts;

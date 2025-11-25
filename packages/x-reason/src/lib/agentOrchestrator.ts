@@ -1,13 +1,18 @@
 // ===== Serializable State Machine Types =====
 export type Transition = {
-  on: string;       // "CONTINUE" | "ERROR"
-  target: string;   // state id
+  on: string; // "CONTINUE" | "ERROR"
+  target: string; // state id
   parallel?: boolean; // only true for BU batch fan-outs
 };
 
 export type SMState =
-  | { id: string; task: string; includesLogic: boolean; transitions: Transition[] }
-  | { id: string; type: "final" };
+  | {
+      id: string;
+      task: string;
+      includesLogic: boolean;
+      transitions: Transition[];
+    }
+  | { id: string; type: 'final' };
 
 // ===== Inputs from prior steps =====
 export type NodeID = string;
@@ -16,7 +21,7 @@ export interface NodeSpec {
   id: NodeID;
   task: string; // original planner task
   agentVersion: string;
-  sideEffect: "pure" | "idempotent" | "effectful";
+  sideEffect: 'pure' | 'idempotent' | 'effectful';
   ttlMs: number;
   deps: NodeID[];
   inputKey: string;
@@ -30,14 +35,14 @@ export interface Graph {
 }
 
 export interface BURegion {
-  id: string;            // e.g., "bu_1"
-  batches: NodeID[][];   // ready inputs; each inner array is parallelizable
-  joins: NodeID[];       // informational
+  id: string; // e.g., "bu_1"
+  batches: NodeID[][]; // ready inputs; each inner array is parallelizable
+  joins: NodeID[]; // informational
 }
 
 export interface TDChain {
-  id: string;            // e.g., "td_1"
-  path: NodeID[];        // ordered serial path
+  id: string; // e.g., "td_1"
+  path: NodeID[]; // ordered serial path
 }
 
 export interface PartitionResult {
@@ -48,15 +53,17 @@ export interface PartitionResult {
 // ===== Builder with NO scheduler and correct parallel flags =====
 export function buildStateMachineWithTasks_NoScheduler(
   graph: Graph,
-  partition: PartitionResult
+  partition: PartitionResult,
 ): SMState[] {
   const states: SMState[] = [];
-  const successId = "success";
-  const failureId = "failure";
+  const successId = 'success';
+  const failureId = 'failure';
 
   const execId = (nid: string) => `exec_${nid}`;
-  const buBatchStartId = (rid: string, idx: number) => `bu_${rid}_batch_${idx}_start`;
-  const buBatchJoinId  = (rid: string, idx: number) => `bu_${rid}_batch_${idx}_join`;
+  const buBatchStartId = (rid: string, idx: number) =>
+    `bu_${rid}_batch_${idx}_start`;
+  const buBatchJoinId = (rid: string, idx: number) =>
+    `bu_${rid}_batch_${idx}_join`;
 
   // ---- Top-Down chains (strictly serial; no parallel flags) ----
   for (const chain of partition.tdChains) {
@@ -71,8 +78,11 @@ export function buildStateMachineWithTasks_NoScheduler(
         includesLogic: true,
         task: node.task, // original planner task
         transitions: [
-          { on: "CONTINUE", target: isLast ? successId : execId(chain.path[i + 1]) },
-          { on: "ERROR", target: failureId },
+          {
+            on: 'CONTINUE',
+            target: isLast ? successId : execId(chain.path[i + 1]),
+          },
+          { on: 'ERROR', target: failureId },
         ],
       });
     });
@@ -83,7 +93,7 @@ export function buildStateMachineWithTasks_NoScheduler(
     region.batches.forEach((batchNodes, idx) => {
       const batchNo = idx + 1;
       const startId = buBatchStartId(region.id, batchNo);
-      const joinId  = buBatchJoinId(region.id, batchNo);
+      const joinId = buBatchJoinId(region.id, batchNo);
       const isLastBatch = batchNo === region.batches.length;
 
       // Start state: ONLY place where parallel: true is set (inputs are ready by definition of BU)
@@ -93,12 +103,14 @@ export function buildStateMachineWithTasks_NoScheduler(
         task: `Bottom-Up ${region.id}: run batch #${batchNo} in parallel (inputs ready).`,
         transitions: [
           ...batchNodes.map((nid) => ({
-            on: "CONTINUE",
+            on: 'CONTINUE',
             target: execId(nid),
             parallel: true, // ✅ ONLY here
           })),
-          ...(batchNodes.length === 0 ? [{ on: "CONTINUE", target: joinId }] : []),
-          { on: "ERROR", target: failureId },
+          ...(batchNodes.length === 0
+            ? [{ on: 'CONTINUE', target: joinId }]
+            : []),
+          { on: 'ERROR', target: failureId },
         ],
       });
 
@@ -110,8 +122,8 @@ export function buildStateMachineWithTasks_NoScheduler(
           includesLogic: true,
           task: node.task,
           transitions: [
-            { on: "CONTINUE", target: joinId },
-            { on: "ERROR", target: failureId },
+            { on: 'CONTINUE', target: joinId },
+            { on: 'ERROR', target: failureId },
           ],
         });
       }
@@ -122,8 +134,13 @@ export function buildStateMachineWithTasks_NoScheduler(
         includesLogic: true,
         task: `Bottom-Up ${region.id}: join for batch #${batchNo} (wait for all).`,
         transitions: [
-          { on: "CONTINUE", target: isLastBatch ? successId : buBatchStartId(region.id, batchNo + 1) },
-          { on: "ERROR", target: failureId },
+          {
+            on: 'CONTINUE',
+            target: isLastBatch
+              ? successId
+              : buBatchStartId(region.id, batchNo + 1),
+          },
+          { on: 'ERROR', target: failureId },
         ],
       });
     });
@@ -132,8 +149,8 @@ export function buildStateMachineWithTasks_NoScheduler(
   }
 
   // Final states
-  states.push({ id: successId, type: "final" });
-  states.push({ id: failureId, type: "final" });
+  states.push({ id: successId, type: 'final' });
+  states.push({ id: failureId, type: 'final' });
 
   return states;
 }

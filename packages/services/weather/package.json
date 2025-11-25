@@ -4,11 +4,11 @@
   "type": "commonjs",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
-  "publishConfig": {
-    "access": "public"
-  },
   "dependencies": {
     "@codestrap/developer-foundations-types": "*",
     "tslib": "^2.3.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

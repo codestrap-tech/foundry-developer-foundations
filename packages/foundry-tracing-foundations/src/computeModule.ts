@@ -6,7 +6,10 @@ import { Type } from '@sinclair/typebox';
 import dotenv from 'dotenv';
 
 import { collectTelemetryFetchWrapper } from './Tracing';
-import { ComputeModuleType, ModuleConfig } from '@codestrap/developer-foundations-types';
+import {
+  ComputeModuleType,
+  ModuleConfig,
+} from '@codestrap/developer-foundations-types';
 
 dotenv.config();
 
@@ -59,7 +62,7 @@ function createComputeModule(): ComputeModuleType {
       return result;
     })
     .on('responsive', () =>
-      console.log('Foundry Tracing Foundations is ready')
+      console.log('Foundry Tracing Foundations is ready'),
     );
 
   module.on('responsive', () => {

@@ -3,9 +3,8 @@
   "version": "1.2.3",
   "description": "## Introduction",
   "license": "MIT",
-  "publishConfig": {
-    "access": "public"
-  },
+  "author": "Dorian Smiley <dsmiley@codestrap.me>",
+  "homepage": "https://github.com/doriansmiley/foundry-developer-foundations/tree/master/foundry-tracing-foundations",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/doriansmiley/foundry-developer-foundations.git"
@@ -13,38 +12,25 @@
   "bugs": {
     "url": "https://github.com/doriansmiley/foundry-developer-foundations/issues"
   },
-  "homepage": "https://github.com/doriansmiley/foundry-developer-foundations/tree/master/foundry-tracing-foundations",
-  "keywords": [
-    "tracing",
-    "otel",
-    "telemetry",
-    "typescript",
-    "decorator",
-    "palantir",
-    "foundry"
-  ],
-  "author": "Dorian Smiley <dsmiley@codestrap.me>",
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
   "type": "commonjs",
   "main": "./index.cjs",
-  "types": "./src/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "lint": "eslint 'src/**/*.{js,ts}'",
+    "prebuild": "npm run clean",
     "build": "tsup --no-watch --silent",
-    "build:npm": "tsup --config tsup.npm.config.ts --no-watch --silent",
     "build:docker": "npm run build && docker build --build-arg FOUNDRY_TOKEN=${FOUNDRY_TOKEN} -t codestrap/foundry-tracing-foundations .",
-    "prepublishOnly": "npm run lint && npm run test && npm run build:npm",
-    "publishPackage:dry": "npm publish --dry-run --access public",
-    "publishPackage": "npm publish --access public",
+    "build:npm": "tsup --config tsup.npm.config.ts --no-watch --silent",
     "clean": "rm -rf dist",
-    "prebuild": "npm run clean"
+    "lint": "eslint 'src/**/*.{js,ts}'",
+    "prepublishOnly": "npm run lint && npm run test && npm run build:npm",
+    "publishPackage": "npm publish --access public",
+    "publishPackage:dry": "npm publish --dry-run --access public",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
+  "types": "./src/index.d.ts",
   "dependencies": {
     "@osdk/client": "^2.2.1",
     "@osdk/foundry.admin": "^2.19.0",
@@ -74,7 +60,19 @@
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
   },
+  "keywords": [
+    "decorator",
+    "foundry",
+    "otel",
+    "palantir",
+    "telemetry",
+    "tracing",
+    "typescript"
+  ],
   "engines": {
     "node": ">=20.10.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

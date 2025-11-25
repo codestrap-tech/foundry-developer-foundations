@@ -32,8 +32,8 @@ export function machinesRoutes(idem: IdempotencyStore, sse: SSEService) {
         const status: MachineStatus = humanReview
           ? 'awaiting_human'
           : running
-          ? 'running'
-          : 'pending';
+            ? 'running'
+            : 'pending';
         const body: MachineResponse = {
           id: machineId,
           status,
@@ -45,7 +45,7 @@ export function machinesRoutes(idem: IdempotencyStore, sse: SSEService) {
       } catch (err) {
         next(err);
       }
-    }
+    },
   );
 
   // POST /machines/:machineId/next
@@ -74,7 +74,7 @@ export function machinesRoutes(idem: IdempotencyStore, sse: SSEService) {
             // run google coding assistant call here
             const { executionId } = await googleCodingAgent(
               machineId,
-              JSON.stringify(contextUpdate)
+              JSON.stringify(contextUpdate),
             );
 
             const machine = await machineDao.read(executionId);
@@ -94,8 +94,8 @@ export function machinesRoutes(idem: IdempotencyStore, sse: SSEService) {
               status: humanReview
                 ? 'awaiting_human'
                 : running
-                ? 'running'
-                : 'pending',
+                  ? 'running'
+                  : 'pending',
               currentStateContext,
               context,
             };
@@ -110,14 +110,14 @@ export function machinesRoutes(idem: IdempotencyStore, sse: SSEService) {
             // Log the error but don't try to send response since it's already sent
             console.error(
               '[machines.routes] Async machine transition failed:',
-              asyncErr
+              asyncErr,
             );
           }
         });
       } catch (err) {
         next(err);
       }
-    }
+    },
   );
 
   return r;

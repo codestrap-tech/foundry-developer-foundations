@@ -15,7 +15,7 @@ import {
 function getTransition(
   transition: { target: string; cond?: string; actions?: string },
   task: Task,
-  transitionEvent: 'CONTINUE' | 'ERROR'
+  transitionEvent: 'CONTINUE' | 'ERROR',
 ) {
   const transitionConfig: any = {
     target: transition.target,
@@ -32,7 +32,7 @@ function getTransition(
       // a classical algorithm or a call to an LLM that returns true or false
       return (task.transitions as Transition).get(transitionEvent)!(
         context,
-        event
+        event,
       );
     };
   } else if (task.transitions?.get(`${transitionEvent}|${genericStateId}`)) {
@@ -40,7 +40,7 @@ function getTransition(
       // TODO improve this by using a function supplied by the function catalog which can either be
       // a classical algorithm or a call to an LLM that returns true or false
       return (task.transitions as Transition).get(
-        `${transitionEvent}|${genericStateId}`
+        `${transitionEvent}|${genericStateId}`,
       )!(context, event);
     };
   }
@@ -53,7 +53,7 @@ function generateStateConfig(
   functionCatalog: Map<string, Task>,
   context: Context,
   parallel = false,
-  isNestedState = false
+  isNestedState = false,
 ): Partial<StateNode<Context, any, MachineEvent>> {
   if (parallel) {
     const stateConfig: any = {};
@@ -76,7 +76,7 @@ function generateStateConfig(
               functionCatalog,
               context,
               false,
-              true
+              true,
             ),
             success: {
               type: 'final',
@@ -118,58 +118,58 @@ function generateStateConfig(
   const retrievedFunction = functionCatalog.get(functionName);
   if (!retrievedFunction) {
     throw new Error(
-      `function implementation for stateId: ${state.id} functionName: ${functionName} not found`
+      `function implementation for stateId: ${state.id} functionName: ${functionName} not found`,
     );
   }
 
   const stateConfig: any = !isNestedState
     ? {
-      entry: (context: Context, event: MachineEvent) => {
-        console.log('Received Event:', event.type);
-        context.stack?.push(state.id);
-        // if the function is async, we ignore the promise as this is fire and forget.
-        // it's up to the function to dispatch the CONTINUE event on the machine to capture results
-        // in the vent payload and continue execution
-        console.log('Executing function:', functionName);
-        retrievedFunction.implementation(context, event, state.task);
-      },
-    }
-    : {
-      invoke: {
-        src: async (context: Context, event: MachineEvent) => {
+        entry: (context: Context, event: MachineEvent) => {
           console.log('Received Event:', event.type);
           context.stack?.push(state.id);
           // if the function is async, we ignore the promise as this is fire and forget.
           // it's up to the function to dispatch the CONTINUE event on the machine to capture results
           // in the vent payload and continue execution
-          console.log('Executing nested state function:', functionName);
-          const result = await retrievedFunction.implementation(
-            context,
-            event,
-            state.task
-          );
-          console.log(
-            `received result from nested state function: ${result}`
-          );
-          const returnValue = {
-            stateId: state.id,
-            [state.id]: {
-              // we destructure to preserve other keys like result which holds values from user interaction
-              ...context[state.id],
-              ...(result as any),
-            },
-          };
-          return returnValue;
+          console.log('Executing function:', functionName);
+          retrievedFunction.implementation(context, event, state.task);
         },
-        onDone: {
-          target: 'success',
-          actions: 'saveResult',
+      }
+    : {
+        invoke: {
+          src: async (context: Context, event: MachineEvent) => {
+            console.log('Received Event:', event.type);
+            context.stack?.push(state.id);
+            // if the function is async, we ignore the promise as this is fire and forget.
+            // it's up to the function to dispatch the CONTINUE event on the machine to capture results
+            // in the vent payload and continue execution
+            console.log('Executing nested state function:', functionName);
+            const result = await retrievedFunction.implementation(
+              context,
+              event,
+              state.task,
+            );
+            console.log(
+              `received result from nested state function: ${result}`,
+            );
+            const returnValue = {
+              stateId: state.id,
+              [state.id]: {
+                // we destructure to preserve other keys like result which holds values from user interaction
+                ...context[state.id],
+                ...(result as any),
+              },
+            };
+            return returnValue;
+          },
+          onDone: {
+            target: 'success',
+            actions: 'saveResult',
+          },
+          onError: {
+            target: 'failure',
+          },
         },
-        onError: {
-          target: 'failure',
-        },
-      },
-    };
+      };
 
   stateConfig.id = state.id;
   // TODO augment with retrievedFunction.transitions.
@@ -193,23 +193,22 @@ function generateStateConfig(
     };
     // we add stateConfig.on[transition.target] to support dynamic transitions added by the LLM
     // The LLM will determine which event to dispatch
-    state.transitions
-      .forEach((transition) => {
-        stateConfig.on[transition.target] = {
-          target: transition.target,
-          actions: transition.actions || 'saveResult',
-        };
-      });
+    state.transitions.forEach((transition) => {
+      stateConfig.on[transition.target] = {
+        target: transition.target,
+        actions: transition.actions || 'saveResult',
+      };
+    });
     // we add these transitions so than non dynamic transitions still work
     stateConfig.on.CONTINUE = state.transitions
       .filter((transition) => transition.on === 'CONTINUE')
       .map((transition) =>
-        getTransition(transition, retrievedFunction, 'CONTINUE')
+        getTransition(transition, retrievedFunction, 'CONTINUE'),
       );
     stateConfig.on.ERROR = state.transitions
       .filter((transition) => transition.on === 'ERROR')
       .map((transition) =>
-        getTransition(transition, retrievedFunction, 'ERROR')
+        getTransition(transition, retrievedFunction, 'ERROR'),
       );
   }
 
@@ -229,7 +228,7 @@ function generateStateConfig(
 
 function generateStateMachineConfig(
   statesArray: StateConfig[],
-  functionCatalog: Map<string, Task>
+  functionCatalog: Map<string, Task>,
 ) {
   const states: {
     [key: string]: Partial<StateNode<Context, any, MachineEvent>>;
@@ -254,7 +253,7 @@ function generateStateMachineConfig(
       state,
       functionCatalog,
       context,
-      state.type === 'parallel'
+      state.type === 'parallel',
     );
   });
 
@@ -269,11 +268,11 @@ function generateStateMachineConfig(
 
 function program(
   statesArray: StateConfig[],
-  functionCatalog: Map<string, Task>
+  functionCatalog: Map<string, Task>,
 ) {
   const states = generateStateMachineConfig(
     statesArray,
-    functionCatalog
+    functionCatalog,
   ) as MachineConfig<Context, any, MachineEvent>;
   return createMachine<Context, MachineEvent>(states, {
     actions: {

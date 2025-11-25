@@ -25,14 +25,18 @@ export function DockerStatusBadge({
   // Close popover when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (popoverRef.current && !popoverRef.current.contains(event.target as Node)) {
+      if (
+        popoverRef.current &&
+        !popoverRef.current.contains(event.target as Node)
+      ) {
         setShowPopover(false);
       }
     };
 
     if (showPopover) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      return () =>
+        document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [showPopover]);
 
@@ -47,7 +51,9 @@ export function DockerStatusBadge({
   };
 
   if (isLoading) {
-    return <span className="docker-status-badge docker-status-loading">⏳</span>;
+    return (
+      <span className="docker-status-badge docker-status-loading">⏳</span>
+    );
   }
 
   const handleClick = (e: any) => {
@@ -61,11 +67,17 @@ export function DockerStatusBadge({
     e.preventDefault();
   };
 
-  const statusColor = isRunning ? 'docker-status-running' : 'docker-status-stopped';
+  const statusColor = isRunning
+    ? 'docker-status-running'
+    : 'docker-status-stopped';
   const statusDot = isRunning ? '🟢' : '⚪';
 
   return (
-    <div className="docker-status-container" ref={popoverRef} onClick={stopPropagation}>
+    <div
+      className="docker-status-container"
+      ref={popoverRef}
+      onClick={stopPropagation}
+    >
       <button
         className={`docker-status-badge ${statusColor}`}
         onClick={handleClick}
@@ -75,7 +87,9 @@ export function DockerStatusBadge({
         {statusDot} Docker
       </button>
       {showPopover && (
-        <div className={`docker-status-popover ${isLastItem ? 'popover-position-top' : ''}`}>
+        <div
+          className={`docker-status-popover ${isLastItem ? 'popover-position-top' : ''}`}
+        >
           <div className="popover-content">
             <div className="popover-status">
               {isRunning ? 'Container is running' : 'Container is stopped'}
@@ -106,4 +120,3 @@ export function DockerStatusBadge({
     </div>
   );
 }
-

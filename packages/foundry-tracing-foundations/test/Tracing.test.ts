@@ -10,7 +10,6 @@ describe('Tracing', () => {
   afterAll(() => jest.clearAllMocks());
 
   beforeEach(() => {
-
     jest.clearAllMocks();
 
     (global.fetch as jest.Mock).mockImplementation((url: string) => {
@@ -29,8 +28,8 @@ describe('Tracing', () => {
               expires_in: 3600,
               token_type: 'Bearer',
             }),
-            { status: 200, headers: { 'Content-Type': 'application/json' } }
-          )
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          ),
         );
       }
       return Promise.reject(new Error('URL not matched'));
@@ -39,7 +38,7 @@ describe('Tracing', () => {
 
   it('should collect telemetry data', async () => {
     const result = await collectTelemetryFetchWrapper(
-      JSON.stringify(mockPayload)
+      JSON.stringify(mockPayload),
     );
     expect(result).toBeDefined();
     expect(JSON.parse(result)).toEqual({ message: 'OK' });

@@ -4,19 +4,19 @@
   "type": "commonjs",
   "main": "./index.cjs",
   "types": "./src/index.d.ts",
-  "publishConfig": {
-    "access": "public"
-  },
   "dependencies": {
-    "@sinclair/typebox": "^0.34.33",
-    "dotenv": "^16.5.0",
-    "@codestrap/developer-foundations.foundry-tracing-foundations": "^1.2.3",
-    "@codestrap/developer-foundations-types": "*",
-    "@codestrap/developer-foundations-utils": "*",
     "@codestrap/developer-foundations-di": "*",
     "@codestrap/developer-foundations-services-google": "*",
+    "@codestrap/developer-foundations-types": "*",
+    "@codestrap/developer-foundations-utils": "*",
     "@codestrap/developer-foundations-x-reason": "*",
+    "@codestrap/developer-foundations.foundry-tracing-foundations": "^1.2.3",
     "@palantir/compute-module": "0.2.7",
+    "@sinclair/typebox": "^0.34.33",
+    "dotenv": "^16.5.0",
     "xstate": "4.37.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

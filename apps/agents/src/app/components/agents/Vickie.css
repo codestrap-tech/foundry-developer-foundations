@@ -1,142 +1,159 @@
 @property --blur {
-            syntax: "<length>";
-            initial-value: 0;
-            inherits: true;
-        }
+  syntax: '<length>';
+  initial-value: 0;
+  inherits: true;
+}
 
-        @property --spread {
-            syntax: "<length>";
-            initial-value: 0;
-            inherits: true;
-        }
+@property --spread {
+  syntax: '<length>';
+  initial-value: 0;
+  inherits: true;
+}
 
-        @property --color {
-            syntax: "<color>";
-            initial-value: rgb(0, 255, 85);
-            inherits: true;
-        }
+@property --color {
+  syntax: '<color>';
+  initial-value: rgb(0, 255, 85);
+  inherits: true;
+}
 
-        @property --lighter-color {
-            syntax: "<color>";
-            initial-value: color-mix(in srgb, var(--color) 80%, white);
-            inherits: true;
-        }
+@property --lighter-color {
+  syntax: '<color>';
+  initial-value: color-mix(in srgb, var(--color) 80%, white);
+  inherits: true;
+}
 
-        @property --darker-color {
-            syntax: "<color>";
-            initial-value: color-mix(in srgb, var(--color) 60%, rgb(2, 137, 24));
-            inherits: true;
-        }
+@property --darker-color {
+  syntax: '<color>';
+  initial-value: color-mix(in srgb, var(--color) 60%, rgb(2, 137, 24));
+  inherits: true;
+}
 
-        @property --angle {
-            syntax: "<angle>";
-            initial-value: 0deg;
-            inherits: true;
-        }
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: true;
+}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-        .orb {
-            --size: 200px;
-            --color: red;
-            --lighter-color: color-mix(in srgb, var(--color) 60%, white);
-            --darker-color: color-mix(in srgb, var(--color) 40%, black);
-            --blur: 40px;
-            --spread: 5px;
-            --angle: -90deg;
-            --border: 10px;
+.orb {
+  --size: 200px;
+  --color: red;
+  --lighter-color: color-mix(in srgb, var(--color) 60%, white);
+  --darker-color: color-mix(in srgb, var(--color) 40%, black);
+  --blur: 40px;
+  --spread: 5px;
+  --angle: -90deg;
+  --border: 10px;
 
-            position: relative;
-            width: var(--size);
-            height: var(--size);
-            aspect-ratio: 1;
-            background:
-                radial-gradient(color-mix(in srgb, var(--darker-color) 65%, transparent) -50%, transparent 50%),
-                radial-gradient(var(--color), var(--color)) no-repeat 50% 50% / 50% 50%,
-                url('/circleLogo-big.svg') no-repeat 50% 50% / 35%,
-                linear-gradient(#ffffff, #ffffff) padding-box,
-                conic-gradient(from var(--angle) at 50% 50%, color-mix(in srgb, var(--lighter-color), transparent) 0 72deg, var(--darker-color) 100deg 180deg, transparent 288deg, color-mix(in srgb, var(--lighter-color), transparent)) border-box,
-                radial-gradient(farthest-corner at 50% 50%, transparent 50%, var(--darker-color) 80% 100%) border-box;
+  position: relative;
+  width: var(--size);
+  height: var(--size);
+  aspect-ratio: 1;
+  background:
+    radial-gradient(
+      color-mix(in srgb, var(--darker-color) 65%, transparent) -50%,
+      transparent 50%
+    ),
+    radial-gradient(var(--color), var(--color)) no-repeat 50% 50% / 50% 50%,
+    url('/circleLogo-big.svg') no-repeat 50% 50% / 35%,
+    linear-gradient(#ffffff, #ffffff) padding-box,
+    conic-gradient(
+        from var(--angle) at 50% 50%,
+        color-mix(in srgb, var(--lighter-color), transparent) 0 72deg,
+        var(--darker-color) 100deg 180deg,
+        transparent 288deg,
+        color-mix(in srgb, var(--lighter-color), transparent)
+      )
+      border-box,
+    radial-gradient(
+        farthest-corner at 50% 50%,
+        transparent 50%,
+        var(--darker-color) 80% 100%
+      )
+      border-box;
 
-            background-blend-mode: normal, overlay, multiply, normal, normal, normal, normal;
-            border: var(--border) solid transparent;
-            border-radius: 50%;
-            box-shadow: 0 0 var(--blur) var(--spread) var(--darker-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: 10s linear infinite change-color, 5s linear infinite orb;
+  background-blend-mode:
+    normal, overlay, multiply, normal, normal, normal, normal;
+  border: var(--border) solid transparent;
+  border-radius: 50%;
+  box-shadow: 0 0 var(--blur) var(--spread) var(--darker-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation:
+    10s linear infinite change-color,
+    5s linear infinite orb;
+}
 
-        }
+@keyframes change-color {
+  0% {
+    --color: rgb(255, 255, 255);
+  }
 
-        @keyframes change-color {
-            0% {
-                --color: rgb(255, 255, 255);
-            }
+  12% {
+    --color: rgb(89, 255, 0);
+  }
 
-            12% {
-                --color: rgb(89, 255, 0);
-            }
+  24% {
+    --color: yellow;
+  }
 
-            24% {
-                --color: yellow;
-            }
+  36% {
+    --color: rgb(225, 255, 0);
+  }
 
-            36% {
-                --color: rgb(225, 255, 0);
-            }
+  48% {
+    --color: rgb(255, 255, 0);
+  }
 
-            48% {
-                --color: rgb(255, 255, 0);
-            }
+  60% {
+    --color: dodgerblue;
+  }
 
-            60% {
-                --color: dodgerblue;
-            }
+  72% {
+    --color: rgb(255, 0, 255);
+  }
 
-            72% {
-                --color: rgb(255, 0, 255);
-            }
+  84% {
+    --color: rgb(0, 255, 85);
+  }
+}
 
-            84% {
-                --color: rgb(0, 255, 85);
-            }
-        }
+@keyframes orb {
+  0% {
+    --angle: -90deg;
+    --blur: 40px;
+    --spread: 5px;
+  }
 
-        @keyframes orb {
-            0% {
-                --angle: -90deg;
-                --blur: 40px;
-                --spread: 5px;
-            }
+  50% {
+    --blur: 80px;
+    --spread: 10px;
+  }
 
-            50% {
-                --blur: 80px;
-                --spread: 10px;
-            }
+  100% {
+    --angle: 270deg;
+  }
+}
 
-            100% {
-                --angle: 270deg;
-            }
-        }
+.orb:hover {
+  animation: reset 0.2s linear 1 forwards;
+}
 
-        .orb:hover {
-            animation: reset .2s linear 1 forwards;
-        }
-
-        @keyframes reset {
-            to {
-                --color: rgb(5, 182, 46);
-                --blur: 40px;
-                --spread: 5px;
-                --angle: -90deg;
-            }
-        }
-        /* Animation classes */
+@keyframes reset {
+  to {
+    --color: rgb(5, 182, 46);
+    --blur: 40px;
+    --spread: 5px;
+    --angle: -90deg;
+  }
+}
+/* Animation classes */
 .animate-orb {
   animation: wave 0.4s infinite ease-in-out;
 }
@@ -147,7 +164,8 @@
 
 /* Keyframes */
 @keyframes wave {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   50% {

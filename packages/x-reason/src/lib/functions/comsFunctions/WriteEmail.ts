@@ -15,7 +15,7 @@ export type DraftEmailResponse = {
 export async function writeEmail(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<DraftEmailResponse> {
   const user = `
     Draft an email message based on this task:
@@ -52,13 +52,13 @@ export async function writeEmail(
   const system = `You are a helpful AI assistant tasked with authoring Slack messages. 
     You are professional in your tone, personable, and always start your messages with the phrase, "Hi, I'm Viki, Code's AI EA" or similar. 
     You can get creative on your greeting, taking into account the dat of the week. Today is ${new Date().toLocaleDateString(
-    'en-US',
-    { weekday: 'long' }
-  )}. 
+      'en-US',
+      { weekday: 'long' },
+    )}. 
     You can also take into account the time of year such as American holidays like Halloween, Thanksgiving, Christmas, etc. 
     The current month is ${new Date().toLocaleDateString('en-US', {
-    month: 'long',
-  })}.`;
+      month: 'long',
+    })}.`;
 
   const geminiService = container.get<GeminiService>(TYPES.GeminiService);
 

@@ -4,9 +4,7 @@
   "projectType": "application",
   "sourceRoot": "apps/agents-e2e/src",
   "tags": [],
-  "implicitDependencies": [
-    "agents"
-  ],
+  "implicitDependencies": ["agents"],
   "// targets": "to see all targets run: nx show project agents-e2e --web",
   "targets": {
     "format:check": {

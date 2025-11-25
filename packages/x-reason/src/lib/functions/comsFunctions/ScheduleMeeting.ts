@@ -11,7 +11,7 @@ import { container } from '@codestrap/developer-foundations-di';
 export async function scheduleMeeting(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<Meeting> {
   try {
     const { subject, times }: ProposedTimes = context[context.stateId];
@@ -25,7 +25,7 @@ export async function scheduleMeeting(
     };
 
     const officeService = await container.getAsync<OfficeService>(
-      TYPES.OfficeService
+      TYPES.OfficeService,
     );
 
     const schedulingResult = await officeService.scheduleMeeting(inputs);

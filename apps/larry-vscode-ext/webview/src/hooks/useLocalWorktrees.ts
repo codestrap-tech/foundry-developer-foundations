@@ -33,4 +33,3 @@ export function useLocalWorktrees() {
 
   return { worktrees, isLoading, error, refetch };
 }
-

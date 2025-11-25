@@ -1,6 +1,5 @@
 //@ts-check
 
- 
 const { composePlugins, withNx } = require('@nx/next');
 
 /**
@@ -14,7 +13,7 @@ const nextConfig = {
     // those examples are added only to check if build passes on CI
     OSDK_CLIENT_ID: process.env.OSDK_CLIENT_ID || 'example',
     OSDK_CLIENT_SECRET: process.env.OSDK_CLIENT_SECRET || 'example',
-  }
+  },
 };
 
 const plugins = [

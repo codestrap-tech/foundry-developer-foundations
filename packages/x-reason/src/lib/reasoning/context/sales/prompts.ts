@@ -1,7 +1,4 @@
-import {
-  xReasonFactory,
-  SupportTrainingDataTypes,
-} from '../../../factory';
+import { xReasonFactory, SupportTrainingDataTypes } from '../../../factory';
 import {
   ActionType,
   TrainingDataDao,
@@ -14,7 +11,7 @@ async function getSolverTrainingData() {
   const trainingDataDao = container.get<TrainingDataDao>(TYPES.TrainingDataDao);
   const searchResults = await trainingDataDao.search(
     SupportedEngines.SALES,
-    SupportTrainingDataTypes.SOLVER
+    SupportTrainingDataTypes.SOLVER,
   );
   const trainingExamples = searchResults.reduce((acc, cur) => {
     acc = `${acc}
@@ -61,7 +58,7 @@ async function getProgrammingTrainingData() {
   const trainingDataDao = container.get<TrainingDataDao>(TYPES.TrainingDataDao);
   const searchResults = await trainingDataDao.search(
     SupportedEngines.SALES,
-    SupportTrainingDataTypes.PROGRAMMER
+    SupportTrainingDataTypes.PROGRAMMER,
   );
   const trainingExamples = searchResults.reduce((acc, cur) => {
     acc = `${acc}
@@ -155,7 +152,7 @@ export async function solver(query: string) {
 
   const formatter = new Intl.DateTimeFormat(
     'en-US',
-    options as Intl.DateTimeFormatOptions
+    options as Intl.DateTimeFormatOptions,
   );
   const formatted = formatter.format(new Date());
 
@@ -166,7 +163,7 @@ export async function solver(query: string) {
 You are professional in your tone, personable, and always start your messages with the phrase, "Hi, I'm Bennie, Code's AI Sales Associate" or similar. 
 You can get creative on your greeting, taking into account the dat of the week. Today is ${new Date().toLocaleDateString(
     'en-US',
-    { weekday: 'long' }
+    { weekday: 'long' },
   )}. 
 You can also take into account the time of year such as American holidays like Halloween, Thanksgiving, Christmas, etc. 
 You always obey the users instructions and understand the people you work for are busy executives and sometimes need help in their personal lives
@@ -320,7 +317,7 @@ The state machine is?
 export async function aiTransition(
   taskList: string,
   currentState: string,
-  context: string
+  context: string,
 ) {
   const system = `
   You are an AI based reasoning engine called Transit. Transit determines if state machine transitions should take place.

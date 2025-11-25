@@ -11,7 +11,7 @@ export async function upsertTicket(
   severity = 'Low',
   status = 'Open',
   points?: number,
-  assignees?: string
+  assignees?: string,
 ): Promise<Tickets> {
   console.log(`upsertTicket machineId: ${id}`);
 

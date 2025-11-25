@@ -35,7 +35,7 @@ export function deriveWindowFromTimeframe(
 
       if (!candidateStr) {
         throw new Error(
-          'timeframe_context "user defined exact date/time" requires a non-empty localDateString (UTC).'
+          'timeframe_context "user defined exact date/time" requires a non-empty localDateString (UTC).',
         );
       }
 
@@ -46,16 +46,21 @@ export function deriveWindowFromTimeframe(
       if (isoNoTZ.test(candidateStr)) {
         // Interpret as *UTC wall-clock*
         const m = candidateStr.match(
-          /^\s*(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})(?::(\d{2}))?\s*$/
+          /^\s*(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})(?::(\d{2}))?\s*$/,
         )!;
-        const Y = +m[1], M = +m[2], D = +m[3], h = +m[4], mm = +m[5], s = +(m[6] || '0');
+        const Y = +m[1],
+          M = +m[2],
+          D = +m[3],
+          h = +m[4],
+          mm = +m[5],
+          s = +(m[6] || '0');
         candidate = new Date(Date.UTC(Y, M - 1, D, h, mm, s));
       } else {
         // Strings with explicit offset are real instants already
         const parsed = new Date(candidateStr);
         if (isNaN(parsed.getTime())) {
           throw new Error(
-            `Invalid localDateString for exact meeting time: "${candidateStr}"`
+            `Invalid localDateString for exact meeting time: "${candidateStr}"`,
           );
         }
         candidate = parsed;
@@ -66,19 +71,19 @@ export function deriveWindowFromTimeframe(
 
       const windowStartLocal = candidate; // UTC instant
       const windowEndLocal = new Date(
-        candidate.getTime() + duration_minutes * 60_000
+        candidate.getTime() + duration_minutes * 60_000,
       );
       const slotStepMinutes = 1;
 
       const clampedStart = clampToWorkingInstant(
         windowStartLocal,
-        working_hours
+        working_hours,
       );
       const clampedEnd = new Date(
         Math.max(
           clampedStart.getTime() + duration_minutes * 60_000,
-          windowEndLocal.getTime()
-        )
+          windowEndLocal.getTime(),
+        ),
       );
 
       return {
@@ -174,7 +179,7 @@ function isWeekend(d: Date): boolean {
  */
 function clampToWorkingInstant(
   instant: Date,
-  hours: { start_hour: number; end_hour: number }
+  hours: { start_hour: number; end_hour: number },
 ): Date {
   let x = new Date(instant);
 
@@ -209,7 +214,6 @@ function clampToWorkingInstant(
   return x;
 }
 
-
 /** Monday 00:00 UTC of the week containing d (Sun=0..Sat=6) */
 function startOfWeekMonday(d: Date): Date {
   const x = startOfDayLocal(d);
@@ -219,10 +223,7 @@ function startOfWeekMonday(d: Date): Date {
 }
 
 /** Next week's Monday at start_hour UTC */
-function startOfNextWeek(
-  d: Date,
-  hours: { start_hour: number }
-): Date {
+function startOfNextWeek(d: Date, hours: { start_hour: number }): Date {
   const nextMon = addDays(startOfWeekMonday(d), 7);
   nextMon.setUTCHours(hours.start_hour, 0, 0, 0);
   return nextMon;
@@ -232,7 +233,7 @@ function startOfNextWeek(
 /** Friday at end_hour UTC of the week containing d (handles UTC wrap past midnight) */
 function endOfWorkWeek(
   d: Date,
-  hours: { start_hour: number; end_hour: number }
+  hours: { start_hour: number; end_hour: number },
 ): Date {
   const mon = startOfWeekMonday(d);
   const fri = addDays(mon, 4); // Mon + 4 = Fri
@@ -254,7 +255,7 @@ function endOfWorkWeek(
 
 function endOfCurrentOrNextWorkWeek(
   start: Date,
-  hours: { start_hour: number; end_hour: number }
+  hours: { start_hour: number; end_hour: number },
 ): Date {
   const end = endOfWorkWeek(start, hours);
   if (start.getTime() >= end.getTime()) {

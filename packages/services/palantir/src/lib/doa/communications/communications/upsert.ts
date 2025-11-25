@@ -16,7 +16,7 @@ export async function upsertCommunications(
   url: string,
   questionPrompt?: string,
   tokens?: number,
-  id: string = uuidv4()
+  id: string = uuidv4(),
 ): Promise<Communications> {
   if (id.length === 0) {
     id = uuidv4();
@@ -63,7 +63,7 @@ export async function upsertCommunications(
   }
 
   console.log(
-    `upsert communications action returned: ${result?.edits?.edits?.[0]}`
+    `upsert communications action returned: ${result?.edits?.edits?.[0]}`,
   );
 
   const commsId = result.edits.edits[0].primaryKey as string;

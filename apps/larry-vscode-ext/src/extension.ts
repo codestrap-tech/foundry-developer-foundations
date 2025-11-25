@@ -17,19 +17,25 @@ interface LarryConfig {
   larryEnvPath: string;
 }
 
-let dockerImageName = process.env.REPO_ROOT ? `${process.env.REPO_ROOT}-larry-server` : 'larry-server'; 
+let dockerImageName = process.env.REPO_ROOT
+  ? `${process.env.REPO_ROOT}-larry-server`
+  : 'larry-server';
 
 let projectName: string | undefined;
 
 const defaultMainPort = 4210;
 const defaultWorktreePort = 4220;
 
-loadLarryConfig().then(async (config) => {
-  projectName = config.name;
-  dockerImageName = projectName ? `${projectName}-larry-server` : 'larry-server'; 
-}).catch((error) => {
-  console.error('Error loading larry config:', error);
-});
+loadLarryConfig()
+  .then(async (config) => {
+    projectName = config.name;
+    dockerImageName = projectName
+      ? `${projectName}-larry-server`
+      : 'larry-server';
+  })
+  .catch((error) => {
+    console.error('Error loading larry config:', error);
+  });
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -61,25 +67,29 @@ async function loadLarryConfig(): Promise<LarryConfig> {
   }
 
   const configPath = path.join(projectRoot, 'larry.config.json');
-  
+
   if (!fs.existsSync(configPath)) {
     throw new Error(`larry.config.json not found at: ${configPath}`);
   }
-  
+
   try {
     const configContent = fs.readFileSync(configPath, 'utf-8');
     const config = JSON.parse(configContent) as LarryConfig;
-    
+
     if (!config || !config.agents || Object.keys(config.agents).length === 0) {
-      throw new Error('Invalid larry.config.json: agents configuration is required');
+      throw new Error(
+        'Invalid larry.config.json: agents configuration is required',
+      );
     }
-    
+
     return config;
   } catch (error) {
     if (error instanceof Error && error.message.includes('larry.config.json')) {
       throw error;
     }
-    throw new Error(`Failed to parse larry.config.json: ${error instanceof Error ? error.message : error}`);
+    throw new Error(
+      `Failed to parse larry.config.json: ${error instanceof Error ? error.message : error}`,
+    );
   }
 }
 
@@ -97,7 +107,7 @@ class SSEProxy {
   start(
     url: string,
     onEvent: (evt: { event?: string; data: string }) => void,
-    onError: (e: any) => void
+    onError: (e: any) => void,
   ) {
     this.stopped = false;
     this.connect(url, onEvent, onError);
@@ -106,7 +116,7 @@ class SSEProxy {
   private connect(
     url: string,
     onEvent: (evt: { event?: string; data: string }) => void,
-    onError: (e: any) => void
+    onError: (e: any) => void,
   ) {
     if (this.stopped) return;
 
@@ -148,9 +158,9 @@ class SSEProxy {
         });
 
         res.on('end', () =>
-          this.handleError(new Error('SSE ended'), url, onEvent, onError)
+          this.handleError(new Error('SSE ended'), url, onEvent, onError),
         );
-      }
+      },
     );
 
     this.req.on('error', (err) => this.handleError(err, url, onEvent, onError));
@@ -161,7 +171,7 @@ class SSEProxy {
     error: any,
     url: string,
     onEvent: (evt: { event?: string; data: string }) => void,
-    onError: (e: any) => void
+    onError: (e: any) => void,
   ) {
     if (this.stopped) return;
 
@@ -169,13 +179,13 @@ class SSEProxy {
       `❌ SSE connection error (attempt ${this.retryCount + 1}/${
         this.maxRetries + 1
       }):`,
-      error
+      error,
     );
 
     if (this.retryCount < this.maxRetries) {
       this.retryCount++;
       console.log(
-        `🔄 Retrying SSE connection in ${this.retryDelay}ms... (${this.retryCount}/${this.maxRetries})`
+        `🔄 Retrying SSE connection in ${this.retryDelay}ms... (${this.retryCount}/${this.maxRetries})`,
       );
 
       this.retryTimeout = setTimeout(() => {
@@ -213,7 +223,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider('larryHome', provider, {
         webviewOptions: { retainContextWhenHidden: true },
-      })
+      }),
     );
 
     // Watch for workspace changes to detect worktree changes
@@ -225,14 +235,14 @@ export function activate(context: vscode.ExtensionContext) {
         } catch (error) {
           console.error('❌ Error in worktree change handler:', error);
         }
-      }
+      },
     );
     context.subscriptions.push(workspaceWatcher);
 
     console.log('🚀 Larry Extension activated successfully!');
     console.log(
       '📁 Workspace folders:',
-      vscode.workspace.workspaceFolders?.map((f) => f.uri.fsPath)
+      vscode.workspace.workspaceFolders?.map((f) => f.uri.fsPath),
     );
 
     // Show a notification to confirm activation (with error handling)
@@ -240,14 +250,14 @@ export function activate(context: vscode.ExtensionContext) {
       .showInformationMessage('Larry Coding Assistant is now active!')
       .then(
         () => console.log('✅ Activation notification shown'),
-        (error) => console.error('❌ Failed to show notification:', error)
+        (error) => console.error('❌ Failed to show notification:', error),
       );
 
     // Note: Docker will be started when the webview is actually opened/used
   } catch (error) {
     console.error('❌ Critical error during extension activation:', error);
     vscode.window.showErrorMessage(
-      `Larry Extension failed to activate: ${error}`
+      `Larry Extension failed to activate: ${error}`,
     );
   }
 }
@@ -270,7 +280,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       })
       .catch((error) => {
         vscode.window.showErrorMessage(
-          `Larry Extension: ${error.message}. Please create a larry.config.json file in your project root.`
+          `Larry Extension: ${error.message}. Please create a larry.config.json file in your project root.`,
         );
         throw error;
       });
@@ -286,10 +296,10 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       console.error('❌ Config not loaded, cannot start SSE');
       return;
     }
-    
+
     const agent = agentKey || Object.keys(this.config.agents)[0];
     const agentRoute = this.config.agents[agent];
-    
+
     const url = `http://localhost:${defaultWorktreePort}${agentRoute}/events?topics=thread.created,machine.updated`;
     console.log('🚀 Starting worktree SSE connection to:', url);
     this.sseWorktree?.stop();
@@ -308,23 +318,23 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       (err) => {
         console.log(
           '❌ Worktree SSE connection failed after all retries:',
-          err
+          err,
         );
         this.view?.webview.postMessage({
           type: 'sse_error',
           source: 'worktree',
           message: `Connection failed after 3 retries: ${String(
-            err?.message || err
+            err?.message || err,
           )}`,
           retryable: true,
         });
-      }
+      },
     );
   }
 
   // Thread ID file management
   private async readCurrentThreadId(
-    worktreeName: string
+    worktreeName: string,
   ): Promise<string[] | undefined> {
     try {
       const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
@@ -338,7 +348,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         'worktrees',
         worktreeName,
         'tmp',
-        'worktreeLocalThreads.json'
+        'worktreeLocalThreads.json',
       );
 
       const fileContent = await vscode.workspace.fs.readFile(threadIdsFilePath);
@@ -352,7 +362,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
   private async writeCurrentThreadId(
     worktreeName: string,
-    threadId: string
+    threadId: string,
   ): Promise<void> {
     try {
       const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
@@ -365,7 +375,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         '.larry',
         'worktrees',
         worktreeName,
-        'tmp'
+        'tmp',
       );
 
       // Create tmp directory if it doesn't exist
@@ -373,15 +383,14 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
       const threadIdsFilePath = vscode.Uri.joinPath(
         tmpDir,
-        'worktreeLocalThreads.json'
+        'worktreeLocalThreads.json',
       );
 
       // Read existing thread IDs or initialize empty array
       let existingThreadIds: string[] = [];
       try {
-        const fileContent = await vscode.workspace.fs.readFile(
-          threadIdsFilePath
-        );
+        const fileContent =
+          await vscode.workspace.fs.readFile(threadIdsFilePath);
         existingThreadIds = JSON.parse(fileContent.toString());
       } catch (error) {
         // File doesn't exist or can't be parsed, start with empty array
@@ -396,7 +405,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       // Write updated thread IDs back to file
       await vscode.workspace.fs.writeFile(
         threadIdsFilePath,
-        Buffer.from(JSON.stringify(existingThreadIds, null, 2), 'utf8')
+        Buffer.from(JSON.stringify(existingThreadIds, null, 2), 'utf8'),
       );
     } catch (error) {
       console.error('Error writing thread ID file:', error);
@@ -412,7 +421,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
           await execAsync(`docker inspect ${this.mainDockerContainer}`);
           console.log(
             'Main docker container already running:',
-            this.mainDockerContainer
+            this.mainDockerContainer,
           );
           return;
         } catch (error) {
@@ -458,7 +467,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
    -e PORT=${port} \
    -v "${foundryProjectRoot}:/workspace:ro" \
    --user 1001:1001 \
-   ${dockerImageName}`
+   ${dockerImageName}`,
       );
 
       const containerId = stdout.trim();
@@ -511,7 +520,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
       console.log(
         'Checking worktree for workspace:',
-        workspaceFolder.uri.fsPath
+        workspaceFolder.uri.fsPath,
       );
 
       // Check if we're in a git worktree by looking for .git file (worktree) vs .git directory (main)
@@ -588,7 +597,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       const containerName = `${projectName || 'larry'}-worktree-${worktreeId}`;
       try {
         const { stdout: inspectOutput } = await execAsync(
-          `docker inspect ${containerName}`
+          `docker inspect ${containerName}`,
         );
         const containerInfo = JSON.parse(inspectOutput);
 
@@ -626,7 +635,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
     // Start appropriate SSE based on worktree state
     if (!isInWorktree) {
       console.log(
-        '🐳 User is not in worktree - starting main Docker container...'
+        '🐳 User is not in worktree - starting main Docker container...',
       );
       await this.ensureMainDockerRunning();
       this.startMainSSE(); // <— start SSE for main list
@@ -673,14 +682,14 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
     worktreeName: string,
     threadId: string | undefined,
     label: string,
-    agentKey?: string
+    agentKey?: string,
   ) {
     try {
       // Create or ensure worktree exists
       const finalWorktreeName = await this.createOrEnsureWorktree(
         worktreeName,
         threadId,
-        label
+        label,
       );
 
       if (!finalWorktreeName) {
@@ -690,35 +699,34 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       let isRunning = false;
       try {
         const containerName = `${projectName || 'larry'}-worktree-${finalWorktreeName}`;
-      const { stdout: inspectOutput } = await execAsync(
-        `docker inspect ${containerName}`
-      );
+        const { stdout: inspectOutput } = await execAsync(
+          `docker inspect ${containerName}`,
+        );
 
-      const containerInfo = JSON.parse(inspectOutput);
-      if (containerInfo.length > 0) {
-        const container = containerInfo[0];
-        isRunning = container.State.Running;
-      }
+        const containerInfo = JSON.parse(inspectOutput);
+        if (containerInfo.length > 0) {
+          const container = containerInfo[0];
+          isRunning = container.State.Running;
+        }
       } catch (e) {
         isRunning = false;
       }
-      
 
       if (!isRunning) {
-      // Setup worktree environment
-      await this.setupWorktreeEnvironment(finalWorktreeName, threadId);
+        // Setup worktree environment
+        await this.setupWorktreeEnvironment(finalWorktreeName, threadId);
 
-      // Start worktree docker container
-      this.view?.webview.postMessage({
-        type: 'update_thread_state',
-        state: 'creating_container',
-      });
+        // Start worktree docker container
+        this.view?.webview.postMessage({
+          type: 'update_thread_state',
+          state: 'creating_container',
+        });
 
-      if (threadId) {
-        await this.writeCurrentThreadId(finalWorktreeName, threadId);
-      }
+        if (threadId) {
+          await this.writeCurrentThreadId(finalWorktreeName, threadId);
+        }
 
-      await this.startWorktreeDockerContainer(finalWorktreeName, threadId);
+        await this.startWorktreeDockerContainer(finalWorktreeName, threadId);
       }
 
       // Notify that worktree is ready
@@ -745,7 +753,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
       // Show VSCode toast notification
       vscode.window.showErrorMessage(
-        `Failed to setup worktree: ${errorMessage}`
+        `Failed to setup worktree: ${errorMessage}`,
       );
 
       this.view?.webview.postMessage({
@@ -760,7 +768,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
   async createOrEnsureWorktree(
     worktreeName: string,
     threadId: string | undefined,
-    label: string
+    label: string,
   ): Promise<string | undefined> {
     try {
       // Get workspace folder
@@ -769,7 +777,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         const activeEditor = vscode.window.activeTextEditor;
         if (activeEditor) {
           workspaceFolder = vscode.workspace.getWorkspaceFolder(
-            activeEditor.document.uri
+            activeEditor.document.uri,
           );
         }
       }
@@ -792,12 +800,12 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         workspaceFolder.uri,
         '.larry',
         'worktrees',
-        finalWorktreeName
+        finalWorktreeName,
       );
 
       const worktreeExists = await vscode.workspace.fs.stat(worktreePath).then(
         () => true,
-        () => false
+        () => false,
       );
 
       if (!worktreeExists) {
@@ -810,7 +818,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
           workspaceFolder,
           finalWorktreeName,
           threadId,
-          label
+          label,
         );
       }
 
@@ -825,7 +833,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
     workspaceFolder: vscode.WorkspaceFolder,
     worktreeName: string,
     threadId: string | undefined,
-    label: string
+    label: string,
   ) {
     try {
       // Create worktree directory path
@@ -833,12 +841,12 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         workspaceFolder.uri,
         '.larry',
         'worktrees',
-        worktreeName
+        worktreeName,
       );
 
       // Create the .larry/worktrees directory if it doesn't exist
       await vscode.workspace.fs.createDirectory(
-        vscode.Uri.joinPath(workspaceFolder.uri, '.larry', 'worktrees')
+        vscode.Uri.joinPath(workspaceFolder.uri, '.larry', 'worktrees'),
       );
 
       // Create branch name in larry/ format
@@ -849,7 +857,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         // Get current branch name to branch from
         const { stdout: currentBranch } = await execAsync(
           'git rev-parse --abbrev-ref HEAD',
-          { cwd: workspaceFolder.uri.fsPath }
+          { cwd: workspaceFolder.uri.fsPath },
         );
         const sourceBranch = currentBranch.trim();
 
@@ -857,25 +865,25 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
         await execAsync(
           `git worktree add "${worktreePath.fsPath}" -b ${branchName} ${sourceBranch}`,
-          { cwd: workspaceFolder.uri.fsPath }
+          { cwd: workspaceFolder.uri.fsPath },
         );
         worktreeCreated = true;
       } catch (branchError: any) {
         // If branch already exists, try to use existing branch
         if (branchError.message?.includes('already exists')) {
           console.log(
-            `Branch ${branchName} already exists, trying to use existing branch`
+            `Branch ${branchName} already exists, trying to use existing branch`,
           );
           try {
             await execAsync(
               `git worktree add "${worktreePath.fsPath}" ${branchName}`,
-              { cwd: workspaceFolder.uri.fsPath }
+              { cwd: workspaceFolder.uri.fsPath },
             );
             worktreeCreated = true;
           } catch (existingBranchError: any) {
             if (existingBranchError.message?.includes('already checked out')) {
               throw new Error(
-                `Worktree path already exists: ${worktreePath.fsPath}`
+                `Worktree path already exists: ${worktreePath.fsPath}`,
               );
             } else {
               throw existingBranchError;
@@ -892,7 +900,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
           try {
             await this.writeCurrentThreadId(worktreeName, threadId);
             console.log(
-              `Worktree created: ${worktreeName} (branch: ${branchName}) with thread ID: ${threadId}`
+              `Worktree created: ${worktreeName} (branch: ${branchName}) with thread ID: ${threadId}`,
             );
           } catch (error) {
             console.error('Failed to write thread ID file:', error);
@@ -900,7 +908,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         } else {
           // New worktree - no thread ID file created yet
           console.log(
-            `New worktree created: ${worktreeName} (branch: ${branchName}) - thread ID will be assigned later`
+            `New worktree created: ${worktreeName} (branch: ${branchName}) - thread ID will be assigned later`,
           );
         }
       }
@@ -930,18 +938,17 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         workspaceFolder.uri,
         '.larry',
         'worktrees',
-        worktreeName
+        worktreeName,
       ).fsPath;
 
- 
       if (this.config.larryEnvPath) {
         console.log(`Copying env file from ${this.config.larryEnvPath}...`);
         const sourceEnvPath = vscode.Uri.joinPath(
           workspaceFolder.uri,
-          this.config.larryEnvPath
+          this.config.larryEnvPath,
         ).fsPath;
         const targetEnvPath = path.join(worktreePath, this.config.larryEnvPath);
-        
+
         await execAsync(`cp ${sourceEnvPath} ${targetEnvPath}`);
       }
 
@@ -961,7 +968,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
   async startWorktreeDockerContainer(
     worktreeName: string,
     threadId: string | undefined,
-    isInWorktree?: boolean
+    isInWorktree?: boolean,
   ): Promise<string> {
     try {
       // Ensure Docker image exists before running
@@ -986,7 +993,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
             workspaceFolder.uri,
             '.larry',
             'worktrees',
-            worktreeName
+            worktreeName,
           ).fsPath
         : vscode.Uri.joinPath(workspaceFolder.uri, '').fsPath;
       console.log(worktreePath);
@@ -1005,7 +1012,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
    -e WORKTREE_NAME=${worktreeName} \
    -v "${worktreePath}:/workspace:rw" \
    --user 1001:1001 \
-   ${dockerImageName}`
+   ${dockerImageName}`,
       );
 
       const containerId = stdout.trim();
@@ -1014,7 +1021,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
       console.log(
         `Worktree Larry container started for ${worktreeName}:`,
-        containerId
+        containerId,
       );
       return containerId;
     } catch (error) {
@@ -1045,7 +1052,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         workspaceFolder.uri,
         '.larry',
         'worktrees',
-        worktreeId
+        worktreeId,
       ).fsPath;
 
       // Convert relative path to absolute path
@@ -1058,7 +1065,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         .stat(vscode.Uri.file(absoluteWorktreePath))
         .then(
           () => true,
-          () => false
+          () => false,
         );
 
       if (!worktreeExists) {
@@ -1066,12 +1073,12 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         const createWorktree = await vscode.window.showWarningMessage(
           `Worktree doesn't exist at: ${worktreePath}`,
           'Create Worktree',
-          'Cancel'
+          'Cancel',
         );
 
         if (createWorktree === 'Create Worktree') {
           vscode.window.showInformationMessage(
-            'Please use the "Open worktree" flow in the extension to create worktrees.'
+            'Please use the "Open worktree" flow in the extension to create worktrees.',
           );
         } else {
           return;
@@ -1081,7 +1088,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
       await vscode.commands.executeCommand(
         'vscode.openFolder',
         vscode.Uri.file(absoluteWorktreePath),
-        true
+        true,
       );
     } catch (error) {
       vscode.window.showErrorMessage(`Failed to open worktree: ${error}`);
@@ -1099,14 +1106,14 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         // Replace /workspace with the actual workspace root path
         resolvedPath = filePath.replace(
           '/workspace/',
-          workspaceFolder.uri.fsPath + '/'
+          workspaceFolder.uri.fsPath + '/',
         );
       }
     }
 
     await vscode.commands.executeCommand(
       'vscode.open',
-      vscode.Uri.file(resolvedPath)
+      vscode.Uri.file(resolvedPath),
     );
   }
 
@@ -1121,13 +1128,13 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         // Replace /workspace with the actual workspace root path
         resolvedPath = filePath.replace(
           '/workspace/',
-          workspaceFolder.uri.fsPath + '/'
+          workspaceFolder.uri.fsPath + '/',
         );
       }
     }
 
     const fileContent = await vscode.workspace.fs.readFile(
-      vscode.Uri.file(resolvedPath)
+      vscode.Uri.file(resolvedPath),
     );
     return Buffer.from(fileContent).toString('utf8');
   }
@@ -1144,9 +1151,12 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         throw new Error('Project root not found for Docker build.');
       }
 
-      await execAsync(`docker build -f Larry.Dockerfile -t ${dockerImageName} .`, {
-        cwd: foundryProjectRoot,
-      });
+      await execAsync(
+        `docker build -f Larry.Dockerfile -t ${dockerImageName} .`,
+        {
+          cwd: foundryProjectRoot,
+        },
+      );
       console.log(`Docker image ${dockerImageName} built successfully`);
     }
   }
@@ -1162,13 +1172,13 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
     };
 
     const scriptUri = view.webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, 'media', 'webview.js')
+      vscode.Uri.joinPath(this.context.extensionUri, 'media', 'webview.js'),
     );
     const styleUri = view.webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, 'media', 'webview.css')
+      vscode.Uri.joinPath(this.context.extensionUri, 'media', 'webview.css'),
     );
     const overridesUri = view.webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, 'media', 'overrides.css')
+      vscode.Uri.joinPath(this.context.extensionUri, 'media', 'overrides.css'),
     );
     const nonce = String(Date.now());
     const csp = [
@@ -1207,7 +1217,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
           msg.worktreeName || '',
           msg.threadId || undefined,
           msg.label,
-          msg.agentKey || undefined
+          msg.agentKey || undefined,
         );
         return;
       }
@@ -1298,8 +1308,10 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
           HEAD 234786afcd4c40f6a47a78b7796062891cc591be
           branch refs/heads/larry/create-sending-email-function-gsf
           */
-          const worktreeBlocks = stdout.split('\n\n').filter((block) => block.trim());
-          
+          const worktreeBlocks = stdout
+            .split('\n\n')
+            .filter((block) => block.trim());
+
           const worktrees = worktreeBlocks
             .map((block) => {
               const lines = block.split('\n');
@@ -1309,13 +1321,15 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
               if (!worktreeLine) return null;
 
               const path = worktreeLine.replace('worktree ', '').trim();
-              
+
               let branch = 'detached';
               if (branchLine) {
                 const branchRef = branchLine.replace('branch ', '').trim();
                 branch = branchRef.replace('refs/heads/', '');
               }
-              const pathMatch = path.match(/\.larry[/\\]worktrees[/\\]([^/\\]+)$/);
+              const pathMatch = path.match(
+                /\.larry[/\\]worktrees[/\\]([^/\\]+)$/,
+              );
               if (!pathMatch) return null;
 
               const worktreeName = pathMatch[1];
@@ -1347,7 +1361,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         try {
           const containerName = `${projectName || 'larry'}-worktree-${msg.worktreeName}`;
           const { stdout: inspectOutput } = await execAsync(
-            `docker inspect ${containerName}`
+            `docker inspect ${containerName}`,
           );
           const containerInfo = JSON.parse(inspectOutput);
 
@@ -1385,7 +1399,11 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
 
       if (msg?.type === 'start_docker_container') {
         try {
-          await this.startWorktreeDockerContainer(msg.worktreeName, undefined, true);
+          await this.startWorktreeDockerContainer(
+            msg.worktreeName,
+            undefined,
+            true,
+          );
           view.webview.postMessage({
             type: 'docker_action_complete',
             action: 'start',
@@ -1440,19 +1458,17 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
           // Stop and remove docker container
           try {
             await execAsync(`docker stop ${containerName}`);
-          } catch (e) {
-          }
+          } catch (e) {}
           try {
             await execAsync(`docker rm -f ${containerName}`);
-          } catch (e) {
-          }
+          } catch (e) {}
 
           // Remove git worktree
           const worktreePath = vscode.Uri.joinPath(
             workspaceFolder.uri,
             '.larry',
             'worktrees',
-            msg.worktreeName
+            msg.worktreeName,
           ).fsPath;
 
           await execAsync(`git worktree remove "${worktreePath}" --force`, {
@@ -1460,12 +1476,10 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
           });
 
           try {
-            await vscode.workspace.fs.delete(
-              vscode.Uri.file(worktreePath),
-              { recursive: true }
-            );
-          } catch (e) {
-          }
+            await vscode.workspace.fs.delete(vscode.Uri.file(worktreePath), {
+              recursive: true,
+            });
+          } catch (e) {}
 
           await execAsync('git worktree prune', {
             cwd: workspaceFolder.uri.fsPath,

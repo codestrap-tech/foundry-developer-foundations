@@ -5,7 +5,10 @@ import {
 import { foundryClientFactory } from '../../factory/foundryClientFactory';
 
 export function makeWorldDao(): WorldDao {
-  const { getToken, url, ontologyRid } = foundryClientFactory(process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE, undefined);
+  const { getToken, url, ontologyRid } = foundryClientFactory(
+    process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
+    undefined,
+  );
 
   return async ({ message, userId }) => {
     console.log(`makeWorldDao userId: ${userId}`);

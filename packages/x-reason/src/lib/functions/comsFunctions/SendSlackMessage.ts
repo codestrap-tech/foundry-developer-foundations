@@ -11,13 +11,13 @@ import { container } from '@codestrap/developer-foundations-di';
 export async function sendSlackMessage(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<MessageResponse> {
   // Get the state ID for the writeSlackMessage step that preceded this
   const writeSlackStateId = context.stack?.[context.stack?.length - 2];
   if (!writeSlackStateId) {
     throw new Error(
-      'Unable to find writeSlackMessage state in the machine stack.'
+      'Unable to find writeSlackMessage state in the machine stack.',
     );
   }
 

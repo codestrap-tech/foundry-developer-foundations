@@ -85,7 +85,12 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
 
     const windowStartUTC = wallClockToUTC('2025-07-22T08:00:00', timezone); // PT → UTC
     const windowEndUTC = wallClockToUTC('2025-07-22T17:00:00', timezone); // PT → UTC
-    const workingHours = workingHoursUTCForDate(windowStartUTC, timezone, 8, 17);
+    const workingHours = workingHoursUTCForDate(
+      windowStartUTC,
+      timezone,
+      8,
+      17,
+    );
 
     const slots = await findOptimalMeetingTimeV2({
       calendar,
@@ -109,7 +114,12 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
 
     const windowStartUTC = wallClockToUTC('2025-07-22T08:00:00', timezone); // PT → UTC
     const windowEndUTC = wallClockToUTC('2025-07-23T17:00:00', timezone); // PT → UTC
-    const workingHours = workingHoursUTCForDate(windowStartUTC, timezone, 8, 17);
+    const workingHours = workingHoursUTCForDate(
+      windowStartUTC,
+      timezone,
+      8,
+      17,
+    );
 
     const slots = await findOptimalMeetingTimeV2({
       calendar,
@@ -133,7 +143,12 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
 
     const windowStartUTC = wallClockToUTC('2025-07-25T08:00:00', timezone); // Fri PT
     const windowEndUTC = wallClockToUTC('2025-07-25T17:00:00', timezone); // PT
-    const workingHours = workingHoursUTCForDate(windowStartUTC, timezone, 8, 17);
+    const workingHours = workingHoursUTCForDate(
+      windowStartUTC,
+      timezone,
+      8,
+      17,
+    );
 
     const slots = await findOptimalMeetingTimeV2({
       calendar,
@@ -155,7 +170,12 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
 
     const windowStartUTC = wallClockToUTC('2025-11-01T08:00:00', timezone); // PDT
     const windowEndUTC = wallClockToUTC('2025-11-03T17:00:00', timezone); // PST
-    const workingHours = workingHoursUTCForDate(windowStartUTC, timezone, 8, 17);
+    const workingHours = workingHoursUTCForDate(
+      windowStartUTC,
+      timezone,
+      8,
+      17,
+    );
 
     const slots = await findOptimalMeetingTimeV2({
       calendar,
@@ -223,7 +243,12 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
 
     const windowStartUTC = wallClockToUTC('2025-07-22T08:00:00', timezone); // PT
     const windowEndUTC = wallClockToUTC('2025-07-22T10:00:00', timezone); // PT
-    const workingHours = workingHoursUTCForDate(windowStartUTC, timezone, 8, 17);
+    const workingHours = workingHoursUTCForDate(
+      windowStartUTC,
+      timezone,
+      8,
+      17,
+    );
 
     const slots = await findOptimalMeetingTimeV2({
       calendar,
@@ -260,7 +285,12 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
 
     const windowStartUTC = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndUTC = wallClockToUTC('2025-07-22T17:00:00', timezone);
-    const workingHours = workingHoursUTCForDate(windowStartUTC, timezone, 8, 17);
+    const workingHours = workingHoursUTCForDate(
+      windowStartUTC,
+      timezone,
+      8,
+      17,
+    );
 
     const slots = await findOptimalMeetingTimeV2({
       calendar,
@@ -282,7 +312,12 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
 
     const windowStartUTC = wallClockToUTC('2025-07-26T08:00:00', timezone); // Sat PT
     const windowEndUTC = wallClockToUTC('2025-07-28T17:00:00', timezone); // Mon PT
-    const workingHours = workingHoursUTCForDate(windowStartUTC, timezone, 8, 17);
+    const workingHours = workingHoursUTCForDate(
+      windowStartUTC,
+      timezone,
+      8,
+      17,
+    );
 
     const slots = await findOptimalMeetingTimeV2({
       calendar,
@@ -306,7 +341,12 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
 
     const windowStartUTC = wallClockToUTC('2025-07-24T08:00:00', timezone); // Thu PT
     const windowEndUTC = wallClockToUTC('2025-07-25T17:00:00', timezone); // Fri PT
-    const workingHours = workingHoursUTCForDate(windowStartUTC, timezone, 8, 17);
+    const workingHours = workingHoursUTCForDate(
+      windowStartUTC,
+      timezone,
+      8,
+      17,
+    );
 
     const slots = await findOptimalMeetingTimeV2({
       calendar,
@@ -329,7 +369,12 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
 
     const windowStartUTC = wallClockToUTC('2025-07-22T10:10:00', timezone); // PT
     const windowEndUTC = wallClockToUTC('2025-07-22T12:00:00', timezone); // PT
-    const workingHours = workingHoursUTCForDate(windowStartUTC, timezone, 8, 17);
+    const workingHours = workingHoursUTCForDate(
+      windowStartUTC,
+      timezone,
+      8,
+      17,
+    );
 
     const slots = await findOptimalMeetingTimeV2({
       calendar,
@@ -357,7 +402,12 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
 
     const windowStartUTC = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndUTC = wallClockToUTC('2025-07-22T17:00:00', timezone);
-    const workingHours = workingHoursUTCForDate(windowStartUTC, timezone, 8, 17);
+    const workingHours = workingHoursUTCForDate(
+      windowStartUTC,
+      timezone,
+      8,
+      17,
+    );
 
     const slots = await findOptimalMeetingTimeV2({
       calendar,
@@ -387,7 +437,12 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
 
     const windowStartUTC = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndUTC = wallClockToUTC('2025-07-22T17:00:00', timezone);
-    const workingHours = workingHoursUTCForDate(windowStartUTC, timezone, 8, 17);
+    const workingHours = workingHoursUTCForDate(
+      windowStartUTC,
+      timezone,
+      8,
+      17,
+    );
 
     const slots = await findOptimalMeetingTimeV2({
       calendar,
@@ -410,7 +465,12 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
 
     const windowStartUTC = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndUTC = wallClockToUTC('2025-07-22T17:00:00', timezone);
-    const workingHours = workingHoursUTCForDate(windowStartUTC, timezone, 8, 17);
+    const workingHours = workingHoursUTCForDate(
+      windowStartUTC,
+      timezone,
+      8,
+      17,
+    );
 
     const slots = await findOptimalMeetingTimeV2({
       calendar,
@@ -437,7 +497,12 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
 
     const windowStartUTC = wallClockToUTC('2025-03-07T08:00:00', timezone); // Fri (PST)
     const windowEndUTC = wallClockToUTC('2025-03-10T17:00:00', timezone); // Mon (PDT)
-    const workingHours = workingHoursUTCForDate(windowStartUTC, timezone, 8, 17);
+    const workingHours = workingHoursUTCForDate(
+      windowStartUTC,
+      timezone,
+      8,
+      17,
+    );
 
     const slots = await findOptimalMeetingTimeV2({
       calendar,
@@ -453,10 +518,10 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
 
     expect(slots.length).toBeGreaterThan(0);
     const hasMinus08 = slots.some(
-      (s) => /-08:00$/.test(s.start) || /-08:00$/.test(s.end)
+      (s) => /-08:00$/.test(s.start) || /-08:00$/.test(s.end),
     ); // Fri
     const hasMinus07 = slots.some(
-      (s) => /-07:00$/.test(s.start) || /-07:00$/.test(s.end)
+      (s) => /-07:00$/.test(s.start) || /-07:00$/.test(s.end),
     ); // Mon
     expect(hasMinus08 && hasMinus07).toBe(true);
   });
@@ -465,7 +530,7 @@ describe('findOptimalMeetingTimeV2 (UTC bounds + PT semantics)', () => {
 /* ---------------- helpers (local to the spec) ---------------- */
 
 function flattenBusy(
-  calendars: Record<string, { busy: Array<{ start: string; end: string }> }>
+  calendars: Record<string, { busy: Array<{ start: string; end: string }> }>,
 ) {
   return Object.values(calendars).flatMap((c) => c.busy);
 }
@@ -475,7 +540,7 @@ function flattenBusy(
  */
 function assertNoOverlap(
   slots: Slot[],
-  busy: Array<{ start: string; end: string }>
+  busy: Array<{ start: string; end: string }>,
 ) {
   const overlaps = slots.filter((s) => {
     const sStart = new Date(s.start).getTime();
@@ -493,7 +558,7 @@ function assertNoOverlap(
 
 function assertWithinLocalWorkingHours(
   slots: Slot[],
-  hours: { start_hour: number; end_hour: number }
+  hours: { start_hour: number; end_hour: number },
 ) {
   for (const s of slots) {
     const startLocalHour = parseInt(s.start.substring(11, 13), 10);

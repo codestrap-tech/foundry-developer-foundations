@@ -16,7 +16,7 @@ import { writeFileIfNotFoundLocally } from './delegates/github';
 export async function applyEdits(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ) {
   const threadsDao = container.get<ThreadsDao>(TYPES.ThreadsDao);
   const repoRootFolder = process.env.REPO_ROOT as string;
@@ -63,22 +63,22 @@ export async function applyEdits(
     dryRun: false,
     write: true,
     format: true,
-     
-    onLog: () => { },
+
+    onLog: () => {},
   };
 
   const results = await executeEditMachine(edits.ops, options);
 
   parsedMessages.push({
     system: `applied edits to the following files: ${results.changedFiles.join(
-      ','
+      ',',
     )}`,
   });
 
   await threadsDao.upsert(
     JSON.stringify(parsedMessages),
     'cli-tool',
-    context.machineExecutionId!
+    context.machineExecutionId!,
   );
 
   return results;
