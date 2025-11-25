@@ -13,7 +13,7 @@ jobs:
     timeout-minutes: 30
     strategy:
       matrix:
-        target: [lint, test, build]
+        target: [lint, format:check, test, build]
     steps:
       - uses: actions/checkout@v4
         with:
