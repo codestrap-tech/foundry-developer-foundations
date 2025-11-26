@@ -8,13 +8,13 @@ export async function readConflictResolutionRules(
 ): Promise<string[]> {
   // mock response for testing with promise
   return new Promise((resolve, reject) => {
-    reject(new Error('Mock error for testing'));
-    // setTimeout(() => {
-    //   resolve([
-    //     'Prioritize meetings with dsmiley@codestrap.me over other internal meetings',
-    //     'Prioritize external meetings over internal meetings',
-    //   ]);
-    // }, 1000);
+    // reject(new Error('Mock error for testing'));
+    setTimeout(() => {
+      resolve([
+        'Prioritize meetings with dsmiley@codestrap.me over other internal meetings',
+        'Prioritize external meetings over internal meetings',
+      ]);
+    }, 1000);
   });
 
   // const fullUrl = `${url}/api/v1/users/${encodeURIComponent(
