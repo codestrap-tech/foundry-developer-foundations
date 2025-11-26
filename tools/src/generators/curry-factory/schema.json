@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/schema",
+  "$id": "CurryFactory",
+  "title": "Curry Factory Generator",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the nx library to generate the factory in.",
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      },
+      "x-prompt": "What is the name of the factory?"
+    },
+    "fileName": {
+      "type": "string",
+      "description": "The name of the factory file to generate.",
+      "$default": {
+        "$source": "argv",
+        "index": 1
+      },
+      "x-prompt": "What is the name of the factory?"
+    },
+    "promptFile": {
+      "type": "string",
+      "description": "Additional user instructions or context for AI-assisted factory generation.",
+      "$default": {
+        "$source": "argv",
+        "index": 2
+      },
+      "x-prompt": "Enter the path to your prompt file. For an example see factory.prompt.txt"
+    }
+  },
+  "required": ["name"]
+}

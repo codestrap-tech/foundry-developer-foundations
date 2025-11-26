@@ -177,6 +177,7 @@ export type FileOp = {
   file: string;
   type: string;
   contents?: string;
+  stubCode?: string;
 }
 
 export const EditOpsJsonSchema = {
