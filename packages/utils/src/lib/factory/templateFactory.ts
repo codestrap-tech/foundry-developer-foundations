@@ -10,8 +10,6 @@ import { curry } from 'ramda';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
-import { curryFactoryGenerator, CurryFactoryGeneratorSchema, googleClientGenerator, GoogleClientGeneratorSchema } from '@codestrap/tools';
-
 import {
   Tree,
   workspaceRoot,
@@ -42,6 +40,18 @@ export interface TemplateDefinition<TOptions = unknown> {
   samplePrompts: string[];
   promptGuide: string;
   projectJson: () => Promise<string>;
+}
+
+// we had to duplicate GoogleClientGeneratorSchema and CurryFactoryGeneratorSchema interfaces here to avoid circular dependencies
+interface GoogleClientGeneratorSchema {
+  name: string;
+  promptFile: string;
+  fileName: string;
+}
+interface CurryFactoryGeneratorSchema {
+  name: string;
+  promptFile: string;
+  fileName: string;
 }
 
 /**

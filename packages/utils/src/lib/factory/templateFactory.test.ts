@@ -11,8 +11,6 @@ jest.mock('@codestrap/tools', () => ({
   curryFactoryGenerator: jest.fn().mockResolvedValue(undefined),
 }));
 
-import { googleClientGenerator, curryFactoryGenerator } from '@codestrap/tools';
-
 describe('templateFactory (bound to default registry)', () => {
   const dummyTree = {} as unknown as Tree;
 
