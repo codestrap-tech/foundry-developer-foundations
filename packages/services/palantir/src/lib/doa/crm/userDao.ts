@@ -1,14 +1,17 @@
 import {
-  SupportedFoundryClients,
   type UserDao,
 } from '@codestrap/developer-foundations-types';
 import { Users } from '@osdk/foundry.admin';
 import { foundryClientFactory } from '../../factory/foundryClientFactory';
+import { getClientType } from '../../utils/getClientType';
+
+function getFoundryClient() {
+  return foundryClientFactory(getClientType(), undefined);
+}
 
 export function makeUserDao(): UserDao {
-  const { getUser } = foundryClientFactory(process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE, undefined);
-
   return async (userId?: string) => {
+    const { getUser } = getFoundryClient();
     const user = await getUser();
     console.log('OSDK makeUserDao returned:', user);
 

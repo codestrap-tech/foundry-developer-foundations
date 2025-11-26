@@ -1,13 +1,16 @@
 import {
-  SupportedFoundryClients,
   type TrainingDataDao,
 } from '@codestrap/developer-foundations-types';
 import { readTrainingData } from './delegates/trainingData/read';
 import { searchTrainingData } from './delegates/trainingData/search';
 import { foundryClientFactory } from '../../factory/foundryClientFactory';
+import { getClientType } from '../../utils/getClientType';
+
+function getFoundryClient() {
+  return foundryClientFactory(getClientType(), undefined);
+}
 
 export function makeTrainingDataDao(): TrainingDataDao {
-  const { getToken, url, ontologyRid } = foundryClientFactory(process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE, undefined);
 
   return {
     // TODO code out all methods using OSDK API calls
@@ -38,6 +41,7 @@ export function makeTrainingDataDao(): TrainingDataDao {
         `stub delete method called for: ${id}. We do not support deleting RfpRequests but include the method as it is part of the interface.`
       ),
     read: async (id: string) => {
+      const { getToken, url, ontologyRid } = getFoundryClient();
       const token = await getToken();
 
       const memoryRecall = await readTrainingData(id, token, ontologyRid, url);
@@ -45,6 +49,7 @@ export function makeTrainingDataDao(): TrainingDataDao {
       return memoryRecall;
     },
     search: async (xReason: string, type: string) => {
+      const { getToken, url, ontologyRid } = getFoundryClient();
       const token = await getToken();
 
       const results = await searchTrainingData(xReason, type, token, ontologyRid, url);

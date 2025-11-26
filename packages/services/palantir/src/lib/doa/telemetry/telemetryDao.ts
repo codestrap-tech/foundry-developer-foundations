@@ -1,11 +1,11 @@
 import {
-  SupportedFoundryClients,
   type TelemetryDao,
 } from '@codestrap/developer-foundations-types';
 import { foundryClientFactory } from '../../factory/foundryClientFactory';
+import { getClientType } from '../../utils/getClientType';
 
 export function makeTelemetryDao(): TelemetryDao {
-  const { getToken, url, ontologyRid } = foundryClientFactory(process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE, undefined);
+  const { getToken, url, ontologyRid } = foundryClientFactory(getClientType(), undefined);
 
   return async (inputJSON) => {
     const token = await getToken();
