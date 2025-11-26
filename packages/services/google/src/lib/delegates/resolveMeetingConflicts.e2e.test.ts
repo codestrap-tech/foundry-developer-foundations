@@ -42,9 +42,13 @@ if (!process.env.E2E) {
       expect(result.resolutionReports).toBeDefined();
       expect(result.summary).toBeDefined();
       expect(typeof result.summary.totalConflicts).toBe('number');
+      expect(result.summary.totalConflicts).toBeGreaterThan(0);
       expect(typeof result.summary.successfullyRescheduled).toBe('number');
+      expect(result.summary.successfullyRescheduled).toBeGreaterThan(0);
       expect(typeof result.summary.failedToReschedule).toBe('number');
+      expect(result.summary.failedToReschedule).toBeGreaterThan(0);
       expect(typeof result.summary.noActionTaken).toBe('number');
+      expect(result.summary.noActionTaken).toBeGreaterThan(0);
     }, 60000);
 
     it('should handle multiple user emails and detect conflicts across calendars', async () => {

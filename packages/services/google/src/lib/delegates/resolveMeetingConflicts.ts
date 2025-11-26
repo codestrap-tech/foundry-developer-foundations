@@ -176,9 +176,16 @@ export async function resolveMeetingConflictsDelegate(args: {
       proposal = JSON.parse(llmRaw) as LLMRescheduleProposal;
     } catch {
       // fallback: attempt to find JSON inside string
-      const m = llmRaw.match(/\{[\s\S]*\}/);
-      if (m) {
-        proposal = JSON.parse(m[0]) as LLMRescheduleProposal;
+      try {
+        // trim JSON from first { to last }
+        const start = llmRaw.indexOf('{');
+        const end = llmRaw.lastIndexOf('}');
+        if (start !== -1 && end !== -1) {
+          const json = llmRaw.substring(start, end + 1);
+          proposal = JSON.parse(json) as LLMRescheduleProposal;
+        }
+      } catch {
+        console.error('Error parsing LLM response: ' + llmRaw);
       }
     }
     if (!proposal) throw new Error('LLMProcessingError: invalid response');
@@ -227,6 +234,8 @@ export async function resolveMeetingConflictsDelegate(args: {
         (new Date(m.newEndTime).getTime() -
           new Date(m.newStartTime).getTime()) /
         60000;
+
+      // if new duration is different by more than 15 minutes, reject proposal
       if (Math.abs(origDur - newDur) > 15) {
         resolutionReports.push({
           meetingId: original.id,
@@ -238,7 +247,8 @@ export async function resolveMeetingConflictsDelegate(args: {
         });
         return;
       }
-      // enqueue for freebusy validation
+
+      // otherwise, enqueue for freebusy validation
       toUpdate.push({
         originalEvent: original,
         proposed: { start: m.newStartTime, end: m.newEndTime },
@@ -312,6 +322,7 @@ export async function resolveMeetingConflictsDelegate(args: {
         isoOverlap(u.proposed.start, u.proposed.end, b.start, b.end)
       );
     });
+
     if (conflictFound) {
       resolutionReports.push({
         meetingId: u.originalEvent.id,

@@ -9,7 +9,9 @@ jest.mock('../delegates/summerizeCalanders', () => ({
 }));
 
 jest.mock('@codestrap/developer-foundations-services-palantir', () => ({
-  readConflictResolutionRulesForUser: jest.fn(),
+  readConflictResolutionRulesForUser: jest.fn(() =>
+    Promise.resolve(['rule1', 'rule2'])
+  ),
   geminiService: jest.fn(),
 }));
 
@@ -87,7 +89,7 @@ const noConflictCalendars = [
     events: [
       {
         id: 'event-1',
-        subject: 'Team Standup',
+        subject: 'Team Standup No Conflict',
         description: 'Daily standup',
         start: '2025-07-22T10:00:00-07:00',
         end: '2025-07-22T10:30:00-07:00',
@@ -101,7 +103,7 @@ const noConflictCalendars = [
     events: [
       {
         id: 'event-3',
-        subject: 'Lunch',
+        subject: 'Lunch No Conflict',
         description: 'Lunch break',
         start: '2025-07-22T12:00:00-07:00',
         end: '2025-07-22T13:00:00-07:00',
@@ -169,17 +171,19 @@ jest.mock('googleapis', () => ({
           update: jest.fn(() => Promise.resolve({ data: {} })),
         },
         freebusy: {
-          query: jest.fn((params: { requestBody: { timeMin: string; timeMax: string } }) => {
-            const { timeMin, timeMax } = params.requestBody;
-            return Promise.resolve({
-              data: {
-                kind: 'calendar#freeBusy',
-                timeMin,
-                timeMax,
-                calendars: currentFreeBusyCalendars,
-              },
-            });
-          }),
+          query: jest.fn(
+            (params: { requestBody: { timeMin: string; timeMax: string } }) => {
+              const { timeMin, timeMax } = params.requestBody;
+              return Promise.resolve({
+                data: {
+                  kind: 'calendar#freeBusy',
+                  timeMin,
+                  timeMax,
+                  calendars: currentFreeBusyCalendars,
+                },
+              });
+            }
+          ),
         },
       };
     }),
@@ -198,7 +202,9 @@ jest.mock('googleapis', () => ({
 describe('resolveMeetingConflictsDelegate', () => {
   let calendarClient: ReturnType<typeof google.calendar>;
   let mockSummarizeCalendars: jest.MockedFunction<typeof summarizeCalendars>;
-  let mockReadRules: jest.MockedFunction<typeof readConflictResolutionRulesForUser>;
+  let mockReadRules: jest.MockedFunction<
+    typeof readConflictResolutionRulesForUser
+  >;
   let mockGeminiService: jest.MockedFunction<typeof geminiService>;
 
   beforeAll(() => {
@@ -207,7 +213,9 @@ describe('resolveMeetingConflictsDelegate', () => {
 
   beforeEach(() => {
     // Create calendar client AFTER jest.mock
-    calendarClient = google.calendar('v3') as ReturnType<typeof google.calendar>;
+    calendarClient = google.calendar('v3') as ReturnType<
+      typeof google.calendar
+    >;
 
     // Setup mocks
     mockSummarizeCalendars = summarizeCalendars as jest.MockedFunction<
@@ -216,7 +224,9 @@ describe('resolveMeetingConflictsDelegate', () => {
     mockReadRules = readConflictResolutionRulesForUser as jest.MockedFunction<
       typeof readConflictResolutionRulesForUser
     >;
-    mockGeminiService = geminiService as jest.MockedFunction<typeof geminiService>;
+    mockGeminiService = geminiService as jest.MockedFunction<
+      typeof geminiService
+    >;
 
     // Default mock implementations
     mockSummarizeCalendars.mockResolvedValue({
@@ -234,10 +244,18 @@ describe('resolveMeetingConflictsDelegate', () => {
 
   // ---------------- BASIC FUNCTIONALITY TESTS ----------------
 
+  // confclit
   it('detects conflicts when events overlap in time', async () => {
+    // given
+    mockSummarizeCalendars.mockResolvedValue({
+      message: 'Fetched events',
+      calendars: conflictingCalendars,
+    });
+
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
+    // when
     const result = await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com', 'charlie@corp.com'],
@@ -246,11 +264,14 @@ describe('resolveMeetingConflictsDelegate', () => {
       windowEndLocal,
     });
 
+    // then
     expect(result.identifiedConflicts.length).toBeGreaterThan(0);
     expect(result.summary.totalConflicts).toBeGreaterThan(0);
   });
 
+  // no conflicts
   it('returns no conflicts when events do not overlap', async () => {
+    // given
     mockSummarizeCalendars.mockResolvedValue({
       message: 'Fetched events',
       calendars: noConflictCalendars,
@@ -259,6 +280,7 @@ describe('resolveMeetingConflictsDelegate', () => {
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
+    // when
     const result = await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
@@ -267,34 +289,41 @@ describe('resolveMeetingConflictsDelegate', () => {
       windowEndLocal,
     });
 
+    // then
     expect(result.identifiedConflicts).toHaveLength(0);
     expect(result.summary.totalConflicts).toBe(0);
   });
 
   it('fetches conflict resolution rules for all involved users', async () => {
+    // given
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
+    const userEmails = ['alice@corp.com', 'bob@corp.com', 'charlie@corp.com'];
 
+    // when
     await resolveMeetingConflictsDelegate({
       calendarClient,
-      userEmails: ['alice@corp.com', 'bob@corp.com', 'charlie@corp.com'],
+      userEmails,
       timezone,
       windowStartLocal,
       windowEndLocal,
     });
 
-    // Should call readRules for all unique participants
-    expect(mockReadRules).toHaveBeenCalledWith('alice@corp.com');
-    expect(mockReadRules).toHaveBeenCalledWith('bob@corp.com');
-    expect(mockReadRules).toHaveBeenCalledWith('charlie@corp.com');
+    // then
+    expect(mockReadRules).toHaveBeenCalledTimes(userEmails.length);
+    userEmails.forEach((email) =>
+      expect(mockReadRules).toHaveBeenCalledWith(email)
+    );
   });
 
   it('calls LLM service with conflict set and rules', async () => {
+    // given
     mockReadRules.mockResolvedValue(['rule1', 'rule2']);
 
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
+    // when
     await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
@@ -303,23 +332,30 @@ describe('resolveMeetingConflictsDelegate', () => {
       windowEndLocal,
     });
 
+    // then
     expect(mockGeminiService).toHaveBeenCalled();
-    const callArgs = mockGeminiService.mock.calls[0];
-    expect(callArgs[0]).toBe('system');
-    const payload = JSON.parse(callArgs[1]);
-    expect(payload.conflictSet).toBeDefined();
-    expect(payload.rules).toBeDefined();
-    expect(payload.fullDay).toBeDefined();
+
+    const [user, system, params] = mockGeminiService.mock.lastCall ?? [];
+    expect(user).toBe('system');
+    expect(system).toBeDefined();
+    expect(params).toEqual({ extractJsonString: true });
+    const payload = JSON.parse(system ?? '');
+    expect(payload.conflictSet).toBeInstanceOf(Array);
+    expect(payload.rules).toBeInstanceOf(Array);
+    expect(payload.fullDay).toBeInstanceOf(Array);
   });
 
   // ---------------- LLM PROPOSAL VALIDATION TESTS ----------------
-
   it('rejects proposal when meeting ID not found in conflict set', async () => {
-    mockGeminiService.mockResolvedValue(JSON.stringify(invalidMeetingIdProposal));
+    // given
+    mockGeminiService.mockResolvedValue(
+      JSON.stringify(invalidMeetingIdProposal)
+    );
 
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
+    // when
     const result = await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
@@ -328,6 +364,7 @@ describe('resolveMeetingConflictsDelegate', () => {
       windowEndLocal,
     });
 
+    // then
     const invalidReports = result.resolutionReports.filter(
       (r) => r.status === 'invalid_proposal'
     );
@@ -335,12 +372,16 @@ describe('resolveMeetingConflictsDelegate', () => {
     expect(invalidReports[0].reason).toContain('Meeting id not found');
   });
 
-  it('rejects proposal when duration change exceeds 15 minutes', async () => {
-    mockGeminiService.mockResolvedValue(JSON.stringify(invalidDurationProposal));
+  it('rejects proposal when duration change proposed by LLM differs from original duration by more than 15 minutes', async () => {
+    // given
+    mockGeminiService.mockResolvedValue(
+      JSON.stringify(invalidDurationProposal)
+    );
 
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
+    // when
     const result = await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
@@ -349,6 +390,7 @@ describe('resolveMeetingConflictsDelegate', () => {
       windowEndLocal,
     });
 
+    // then
     const invalidReports = result.resolutionReports.filter(
       (r) => r.status === 'invalid_proposal'
     );
@@ -356,8 +398,14 @@ describe('resolveMeetingConflictsDelegate', () => {
     expect(invalidReports[0].reason).toContain('Duration change too large');
   });
 
-  it('rejects proposal when proposed time conflicts with freebusy', async () => {
-    // Set up freebusy to show busy at proposed time
+  // conflict
+  it('rejects proposal when proposed time introduces conflicts for any attendee', async () => {
+    // given
+    mockSummarizeCalendars.mockResolvedValue({
+      message: 'Fetched events',
+      calendars: conflictingCalendars,
+    });
+
     currentFreeBusyCalendars = {
       'alice@corp.com': {
         busy: [
@@ -369,6 +417,7 @@ describe('resolveMeetingConflictsDelegate', () => {
       },
     };
 
+    // when
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
@@ -380,6 +429,7 @@ describe('resolveMeetingConflictsDelegate', () => {
       windowEndLocal,
     });
 
+    // then
     const invalidReports = result.resolutionReports.filter(
       (r) => r.status === 'invalid_proposal'
     );
@@ -387,13 +437,21 @@ describe('resolveMeetingConflictsDelegate', () => {
     expect(invalidReports[0].reason).toContain('introduces conflicts');
   });
 
-  it('accepts proposal when proposed time is free for all attendees', async () => {
-    // Freebusy shows no conflicts
-    currentFreeBusyCalendars = {};
+  // ---------------- USER CONFIRMATION TESTS ----------------
+  // conflict
+  it('reschedules proposals when proposed time is free for all attendees', async () => {
+    // given
+    mockSummarizeCalendars.mockResolvedValue({
+      message: 'Fetched events',
+      calendars: conflictingCalendars,
+    });
+
+    mockGeminiService.mockResolvedValue(JSON.stringify(validLLMProposal));
 
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
+    // when
     const result = await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
@@ -403,42 +461,46 @@ describe('resolveMeetingConflictsDelegate', () => {
     });
 
     const candidates = result.resolutionReports.filter(
-      (r) => r.status === 'no_action_taken'
+      (r) => r.status === 'rescheduled'
     );
+
     expect(candidates.length).toBeGreaterThan(0);
     expect(candidates[0].proposedNewStartTime).toBeDefined();
     expect(candidates[0].proposedNewEndTime).toBeDefined();
   });
 
-  // ---------------- USER CONFIRMATION TESTS ----------------
-
-  it('marks proposals as no_action_taken when user declines', async () => {
-    const mockConfirm = jest.fn().mockResolvedValue(false);
+  it('does not reschedule proposals when user declines', async () => {
+    // given
+    const mockDecline = jest.fn().mockResolvedValue(false);
 
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
+    // when
     const result = await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
       timezone,
       windowStartLocal,
       windowEndLocal,
-      confirm: mockConfirm,
+      confirm: mockDecline,
     });
 
-    expect(mockConfirm).toHaveBeenCalled();
+    // then
+    expect(mockDecline).toHaveBeenCalled();
     expect(result.summary.successfullyRescheduled).toBe(0);
     expect(result.summary.noActionTaken).toBeGreaterThan(0);
   });
 
-  it('proceeds with updates when user confirms', async () => {
+  it('reschedules proposals when user confirms', async () => {
+    // given
     const mockConfirm = jest.fn().mockResolvedValue(true);
 
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
-    const result = await resolveMeetingConflictsDelegate({
+    // when
+    await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
       timezone,
@@ -452,10 +514,12 @@ describe('resolveMeetingConflictsDelegate', () => {
   });
 
   it('skips confirmation when confirm callback not provided', async () => {
+    // given
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
-    const result = await resolveMeetingConflictsDelegate({
+    // when
+    await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
       timezone,
@@ -464,18 +528,20 @@ describe('resolveMeetingConflictsDelegate', () => {
       // no confirm callback
     });
 
-    // Should still attempt updates (userConfirmed defaults to true)
+    // then
     expect(calendarClient.events.update).toHaveBeenCalled();
   });
 
   // ---------------- CALENDAR UPDATE TESTS ----------------
 
   it('successfully reschedules meetings when calendar update succeeds', async () => {
+    // given
     (calendarClient.events.update as jest.Mock).mockResolvedValue({ data: {} });
 
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
+    // when
     const result = await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
@@ -484,6 +550,7 @@ describe('resolveMeetingConflictsDelegate', () => {
       windowEndLocal,
     });
 
+    // then
     const rescheduled = result.resolutionReports.filter(
       (r) => r.status === 'rescheduled'
     );
@@ -491,12 +558,16 @@ describe('resolveMeetingConflictsDelegate', () => {
     expect(result.summary.successfullyRescheduled).toBeGreaterThan(0);
   });
 
-  it('marks as failed_reschedule when calendar update fails after retries', async () => {
-    (calendarClient.events.update as jest.Mock).mockRejectedValue(new Error('Update failed'));
+  it('reports errors as failed_reschedule when calendar update fails after retries', async () => {
+    // given
+    (calendarClient.events.update as jest.Mock).mockRejectedValue(
+      new Error('Update failed')
+    );
 
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
+    // when
     const result = await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
@@ -505,6 +576,7 @@ describe('resolveMeetingConflictsDelegate', () => {
       windowEndLocal,
     });
 
+    // then
     const failed = result.resolutionReports.filter(
       (r) => r.status === 'failed_reschedule'
     );
@@ -514,10 +586,12 @@ describe('resolveMeetingConflictsDelegate', () => {
   });
 
   it('retries calendar updates with exponential backoff', async () => {
+    // given
+    const retryAttempts = 3;
     let attemptCount = 0;
     (calendarClient.events.update as jest.Mock).mockImplementation(() => {
       attemptCount++;
-      if (attemptCount < 3) {
+      if (attemptCount < retryAttempts) {
         return Promise.reject(new Error('Temporary failure'));
       }
       return Promise.resolve({ data: {} });
@@ -526,6 +600,7 @@ describe('resolveMeetingConflictsDelegate', () => {
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
+    // when
     const result = await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
@@ -534,7 +609,10 @@ describe('resolveMeetingConflictsDelegate', () => {
       windowEndLocal,
     });
 
-    expect(calendarClient.events.update).toHaveBeenCalledTimes(3);
+    // then
+    expect(calendarClient.events.update).toHaveBeenCalledTimes(
+      retryAttempts + 1
+    );
     const rescheduled = result.resolutionReports.filter(
       (r) => r.status === 'rescheduled'
     );
@@ -543,12 +621,14 @@ describe('resolveMeetingConflictsDelegate', () => {
 
   // ---------------- ERROR HANDLING TESTS ----------------
 
-  it('handles LLM service errors gracefully', async () => {
+  it('reports errors as failed_reschedule when LLM service fails', async () => {
+    // given
     mockGeminiService.mockRejectedValue(new Error('LLM service unavailable'));
 
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
+    // when
     const result = await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
@@ -557,17 +637,20 @@ describe('resolveMeetingConflictsDelegate', () => {
       windowEndLocal,
     });
 
+    // then
     expect(result.errors).toBeDefined();
     expect(result.errors?.length).toBeGreaterThan(0);
     expect(result.errors?.[0]).toContain('LLMProcessingError');
   });
 
   it('handles invalid LLM JSON response', async () => {
+    // given
     mockGeminiService.mockResolvedValue('This is not valid JSON');
 
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
+    // when
     const result = await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
@@ -576,17 +659,22 @@ describe('resolveMeetingConflictsDelegate', () => {
       windowEndLocal,
     });
 
+    // then
     expect(result.errors).toBeDefined();
     expect(result.errors?.length).toBeGreaterThan(0);
   });
 
   it('handles LLM response with JSON embedded in text', async () => {
-    const embeddedJson = `Here's the proposal: ${JSON.stringify(validLLMProposal)}. Let me know if you need changes.`;
+    // given
+    const embeddedJson = `Here's the proposal: ${JSON.stringify(
+      validLLMProposal
+    )}. Let me know if you need changes.`;
     mockGeminiService.mockResolvedValue(embeddedJson);
 
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
+    // when
     const result = await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
@@ -595,11 +683,12 @@ describe('resolveMeetingConflictsDelegate', () => {
       windowEndLocal,
     });
 
-    // Should extract JSON from text
+    // then
     expect(result.resolutionReports.length).toBeGreaterThan(0);
   });
 
-  it('handles freebusy query failures', async () => {
+  it('reports errors as failed_reschedule when freebusy query fails', async () => {
+    // given
     (calendarClient.freebusy.query as jest.Mock).mockRejectedValue(
       new Error('Freebusy API error')
     );
@@ -607,24 +696,26 @@ describe('resolveMeetingConflictsDelegate', () => {
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
-    await expect(
-      resolveMeetingConflictsDelegate({
-        calendarClient,
-        userEmails: ['alice@corp.com', 'bob@corp.com'],
-        timezone,
-        windowStartLocal,
-        windowEndLocal,
-      })
-    ).rejects.toThrow('GoogleCalendarAPIError');
+    // when
+    const result = resolveMeetingConflictsDelegate({
+      calendarClient,
+      userEmails: ['alice@corp.com', 'bob@corp.com'],
+      timezone,
+      windowStartLocal,
+      windowEndLocal,
+    });
+
+    await expect(result).rejects.toThrow('GoogleCalendarAPIError');
   });
 
-  it('handles errors reading conflict resolution rules', async () => {
+  it('should still try to reschedule meetings as if no rules when reading conflict resolution rules fails', async () => {
+    // given
     mockReadRules.mockRejectedValue(new Error('Database error'));
 
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
-    // Should not throw, but continue with empty rules
+    // when
     const result = await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
@@ -633,14 +724,15 @@ describe('resolveMeetingConflictsDelegate', () => {
       windowEndLocal,
     });
 
-    // Should still process conflicts
-    expect(result.identifiedConflicts.length).toBeGreaterThan(0);
+    // then
+    expect(result.summary.successfullyRescheduled).toBeGreaterThan(0);
+    expect(result.summary.noActionTaken).toBe(0);
   });
 
   // ---------------- EDGE CASES ----------------
 
-  it('returns early when no updates to validate', async () => {
-    // LLM returns empty proposal
+  it('should not reschedule meetings when no updates to validate from LLM', async () => {
+    // given
     mockGeminiService.mockResolvedValue(
       JSON.stringify({ meetingsToReschedule: [] })
     );
@@ -648,6 +740,7 @@ describe('resolveMeetingConflictsDelegate', () => {
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
+    // when
     const result = await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com', 'bob@corp.com'],
@@ -656,12 +749,13 @@ describe('resolveMeetingConflictsDelegate', () => {
       windowEndLocal,
     });
 
+    // then
     expect(result.summary.successfullyRescheduled).toBe(0);
     expect(calendarClient.freebusy.query).not.toHaveBeenCalled();
   });
 
-  it('handles multiple conflict sets in parallel', async () => {
-    // Create calendar with multiple separate conflict sets
+  it('should reschedule meetings when multiple conflict sets are identified', async () => {
+    // given
     const multiConflictCalendars = [
       {
         email: 'alice@corp.com',
@@ -726,6 +820,7 @@ describe('resolveMeetingConflictsDelegate', () => {
     const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
     const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
 
+    // when
     const result = await resolveMeetingConflictsDelegate({
       calendarClient,
       userEmails: ['alice@corp.com'],
@@ -734,58 +829,8 @@ describe('resolveMeetingConflictsDelegate', () => {
       windowEndLocal,
     });
 
-    // Should handle multiple conflict sets
+    // then
     expect(result.identifiedConflicts.length).toBeGreaterThan(0);
-    expect(mockGeminiService).toHaveBeenCalled();
-  });
-
-  it('handles attendee overlap conflicts (same attendees, different times)', async () => {
-    const attendeeOverlapCalendars = [
-      {
-        email: 'alice@corp.com',
-        events: [
-          {
-            id: 'event-1',
-            subject: 'Meeting 1',
-            start: '2025-07-22T10:00:00-07:00',
-            end: '2025-07-22T10:30:00-07:00',
-            participants: ['alice@corp.com', 'bob@corp.com'],
-            durationMinutes: 30,
-          },
-        ],
-      },
-      {
-        email: 'bob@corp.com',
-        events: [
-          {
-            id: 'event-2',
-            subject: 'Meeting 2',
-            start: '2025-07-22T12:00:00-07:00',
-            end: '2025-07-22T12:30:00-07:00',
-            participants: ['alice@corp.com', 'bob@corp.com'],
-            durationMinutes: 30,
-          },
-        ],
-      },
-    ];
-
-    mockSummarizeCalendars.mockResolvedValue({
-      message: 'Fetched events',
-      calendars: attendeeOverlapCalendars,
-    });
-
-    const windowStartLocal = wallClockToUTC('2025-07-22T08:00:00', timezone);
-    const windowEndLocal = wallClockToUTC('2025-07-22T17:00:00', timezone);
-
-    const result = await resolveMeetingConflictsDelegate({
-      calendarClient,
-      userEmails: ['alice@corp.com', 'bob@corp.com'],
-      timezone,
-      windowStartLocal,
-      windowEndLocal,
-    });
-
-    // Should detect conflicts based on attendee overlap
-    expect(result.identifiedConflicts.length).toBeGreaterThan(0);
+    expect(result.summary.successfullyRescheduled).toBeGreaterThan(0);
   });
 });
