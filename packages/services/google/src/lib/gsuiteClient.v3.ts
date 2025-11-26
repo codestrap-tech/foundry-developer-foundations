@@ -45,6 +45,7 @@ export async function makeGSuiteClientV3(user: string) {
       const now = input.targetDayISO
         ? new Date(input.targetDayISO)
         : new Date();
+      // TODO: @kopach - Update to be a week over day
       const windowStartLocal = new Date(now);
       windowStartLocal.setHours(0, 0, 0, 0);
       const windowEndLocal = new Date(now);

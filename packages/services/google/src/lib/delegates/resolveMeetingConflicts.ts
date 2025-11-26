@@ -115,7 +115,7 @@ export async function resolveMeetingConflictsDelegate(args: {
       .filter((other, jdx) => idx !== jdx)
       .filter(
         (other) =>
-          isoOverlap(evt.start, evt.end, other.start, other.end) ||
+          isoOverlap(evt.start, evt.end, other.start, other.end) &&
           other.participants.some((p) => (evt.participants ?? []).includes(p))
       );
 
