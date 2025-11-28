@@ -73,6 +73,7 @@ import { loadLarryConfig } from './config/larry-config';
 import { createWebviewProvider, notifyWorktreeChangeFromProvider } from './webview/webview-provider';
 import { stopAllSSEConnections } from './sse/sse-streams';
 import { getMainContainerName } from './config/larry-config';
+import { ArtifactEditorProvider } from './editors/artifact-editor-provider';
 import { exec } from 'child_process';
 
 // ============================================================================
@@ -110,11 +111,24 @@ export function activate(context: vscode.ExtensionContext): void {
       });
 
 
+    // Register webview provider for sidebar
     const provider = createWebviewProvider(context, extensionState);
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider('larryHome', provider, {
         webviewOptions: { retainContextWhenHidden: true },
       })
+    );
+
+    // Register custom editor for .larry/artifact files
+    context.subscriptions.push(
+      vscode.window.registerCustomEditorProvider(
+        ArtifactEditorProvider.viewType,
+        new ArtifactEditorProvider(context, extensionState),
+        {
+          webviewOptions: { retainContextWhenHidden: true },
+          supportsMultipleEditorsPerDocument: false,
+        }
+      )
     );
 
     // Watch for workspace changes to detect worktree changes
