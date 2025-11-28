@@ -9,3 +9,4 @@ export * from './lib/Vectors';
 export * from './lib/loggingService';
 export * from './lib/utc';
 export * from './lib/markdownParsers';
+export * from './lib/findWorkspaceRoot';

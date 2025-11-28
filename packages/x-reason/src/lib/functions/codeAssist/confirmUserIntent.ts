@@ -19,7 +19,6 @@ export async function confirmUserIntent(
   task?: string
 ): Promise<Completion> {
   let messages;
-
   const threadsDao = container.get<ThreadsDao>(TYPES.ThreadsDao);
 
   // we use the thread because it should not aonly contain the design specification but user comments as well

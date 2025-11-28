@@ -129,7 +129,7 @@ class SSEProxy {
         this.res = res;
         res.setEncoding('utf8');
 
-        console.log('SSE connection established');
+        console.log('SSE connection established', url);
         // Reset retry count on successful connection
         this.retryCount = 0;
 
@@ -267,6 +267,7 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
   private mainDockerContainer: string | undefined; // Main docker container for port 4210
 
   private sseWorktree?: SSEProxy;
+  private sseLarryStreams: Map<string, SSEProxy> = new Map();
 
   private config?: LarryConfig;
   private configLoaded: Promise<void>;
@@ -329,6 +330,42 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
         });
       }
     );
+  }
+
+  private startLarryStream(streamId: string, baseUrl: string) {
+    this.stopLarryStream(streamId);
+
+    const url = `${baseUrl}/larry/${streamId}/events`;
+
+    const proxy = new SSEProxy();
+    this.sseLarryStreams.set(streamId, proxy);
+
+    proxy.start(
+      url,
+      (ev) => {
+        this.view?.webview.postMessage({
+          type: 'larry_stream_event',
+          streamId,
+          event: ev.event || 'message',
+          data: ev.data,
+        });
+      },
+      (err) => {
+        this.view?.webview.postMessage({
+          type: 'larry_stream_error',
+          streamId,
+          message: `Connection failed: ${String(err?.message || err)}`,
+        });
+      }
+    );
+  }
+
+  private stopLarryStream(streamId: string) {
+    const proxy = this.sseLarryStreams.get(streamId);
+    if (proxy) {
+      proxy.stop();
+      this.sseLarryStreams.delete(streamId);
+    }
   }
 
   // Thread ID file management
@@ -1281,6 +1318,16 @@ class LarryViewProvider implements vscode.WebviewViewProvider {
           worktreePort: defaultWorktreePort,
           mainPort: defaultMainPort,
         });
+        return;
+      }
+
+      if (msg?.type === 'start_larry_stream') {
+        this.startLarryStream(msg.streamId, msg.baseUrl);
+        return;
+      }
+
+      if (msg?.type === 'stop_larry_stream') {
+        this.stopLarryStream(msg.streamId);
         return;
       }
 
