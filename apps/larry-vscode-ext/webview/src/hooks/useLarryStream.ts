@@ -18,12 +18,13 @@ type UseLarryStreamOptions = {
   onError?: (error: string) => void;
 };
 
-export function useLarryStream(baseUrl: string, streamId: string, options?: UseLarryStreamOptions) {
+export function useLarryStream(baseUrl: string, streamId?: string, options?: UseLarryStreamOptions) {
   const [isConnected, setIsConnected] = useState(false);
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
   useEffect(() => {
+    if (!streamId) return;
     const handler = (event: MessageEvent) => {
       const msg = event.data;
 
