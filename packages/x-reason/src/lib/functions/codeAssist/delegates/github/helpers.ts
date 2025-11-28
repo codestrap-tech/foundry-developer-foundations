@@ -4,6 +4,28 @@ import * as fs from 'fs';
 import { container } from "@codestrap/developer-foundations-di";
 import { TYPES, VersionControlService } from "@codestrap/developer-foundations-types";
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries = 3,
+  delayMs = 3000
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (e) {
+      lastError = e;
+      if (attempt < maxRetries) {
+        console.log(`Attempt ${attempt} failed, retrying in ${delayMs}ms...`);
+        await sleep(delayMs);
+      }
+    }
+  }
+  throw lastError;
+}
+
 let githubService: VersionControlService | undefined;
 
 async function getGithubClint(): Promise<VersionControlService> {
@@ -25,11 +47,11 @@ export async function writeFileIfNotFoundLocally(file: string | undefined) {
     
         try {
           // this will throw "Path ${path} not found in repo ${owner}/${repo} or is not a file." if the file is not found
-          result = await githubService.getFile({
+          result = await withRetry(() => githubService.getFile({
             owner: process.env.GITHUB_REPO_OWNER || '',
             repo: process.env.GITHUB_REPO_NAME || '',
             path: fileName,
-          });
+          }));
         } catch (e) {
           // log the error just in case it is something other than file not found
           console.log(e);

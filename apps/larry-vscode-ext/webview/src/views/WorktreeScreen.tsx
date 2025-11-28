@@ -30,6 +30,7 @@ export function WorktreeScreen() {
       setWorkingStatus(notification.payload.message);
       setIsWorking(false);
       setWorkingError(notification.payload.metadata.error);
+      setProvisioning(false);
     }
   }
   const { start: startLarryStream, stop: stopLarryStream } = useLarryStream(apiUrl, 'new-thread-creation', { onUpdate: onLarryUpdate });
@@ -45,11 +46,14 @@ export function WorktreeScreen() {
   useEffect(() => {
     if (currentThreadId) {
       setProvisioning(false);
+      setIsWorking(false);
+      setWorkingError(undefined);
+      setWorkingStatus('Working on it');
     }
   }, [currentThreadId]);
   
   // Read machine data from React Query cache (set by SSE bridge)
-  const { data: machineData, isLoading } = useMachineQuery(apiUrl, currentThreadId);
+  const { data: machineData, isLoading } = useMachineQuery(apiUrl, currentThreadId, { refetchInterval: 10000 });
 
   // Read threads data to get the session label
   const { data: threadsData } = useThreadsQuery(apiUrl);
@@ -58,9 +62,10 @@ export function WorktreeScreen() {
   
   // Find current thread label from threads list
   const currentThread = threadsData?.items?.find(t => t.id === currentThreadId);
-  const sessionLabel = currentThread?.label || 'Session 123';
+  const sessionLabel = currentThread?.label || currentWorktreeName;
 
   async function startNewThread() {
+    setWorkingError(undefined);
     if (!firstMessage.trim()) return;
     if (!currentWorktreeName) {
       // NOTE: Ideally extension should pass worktreeName in worktree_detection; otherwise we can prompt the user
@@ -125,11 +130,11 @@ export function WorktreeScreen() {
           </div>
         </div>
         <div className="mb-2">
-          <h4 className="h4 m-0">{sessionLabel}</h4>
+          <h4 className="h6 m-0">{sessionLabel}</h4>
           <small>{currentThreadId}</small>
         </div>
         {isLoading ? (
-          <div className="color-fg-muted">Loading thread...</div>
+          <WorkingIndicator status="Loading thread..." isWorking />
         ) : (
           <StateVisualization data={machineData} onSubmit={handleSubmit} />
         )}
@@ -153,19 +158,18 @@ export function WorktreeScreen() {
         rows={6}
         placeholder="Hello, how can I help you today?"
         value={firstMessage}
+        readOnly={provisioning}
         onInput={(e) => setFirstMessage((e.currentTarget as HTMLTextAreaElement).value)}
       />
       <div>
         {provisioning && (
           <div className="mt-1">
-            <span className="shimmer-loading">Working on it</span><AnimatedEllipsis />
-
             <WorkingIndicator status={workingStatus} isWorking={isWorking} error={workingError} />
           </div>
         )}
         {!provisioning && (
           <button className="btn btn-primary" disabled={!firstMessage.trim()} onClick={startNewThread}>
-            Send
+            {workingError ? 'Try again' : 'Send'}
           </button>
         )}
       </div>

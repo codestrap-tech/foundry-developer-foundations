@@ -10,6 +10,7 @@ import { IdempotencyStore } from '../../services/idempotency.store';
 import { SSEService } from '../../services/sse.service';
 import {
   Context,
+  LarryStream,
   MachineDao,
   TYPES,
   ThreadsDao,
@@ -22,6 +23,7 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
 
   const threadsDao = container.get<ThreadsDao>(TYPES.ThreadsDao);
   const machineDao = container.get<MachineDao>(TYPES.MachineDao);
+  const larryStream = container.get<LarryStream>(TYPES.LarryStream);
 
   // GET /threads?cursor=&limit=
   r.get('/threads', async (req: Request, res: Response, next: NextFunction) => {
@@ -125,7 +127,17 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
             };
             sse.broadcastThreadCreated(evt);
           } catch (asyncErr) {
-            // Log the error but don't try to send response since it's already sent
+            larryStream.publish({
+              id: 'new-thread-creation',
+              payload: {
+                type: 'error',
+                message: 'Failed to create thread, try again',
+                metadata: {
+                  error: asyncErr,
+                },
+              },
+            });
+
             console.error(
               '[threads.routes] Async thread creation failed:',
               asyncErr
