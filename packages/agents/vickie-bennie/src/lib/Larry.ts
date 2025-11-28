@@ -128,6 +128,16 @@ export class Larry extends Text2Action {
       console.error('error writing readme:: ', error);
     }
 
+    this.larryStream.publish({
+      id: 'new-thread-creation',
+      payload: {
+        type: 'info',
+        message: 'Generating state machine...',
+        metadata: {
+          threadId: threadId || '',
+        }
+      }
+    });
     // if task list is defined and there's no machine where machineExecutionId === threadId, a new solution will be generated
     // else the exiting machine will be rehydrated and the next state sent back
     const results = await this.getNextState(
@@ -147,6 +157,16 @@ export class Larry extends Text2Action {
       system: string;
     }[];
 
+    this.larryStream.publish({
+      id: 'new-thread-creation',
+      payload: {
+        type: 'info',
+        message: 'Calrifying user request...',
+        metadata: {
+          threadId: threadId || '',
+        }
+      }
+    });
     // construct the response
     const system = `You are a helpful AI coding assistant named Larry.
         You are professional in your tone, personable, and always start your messages with the phrase, "Hi, I'm Larry, Code's AI Coding Assistant" or similar.
