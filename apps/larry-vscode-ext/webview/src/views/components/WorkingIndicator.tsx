@@ -11,9 +11,11 @@ type PropsType = {
   actionNode?: JSX.Element;
   onActionClick?: () => void;
   error?: string;
+  disablePulse?: boolean;
 };
 
 export default function WorkStatusLoader({
+  disablePulse = false,
   status,
   isWorking = false,
   actionButton = false,
@@ -84,7 +86,7 @@ export default function WorkStatusLoader({
                 : 'work-status-loader__status--enter'
             }`}
           >
-            <span className="shimmer-loading">{displayStatus}</span>
+            <span className={disablePulse ? '' : 'shimmer-loading'}>{displayStatus}</span>
           </div>
         )}
       </div>

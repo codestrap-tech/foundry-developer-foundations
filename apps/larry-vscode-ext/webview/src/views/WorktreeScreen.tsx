@@ -23,9 +23,20 @@ export function WorktreeScreen() {
   const dispatch = useExtensionDispatch();
   const { apiUrl, clientRequestId, currentThreadId, currentWorktreeName } = useExtensionStore();
 
+  const { data: machineData, isLoading, refetch } = useMachineQuery(apiUrl, currentThreadId);
+
+  let timeout: NodeJS.Timeout | undefined;
   const onLarryUpdate = (notification: LarryUpdateEvent) => {
+    clearTimeout(timeout);
     if (notification.payload.type === 'info') {
       setWorkingStatus(notification.payload.message);
+
+      timeout = setTimeout(() => {
+        setWorkingStatus('Timed out, please try again');
+        setIsWorking(false);
+        setWorkingError('Timed out, please try again');
+        setProvisioning(false);
+      }, 120000);
     } else if (notification.payload.type === 'error') {
       setWorkingStatus(notification.payload.message);
       setIsWorking(false);
@@ -49,11 +60,10 @@ export function WorktreeScreen() {
       setIsWorking(false);
       setWorkingError(undefined);
       setWorkingStatus('Working on it');
+      clearTimeout(timeout);
     }
   }, [currentThreadId]);
   
-  // Read machine data from React Query cache (set by SSE bridge)
-  const { data: machineData, isLoading } = useMachineQuery(apiUrl, currentThreadId, { refetchInterval: 10000 });
 
   // Read threads data to get the session label
   const { data: threadsData } = useThreadsQuery(apiUrl);
@@ -113,7 +123,7 @@ export function WorktreeScreen() {
   }
 
   if (currentThreadId && !machineData) {
-    return <div>Loading thread...</div>
+    return <WorkingIndicator status="Loading thread..." isWorking />
   }
 
   if (currentThreadId && machineData) {

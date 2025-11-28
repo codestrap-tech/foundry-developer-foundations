@@ -17,6 +17,7 @@ import {
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 import { googleCodingAgent } from '../../../../googleCodingAgentStandalone';
+import { pauseFor } from '../../utils';
 
 export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
   const r = Router();
@@ -93,6 +94,8 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
               userTask
             );
 
+            await pauseFor(2000); // pause for 2s to avoid issues with eventual consistency
+
             const threadId = executionId;
             const machineId = executionId;
 
@@ -100,11 +103,14 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
 
             const context = JSON.parse(machine.state!).context;
             const currentStateContext = context[context.stateId];
-            const humanReview = !!currentStateContext?.confirmationPrompt;
+            const humanReview = currentStateContext?.reviewRequired;
 
+            const running = !humanReview && !currentStateContext?.approved;
             const status: MachineStatus = humanReview
               ? 'awaiting_human'
-              : 'running';
+              : running
+              ? 'running'
+              : 'pending';
             const machineUpdateEvt: MachineUpdatedEvent = {
               type: 'machine.updated',
               machine: {
@@ -152,3 +158,5 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
 
   return r;
 }
+
+
