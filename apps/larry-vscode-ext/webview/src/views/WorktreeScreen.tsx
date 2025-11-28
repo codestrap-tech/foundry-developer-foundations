@@ -9,15 +9,38 @@ import { useMachineQuery } from '../hooks/useMachineQuery';
 import { StateVisualization } from './components/StateVisualization';
 import { useWorktreeThreads } from '../hooks/useWorktreeThreads';
 import { PlusIcon } from 'lucide-preact';
+import { useLarryStream } from '../hooks/useLarryStream';
+import type { LarryUpdateEvent } from '../hooks/useLarryStream';
+import WorkingIndicator from './components/WorkingIndicator';
 
 export function WorktreeScreen() {
   const [firstMessage, setFirstMessage] = useState('');
   const [provisioning, setProvisioning] = useState(false);
+  const [workingStatus, setWorkingStatus] = useState<string>('Working on it');
+  const [workingError, setWorkingError] = useState<string | undefined>(undefined);
+  const [isWorking, setIsWorking] = useState(false);
   const [previousThreadId, setPreviousThreadId] = useState<string | undefined>(undefined);
   const dispatch = useExtensionDispatch();
   const { apiUrl, clientRequestId, currentThreadId, currentWorktreeName } = useExtensionStore();
-  console.log('CURRENT THREAD ID::', currentThreadId);
+
+  const onLarryUpdate = (notification: LarryUpdateEvent) => {
+    if (notification.payload.type === 'info') {
+      setWorkingStatus(notification.payload.message);
+    } else if (notification.payload.type === 'error') {
+      setWorkingStatus(notification.payload.message);
+      setIsWorking(false);
+      setWorkingError(notification.payload.metadata.error);
+    }
+  }
+  const { start: startLarryStream, stop: stopLarryStream } = useLarryStream(apiUrl, 'new-thread-creation', { onUpdate: onLarryUpdate });
   
+  useEffect(() => {
+    startLarryStream();
+    return () => {
+      stopLarryStream();
+    };
+  }, []);
+
   // Stop provisioning when thread is created
   useEffect(() => {
     if (currentThreadId) {
@@ -33,12 +56,6 @@ export function WorktreeScreen() {
 
   const { threads: localThreads } = useWorktreeThreads(currentWorktreeName);
   
-  useEffect(() => {
-    // This effect is only for debug purposes, not doing anything more
-    console.log('MACHINE DATA::')
-    console.log(machineData)
-  }, [machineData, threadsData]);
-  
   // Find current thread label from threads list
   const currentThread = threadsData?.items?.find(t => t.id === currentThreadId);
   const sessionLabel = currentThread?.label || 'Session 123';
@@ -52,6 +69,7 @@ export function WorktreeScreen() {
       return;
     }
     setProvisioning(true);
+    setIsWorking(true);
     await createThread({
       baseUrl: apiUrl,
       worktreeName: currentWorktreeName || 'test-001',
@@ -141,6 +159,8 @@ export function WorktreeScreen() {
         {provisioning && (
           <div className="mt-1">
             <span className="shimmer-loading">Working on it</span><AnimatedEllipsis />
+
+            <WorkingIndicator status={workingStatus} isWorking={isWorking} error={workingError} />
           </div>
         )}
         {!provisioning && (

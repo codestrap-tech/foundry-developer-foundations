@@ -19,7 +19,7 @@ const clients: Record<SupportedCodingAgents, LarryAgentFactoryType> = {
     [SupportedCodingAgents.GOOGLE]: (config: Record<string, any>) => {
         return {
             name: 'cli-tool',
-            readmePath: '../../packages/services/google/src/lib/README.LLM.md',
+            readmePath: '/packages/services/google/src/lib/README.LLM.md',
             xreason: SupportedEngines.GOOGLE_SERVICES_CODE_ASSIST,
         };
     }

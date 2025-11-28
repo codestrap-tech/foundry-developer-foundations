@@ -138,3 +138,24 @@ The extension will automatically:
 - Copy environment files
 - Open the worktree in a new VSCode window
 
+
+
+
+
+## Larry stream extension bridge
+
+Webview                    Extension                   Backend
+   │                          │                           │
+   │ start_larry_stream       │                           │
+   │─────────────────────────>│                           │
+   │                          │ SSEProxy connects         │
+   │                          │──────────────────────────>│
+   │                          │                           │
+   │                          │    larry.update event     │
+   │                          │<──────────────────────────│
+   │  larry_stream_event      │                           │
+   │<─────────────────────────│                           │
+   │                          │                           │
+   │ stop_larry_stream        │                           │
+   │─────────────────────────>│                           │
+   │                          │ proxy.stop()              │

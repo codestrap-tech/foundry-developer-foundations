@@ -130,20 +130,26 @@ Dorian Smiley <dsmiley@codestrap.me> - Dorian is the CTO who manages the softwar
       `${query}\n\n${groudingContext}`,
       solver
     );
-    const comsDao = container.get<CommsDao>(TYPES.CommsDao);
-    const communication = await comsDao.upsert(
-      'User Defined',
-      'None, these tasks were entered by a human',
-      'Accept',
-      taskList,
-      xReasonEngine,
-      userId,
-      questionPrompt,
-      tokens,
-      id
-    );
 
-    return communication;
+    const comsDao = container.get<CommsDao>(TYPES.CommsDao);
+    try {
+      const communication = await comsDao.upsert(
+        'User Defined',
+        'None, these tasks were entered by a human',
+        'Accept',
+        taskList,
+        xReasonEngine,
+        userId,
+        questionPrompt,
+        tokens,
+        id
+      );
+      return communication;
+
+    } catch (error) {
+      console.error('Error upserting communication:', error);
+      throw error;
+    }
   }
 
   @Trace({
