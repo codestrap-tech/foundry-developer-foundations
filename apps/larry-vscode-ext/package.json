@@ -18,7 +18,8 @@
   ],
   "activationEvents": [
     "onView:larryHome",
-    "onStartupFinished"
+    "onStartupFinished",
+    "onCustomEditor:larry.artifactEditor"
   ],
   "contributes": {
     "configuration": {
@@ -49,7 +50,19 @@
           "name": "Larry AI Coding Assistant"
         }
       ]
-    }
+    },
+    "customEditors": [
+      {
+        "viewType": "larry.artifactEditor",
+        "displayName": "Larry Artifact Editor",
+        "selector": [
+          {
+            "filenamePattern": "**/.larry/artifacts/**"
+          }
+        ],
+        "priority": "default"
+      }
+    ]
   },
   "scripts": {
     "build": "tsc -p ./ && node scripts/bundle-webview.mjs",
