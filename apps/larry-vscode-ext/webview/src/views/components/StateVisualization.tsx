@@ -52,21 +52,25 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
     if (event.payload.type === 'info') {
       setWorkingStatus(event.payload.message);
     } else if (event.payload.type === 'error') {
+      console.error('LARRY UPDATE ERROR::', event.payload);
       setWorkingStatus(event.payload.message);
       setIsWorking(false);
       setWorkingError(event.payload.metadata.error);
-      setStateRetry(prev => ({...prev, action: event.payload.metadata.retry}));
+      // setStateRetry(prev => ({...prev, action: event.payload.metadata.retry}));
     }
   }
 
   const {start: startLarryStream, stop: stopLarryStream} = useLarryStream(apiUrl, data.context?.machineExecutionId, { onUpdate: onLarryUpdate });
 
   useEffect(() => {
-    startLarryStream();
+    stopLarryStream();
+    setTimeout(() => {
+      startLarryStream();
+    }, 100);
     return () => {
       stopLarryStream();
     };
-  }, [data.context?.machineExecutionId]);
+  }, [data.context?.machineExecutionId, startLarryStream, stopLarryStream]);
 
   const showInput = useMemo(() => {
     // state computation for confirmUserIntent state
@@ -81,6 +85,14 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
         return true;
       }
   }, [data, specReviewRejected]);
+
+
+  useEffect(() => {
+    if (data.status !== 'running') {
+      setIsWorking(false);
+    }
+  }, [data.status]);
+
   const getDeduplicatedStack = () => {
     if (!data.context?.stack) return [];
     
@@ -220,10 +232,12 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
   };
 
   const continueToNextState = () => {
+    setIsWorking(true);
     fetchGetNextState({ machineId: data.id, contextUpdate: {} });
   }
 
   const handleSubmit = (e) => {
+    setIsWorking(true);
     e.preventDefault();
     if (!input.value.trim()) return;
     
@@ -269,6 +283,7 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
 
 
   const handleAction = (action: string, payload?: any) => {
+    setIsWorking(true);
     if (action === 'approveSpec' || action === 'approveArchitecture' || action === 'approveCodeReview') {
       setSpecReviewRejected(false);
 
@@ -381,7 +396,7 @@ return (
   )}
   {finished && (
     <div>
-      <WorkingIndicator status="Code changes applied, review them and commit." />
+      <WorkingIndicator disablePulse status="Code changes applied." />
     </div>
   )}
   {(data.status === 'pending' && !finished) && (
