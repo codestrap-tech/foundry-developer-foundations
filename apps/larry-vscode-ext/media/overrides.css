@@ -727,3 +727,115 @@ label {
 		transform: rotate(360deg);
 	}
 }
+
+.work-status-loader {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border: 1px solid var(--vscode-panel-border, rgba(255, 255, 255, 0.12));
+	border-radius: 6px;
+	background: var(--vscode-editor-background);
+}
+
+.work-status-loader__icon {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--vscode-foreground);
+}
+
+.work-status-loader__icon--error {
+	color: var(--vscode-errorForeground, #f48771);
+}
+
+.work-status-loader__status-container {
+	flex: 1 1 auto;
+	overflow: hidden;
+	position: relative;
+	min-height: 20px;
+}
+
+.work-status-loader__status {
+	font-size: 13px;
+	color: var(--vscode-foreground);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.work-status-loader__status--enter {
+	animation: work-status-loader-slide-up-fade-in 0.3s ease-out forwards;
+}
+
+.work-status-loader__status--exit {
+	animation: work-status-loader-fade-out 0.2s ease-out forwards;
+}
+
+.work-status-loader__error {
+	font-size: 13px;
+	color: var(--vscode-errorForeground, #f48771);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.work-status-loader__error--enter {
+	animation: work-status-loader-slide-down-fade-in 0.3s ease-out forwards;
+}
+
+.work-status-loader__error--exit {
+	animation: work-status-loader-fade-out 0.2s ease-out forwards;
+}
+
+.work-status-loader__action-btn {
+	flex-shrink: 0;
+	background: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+	border: none;
+	border-radius: 4px;
+	padding: 4px 12px;
+	font-size: 12px;
+	cursor: pointer;
+	transition: background-color 0.2s ease;
+}
+
+.work-status-loader__action-btn:hover {
+	background: var(--vscode-button-hoverBackground);
+}
+
+.work-status-loader__action-btn:active {
+	background: var(--vscode-button-activeBackground, var(--vscode-button-hoverBackground));
+}
+
+@keyframes work-status-loader-slide-up-fade-in {
+	0% {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes work-status-loader-fade-out {
+	0% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+@keyframes work-status-loader-slide-down-fade-in {
+	0% {
+		opacity: 0;
+		transform: translateY(-10px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
