@@ -19,11 +19,9 @@ const aliasPlugin = {
 	},
 };
 
-const common = {
-	entryPoints: [path.join(projectRoot, 'webview', 'src', 'main.tsx')],
+const commonConfig = {
 	bundle: true,
 	format: 'iife',
-	outfile: path.join(projectRoot, 'media', 'webview.js'),
 	jsx: 'automatic',
 	jsxImportSource: 'preact',
 	platform: 'browser',
@@ -34,11 +32,26 @@ const common = {
 	plugins: [aliasPlugin]
 };
 
+const mainConfig = {
+	...commonConfig,
+	entryPoints: [path.join(projectRoot, 'webview', 'src', 'main.tsx')],
+	outfile: path.join(projectRoot, 'media', 'webview.js'),
+};
+
+const editorConfig = {
+	...commonConfig,
+	entryPoints: [path.join(projectRoot, 'webview', 'src', 'editor-main.tsx')],
+	outfile: path.join(projectRoot, 'media', 'editor-webview.js'),
+};
+
 if (watch) {
-	const ctx = await esbuild.context(common);
-	await ctx.watch();
-	console.log('Watching webview…');
+	const mainCtx = await esbuild.context(mainConfig);
+	await mainCtx.watch();
+	const editorCtx = await esbuild.context(editorConfig);
+	await editorCtx.watch();
+	console.log('Watching webview and editor…');
 } else {
-	await esbuild.build(common);
-	console.log('Built webview');
+	await esbuild.build(mainConfig);
+	await esbuild.build(editorConfig);
+	console.log('Built webview and editor');
 } 

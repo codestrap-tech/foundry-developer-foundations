@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import type { ExtensionState } from '../types';
+import type { ExtensionState, LarryState } from '../types';
 import { 
   openFile,
   readFileContent,
@@ -250,6 +250,59 @@ const handleDeleteWorktree: MessageHandler = async (state, msg, view) => {
 };
 
 // ============================================================================
+// State Sync Handlers (Sidebar → Extension → Artifact Editors)
+// ============================================================================
+
+/**
+ * Handle LarryState sync from sidebar
+ * Caches state and broadcasts to all artifact editors
+ */
+const handleLarryStateSync: MessageHandler = async (state, msg) => {
+  const larryState = msg.larryState as LarryState;
+  
+  // Cache the state
+  state.larryState = larryState;
+  
+  // Broadcast to all artifact editors
+  state.artifactEditorPanels?.forEach(panel => {
+    panel.webview.postMessage({
+      type: 'larry_state_update',
+      larryState,
+    });
+  });
+};
+
+/**
+ * Handle query cache sync from sidebar
+ * Caches dehydrated state and broadcasts to all artifact editors
+ */
+const handleQueryCacheSync: MessageHandler = async (state, msg) => {
+  const queryCache = msg.queryCache as string;
+  
+  // Cache the dehydrated query state
+  state.queryCache = queryCache;
+  
+  // Broadcast to all artifact editors
+  state.artifactEditorPanels?.forEach(panel => {
+    panel.webview.postMessage({
+      type: 'query_cache_hydrate',
+      queryCache,
+    });
+  });
+};
+
+/**
+ * Handle proceed complete from artifact editor
+ * Notifies sidebar to refetch machine data
+ */
+const handleProceedComplete: MessageHandler = async (state) => {
+  // Notify sidebar to refetch machine data
+  state.view?.webview.postMessage({
+    type: 'refetch_machine',
+  });
+};
+
+// ============================================================================
 // Message Handler Registry
 // ============================================================================
 
@@ -269,6 +322,10 @@ const messageHandlers: Record<string, MessageHandler> = {
   start_docker_container: handleStartDockerContainer,
   stop_docker_container: handleStopDockerContainer,
   delete_worktree: handleDeleteWorktree,
+  // State sync handlers (sidebar ↔ artifact editors)
+  larry_state_sync: handleLarryStateSync,
+  query_cache_sync: handleQueryCacheSync,
+  proceed_complete: handleProceedComplete,
 };
 
 // ============================================================================

@@ -13,6 +13,29 @@ export interface LarryConfig {
 }
 
 // ============================================================================
+// Larry State (Shared between extension and webviews)
+// ============================================================================
+
+/**
+ * LarryState - Cached state from sidebar webview
+ * 
+ * This mirrors the LarryState type in webview/src/store/larry-state.ts
+ * Extension caches this to provide to artifact editors.
+ * 
+ * See webview/src/store/docs.md for communication architecture.
+ */
+export interface LarryState {
+  currentThreadId: string | undefined;
+  apiUrl: string;
+  machineData: unknown; // MachineResponse from webview types
+  isInWorktree: boolean;
+  worktreePort: number;
+  mainPort: number;
+  agents: Record<string, string>;
+  selectedAgent: string;
+}
+
+// ============================================================================
 // Extension State
 // ============================================================================
 
@@ -37,6 +60,15 @@ export interface ExtensionState {
   // Ports
   mainPort: number;
   worktreePort: number;
+  
+  // Shared Larry state (cached from sidebar webview)
+  larryState: LarryState | undefined;
+  
+  // Dehydrated React Query cache (JSON string, from sidebar)
+  queryCache: string | undefined;
+  
+  // Active artifact editor panels (for broadcasting state updates)
+  artifactEditorPanels: Set<vscode.WebviewPanel>;
 }
 
 /**
@@ -53,6 +85,9 @@ export function createExtensionState(): ExtensionState {
     view: undefined,
     mainPort: 4210,
     worktreePort: 4220,
+    larryState: undefined,
+    queryCache: undefined,
+    artifactEditorPanels: new Set(),
   };
 }
 
@@ -111,7 +146,11 @@ export type WebviewMessageType =
   | 'get_docker_status'
   | 'start_docker_container'
   | 'stop_docker_container'
-  | 'delete_worktree';
+  | 'delete_worktree'
+  // State sync messages (sidebar → extension → artifact editor)
+  | 'larry_state_sync'
+  | 'query_cache_sync'
+  | 'proceed_complete';
 
 export interface WebviewMessage {
   type: WebviewMessageType;
