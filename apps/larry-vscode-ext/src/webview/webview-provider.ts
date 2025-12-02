@@ -11,7 +11,7 @@ import { notifyWorktreeChange } from '../workspace/worktree';
 /**
  * Generates the Content Security Policy for the webview
  */
-function generateCSP(
+export function generateCSP(
   webview: vscode.Webview,
   nonce: string,
   mainPort: number,

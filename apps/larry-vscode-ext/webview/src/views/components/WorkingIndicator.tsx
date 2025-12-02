@@ -76,7 +76,7 @@ export default function WorkStatusLoader({
                 : 'work-status-loader__error--enter'
             }`}
           >
-            {displayError}
+            {displayStatus} - {displayError}
           </div>
         ) : (
           <div

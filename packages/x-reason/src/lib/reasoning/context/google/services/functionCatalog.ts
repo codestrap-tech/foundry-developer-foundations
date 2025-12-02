@@ -72,7 +72,6 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                                     message: `'Error in confirmUserIntent'`,
                                     metadata: {
                                         error: error,
-                                        retry: run,
                                     },
                                 },
                             });
@@ -92,7 +91,6 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                     const larryStream = container.get<LarryStream>(TYPES.LarryStream);
                     const run = async () => {
                         try {
-                            console.log('specReview implementation in function catalog called');
                             const result = await specReview(context, event, task);
                             const payload = getPayload(context, result);
                             console.log(`specReview returned: ${JSON.stringify(result)}`);
@@ -144,6 +142,7 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                                 }));
                             }
                         } catch (error) {
+                            console.log('went into catch block in specReview');
                             larryStream.publish({
                                 id: context.machineExecutionId!,
                                 payload: {
@@ -151,7 +150,6 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                                     message: `'Error in specReview'`,
                                     metadata: {
                                         error: error,
-                                        retry: run,
                                     },
                                 },
                             });
@@ -189,7 +187,6 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                                     message: `'Error in searchDocumentation'`,
                                     metadata: {
                                         error: error,
-                                        retry: run,
                                     },
                                 },
                             });
@@ -227,7 +224,6 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                                     message: `'Error in architectImplementation'`,
                                     metadata: {
                                         error: error,
-                                        retry: run,
                                     },
                                 },
                             });
@@ -306,7 +302,6 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                                     message: `'Error in architectureReview'`,
                                     metadata: {
                                         error: error,
-                                        retry: run,
                                     },
                                 },
                             });
@@ -344,7 +339,6 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                                     message: `'Error in generateEditMachine'`,
                                     metadata: {
                                         error: error,
-                                        retry: run,
                                     },
                                 },
                             });
@@ -424,7 +418,6 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                                     message: `'Error in codeReview'`,
                                     metadata: {
                                         error: error,
-                                        retry: run,
                                     },
                                 },
                             });
@@ -462,7 +455,6 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                                     message: `'Error in applyEdits'`,
                                     metadata: {
                                         error: error,
-                                        retry: run,
                                     },
                                 },
                             });

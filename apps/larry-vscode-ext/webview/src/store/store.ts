@@ -1,5 +1,15 @@
 import { makeStore } from './makeStore';
+import type { LarryState } from './larry-state';
+import type { MachineResponse } from '../lib/backend-types';
 
+/**
+ * ExtensionState - Full sidebar store state
+ * 
+ * Contains LarryState fields (shared with artifact editor)
+ * plus sidebar-specific UI state.
+ * 
+ * See docs.md for architecture details.
+ */
 export interface ExtensionState {
   // Thread/Worktree state
   currentThreadState:
@@ -32,6 +42,9 @@ export interface ExtensionState {
 
   worktreePort: number;
   mainPort: number;
+
+  // Global working state (set by artifact editor when proceed is clicked)
+  isGlobalWorking: boolean;
 
   // Client request ID for tracking requests
   clientRequestId: string;
@@ -73,6 +86,7 @@ export type ExtensionAction =
       };
     }
   | { type: 'SET_SELECTED_AGENT'; payload: string }
+  | { type: 'SET_GLOBAL_WORKING'; payload: boolean }
   | { type: 'RESET_STATE' };
 
 // Initial state
@@ -91,6 +105,7 @@ const initialState: ExtensionState = {
   currentThreadArtifacts: {},
   isLoadingWorktreeInfo: true,
   isLoadingApp: true,
+  isGlobalWorking: false,
   clientRequestId:
     typeof crypto !== 'undefined' && 'randomUUID' in crypto
       ? crypto.randomUUID()
@@ -196,6 +211,12 @@ function extensionReducer(
           : `http://localhost:${state.mainPort}${agentRoute}`,
       };
 
+    case 'SET_GLOBAL_WORKING':
+      return {
+        ...state,
+        isGlobalWorking: action.payload,
+      };
+
     case 'RESET_STATE':
       return {
         ...initialState,
@@ -215,3 +236,26 @@ const [ExtensionStoreProvider, useExtensionDispatch, useExtensionStore] =
   makeStore(initialState, extensionReducer);
 
 export { ExtensionStoreProvider, useExtensionDispatch, useExtensionStore };
+
+/**
+ * Extract LarryState from the full ExtensionState
+ * Used by LarryStateSync to sync shared state to extension
+ */
+export function extractLarryStateFromStore(
+  state: ExtensionState,
+  machineData?: MachineResponse
+): LarryState {
+  return {
+    currentThreadId: state.currentThreadId,
+    apiUrl: state.apiUrl,
+    machineData,
+    isInWorktree: state.isInWorktree,
+    worktreePort: state.worktreePort,
+    mainPort: state.mainPort,
+    agents: state.agents,
+    selectedAgent: state.selectedAgent,
+  };
+}
+
+// Re-export LarryState type for convenience
+export type { LarryState } from './larry-state';

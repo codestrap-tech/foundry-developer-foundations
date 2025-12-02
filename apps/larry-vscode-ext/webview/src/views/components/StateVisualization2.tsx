@@ -97,7 +97,7 @@ interface StateVisualization2Props {
 }
 
 export function StateVisualization2({ data }: StateVisualization2Props) {
-  const { apiUrl } = useExtensionStore();
+  const { apiUrl, isGlobalWorking } = useExtensionStore();
   const { fetch: fetchGetNextState } = useNextMachineState(apiUrl);
   
   // Working indicator state
@@ -107,7 +107,7 @@ export function StateVisualization2({ data }: StateVisualization2Props) {
   const [stateRetry, setStateRetry] = useState({
     actionButton: (
       <div className="flex items-center gap-1.5">
-        <RotateCcw size={14} />
+        <RotateCcw size={14} className="retry-icon" />
         <span>Retry</span>
       </div>
     ),
@@ -126,10 +126,9 @@ export function StateVisualization2({ data }: StateVisualization2Props) {
     if (event.payload.type === 'info') {
       setWorkingStatus(event.payload.message);
     } else if (event.payload.type === 'error') {
-      console.error('LARRY UPDATE ERROR::', event.payload);
       setWorkingStatus(event.payload.message);
       setIsWorking(false);
-      setWorkingError(event.payload.metadata.error);
+      setWorkingError(JSON.stringify(event.payload.metadata.error));
     }
   };
 
@@ -249,6 +248,13 @@ export function StateVisualization2({ data }: StateVisualization2Props) {
     data.currentState === 'success' || 
     deduplicatedStack.includes('success');
 
+  const handleWorkingIndicatorAction = () => {
+    setIsWorking(true);
+    setWorkingError(undefined);
+    setWorkingStatus('Retrying...');
+    continueToNextState();
+  }
+
   // ============================================================================
   // Render
   // ============================================================================
@@ -305,8 +311,8 @@ export function StateVisualization2({ data }: StateVisualization2Props) {
           })}
         </div>
 
-        {/* Working indicator */}
-        {data.status === 'running' && !finished && (
+        {/* Working indicator - show when running, global working, or error */}
+        {(data.status === 'running' || isGlobalWorking || workingError) && !finished && (
           <div>
             <WorkingIndicator
               status={workingStatus}
@@ -314,7 +320,7 @@ export function StateVisualization2({ data }: StateVisualization2Props) {
               error={workingError}
               actionButton={!!workingError}
               actionNode={stateRetry.actionButton}
-              onActionClick={stateRetry.action}
+              onActionClick={handleWorkingIndicatorAction}
             />
           </div>
         )}
