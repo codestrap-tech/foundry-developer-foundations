@@ -115,7 +115,7 @@ or they don't have the required permissions.
     Files added/modified
     - Modified: packages/services/google/src/lib/delegates/sendEmail.ts
     - Added: packages/services/google/src/lib/delegates/driveHelpers.ts
-    - Modified: packages/services/google/src/lib/types.ts (EmailContext, SendEmailOutput)
+    - Modified: packages/services/google/src/lib/types.ts
     - Added: packages/services/google/src/lib/delegates/sendEmail.test.ts
   Or
   Files added/modified
@@ -123,7 +123,7 @@ or they don't have the required permissions.
     - Required: packages/services/palantir/src/lib/doa/communications/communications/upsert.test.ts
     - Added: packages/services/palantir/src/lib/doa/communications/communications/upsert.v2.ts
     - Added: packages/services/palantir/src/lib/doa/communications/communications/upsert.v2.test.ts
-    - Modified: packages/types/src/lib/types.ts (Machine)
+    - Modified: packages/types/src/lib/types.ts
   This ensures our code editor can distinguish how to handle the changes with ts-morph, and the coder has sufficient context to write the code
 
 **Inputs and Outputs**
@@ -255,7 +255,7 @@ A:
     Files added/modified
     - Modified: packages/services/google/src/lib/delegates/sendEmail.ts
     - Added: packages/services/google/src/lib/delegates/driveHelpers.ts
-    - Modified: packages/services/google/src/lib/types.ts (EmailContext, SendEmailOutput)
+    - Modified: packages/services/google/src/lib/types.ts
     - Added: packages/services/google/src/lib/delegates/sendEmail.test.ts
   This ensures our code editor can distinguish how to handle the changes with ts-morph. 
   File paths can be inferred from the Initial user request. It includes the complete listing of existing files and their exposed members (functions, types, etc).
