@@ -15,9 +15,7 @@ import {
 import { container } from '@codestrap/developer-foundations-di';
 import { googleFileOpsGenerator } from './delegates';
 import { saveFileToGithub, writeFileIfNotFoundLocally } from './delegates/github';
-import { templateFactory } from '@codestrap/developer-foundations-utils';
-import { addProjectConfiguration, type Tree, workspaceRoot, names } from '@nx/devkit';
-import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
+import { templateFactory } from '@codestrap/developer-foundations-utils/src/lib/factory/templateFactory';
 import { exec } from 'child_process';
 
 async function verifyFilePaths(ops: FileOp[]) {
@@ -141,7 +139,7 @@ async function runNxGenerate(generator: string, options: {
         const { name, promptFile, fileName } = options;
         exec(
             `npx nx g ${generator} ${name} ${fileName} ${promptFile}`,
-            { cwd: workspaceRoot },
+            { cwd: process.env.WORKSPACE_ROOT },
             (error, stdout, stderr) => {
                 if (stdout) process.stdout.write(stdout);
                 if (stderr) process.stderr.write(stderr);
@@ -259,7 +257,7 @@ Response with the prompt as a single string. Do not include any additional comme
 
                 // load the generated file. Generators always send output to the packages src/lib directory for now
                 // if this ever changes we need to capture the output path from the generator
-                const pathToGeneratedFile = path.resolve(workspaceRoot, config.sourceRoot!, 'lib', `${names(options.fileName!).fileName}.ts`);
+                const pathToGeneratedFile = path.resolve(process.env.WORKSPACE_ROOT, config.sourceRoot!, 'lib', `${options.fileName}.ts`);
                 const fileContents = await fs.promises.readFile(pathToGeneratedFile, 'utf-8');
                 file.stubCode = fileContents;
                 

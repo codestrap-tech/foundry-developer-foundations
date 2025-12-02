@@ -7,13 +7,8 @@
  */
 
 import { curry } from 'ramda';
-import { promises as fs } from 'fs';
+import * as fs from 'fs';
 import * as path from 'path';
-
-import {
-  Tree,
-  workspaceRoot,
-} from '@nx/devkit';
 
 /**
  * Enumeration of supported templates.
@@ -72,7 +67,7 @@ type TemplateRegistry = {
 export const templateRegistry: TemplateRegistry = {
   [SupportedTemplates.GSUITE_CLIENT]: {
     generator: 'google-client',
-    projectJson: async () => fs.readFile(path.resolve(workspaceRoot, 'packages/services/google/project.json'), 'utf-8'),
+    projectJson: async () => fs.promises.readFile(path.resolve(process.env.WORKSPACE_ROOT, 'packages/services/google/project.json'), 'utf-8'),
     samplePrompts: [
       `Create packages/services/google/src/lib/gsuiteClient.v3.ts implementing makeGSuiteClientV3 (TypeScript, Node.js 20.x) based on the existing v2 client (packages/services/google/src/lib/gsuiteClient.v2.ts). Use googleapis@149.0.0 and integrate with the new helper packages/services/google/src/lib/helpers/driveAttachmentProcessor.ts and the modified types in packages/types/src/lib/types.ts.
 
@@ -129,7 +124,7 @@ Generate the full contents of packages/services/google/src/lib/gsuiteClient.v3.t
   },
   [SupportedTemplates.FACTORY]: {
     generator: 'curry-factory',
-    projectJson: async () => fs.readFile(path.resolve(workspaceRoot, 'packages/utils/project.json'), 'utf-8'),
+    projectJson: async () => fs.promises.readFile(path.resolve(process.env.WORKSPACE_ROOT, 'packages/utils/project.json'), 'utf-8'),
     samplePrompts: [
       `Create a new factory using the template below that will:
 Manage retrieval of templates based on file paths in the moduleRegistry. 

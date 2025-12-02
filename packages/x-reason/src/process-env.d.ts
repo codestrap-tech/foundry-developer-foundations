@@ -41,6 +41,7 @@ declare global {
             GITHUB_INSTALLATION_ID: string;
             GITHUB_REPO_OWNER: string;
             GITHUB_REPO_NAME: string;
+            WORKSPACE_ROOT: string;
         }
     }
 }
