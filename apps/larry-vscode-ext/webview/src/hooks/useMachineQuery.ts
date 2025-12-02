@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { fetchMachine } from '../lib/http';
 import { queryClient } from '../lib/query';
 

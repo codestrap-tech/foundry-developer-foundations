@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from "preact/hooks";
 import { MachineResponse, MachineStatus } from "../../lib/backend-types";
 import { ConfirmUserIntent } from "./states/ConfirmUserIntent.tsx";
-import { ChevronRight, SendIcon } from "lucide-preact";
+import { ChevronRight, RefreshCw, RotateCcw, SendIcon } from "lucide-preact";
 import { ChevronDown } from "lucide-preact";
 import TextareaAutosize from "react-textarea-autosize";
 import { AnimatedEllipsis } from "./AnimatedEllipsis.tsx";
@@ -14,6 +14,8 @@ import { ArchitectureReview } from "./states/ArchitectureReview/ArchitectureRevi
 import { GeneralMessageBubble } from "./GeneralMessageBubble.tsx";
 import { CodeReview } from "./states/CodeReview.tsx";
 import { GenerateEditMachine } from "./states/generateEditMachine.tsx";
+import { LarryUpdateEvent, useLarryStream } from "../../hooks/useLarryStream.ts";
+import WorkingIndicator from "./WorkingIndicator.tsx";
 
 const SearchDocumentation = () => <div></div>;
 
@@ -35,6 +37,40 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
   const [architectureReviewRejected, setArchitectureReviewRejected] = useState(false);
   const [architectureReviewPayload, setArchitectureReviewPayload] = useState<any>(null);
   const [input, setInput] = useState<{placeholder: string, value}>({placeholder: 'Tell me more...', value: ''});
+  const [workingStatus, setWorkingStatus] = useState<string>('Working on it');
+  const [workingError, setWorkingError] = useState<string | undefined>(undefined);
+  const [isWorking, setIsWorking] = useState(false);
+  const [stateRetry, setStateRetry] = useState({
+    actionButton: <div className="flex items-center gap-1.5">
+          <RotateCcw size={14} />
+          <span>Retry</span>
+        </div>,
+    action: () => null,
+  });
+
+  const onLarryUpdate = (event: LarryUpdateEvent) => {
+    if (event.payload.type === 'info') {
+      setWorkingStatus(event.payload.message);
+    } else if (event.payload.type === 'error') {
+      console.error('LARRY UPDATE ERROR::', event.payload);
+      setWorkingStatus(event.payload.message);
+      setIsWorking(false);
+      setWorkingError(event.payload.metadata.error);
+      // setStateRetry(prev => ({...prev, action: event.payload.metadata.retry}));
+    }
+  }
+
+  const {start: startLarryStream, stop: stopLarryStream} = useLarryStream(apiUrl, data.context?.machineExecutionId, { onUpdate: onLarryUpdate });
+
+  useEffect(() => {
+    stopLarryStream();
+    setTimeout(() => {
+      startLarryStream();
+    }, 100);
+    return () => {
+      stopLarryStream();
+    };
+  }, [data.context?.machineExecutionId, startLarryStream, stopLarryStream]);
 
   const showInput = useMemo(() => {
     // state computation for confirmUserIntent state
@@ -49,6 +85,14 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
         return true;
       }
   }, [data, specReviewRejected]);
+
+
+  useEffect(() => {
+    if (data.status !== 'running') {
+      setIsWorking(false);
+    }
+  }, [data.status]);
+
   const getDeduplicatedStack = () => {
     if (!data.context?.stack) return [];
     
@@ -188,10 +232,12 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
   };
 
   const continueToNextState = () => {
+    setIsWorking(true);
     fetchGetNextState({ machineId: data.id, contextUpdate: {} });
   }
 
   const handleSubmit = (e) => {
+    setIsWorking(true);
     e.preventDefault();
     if (!input.value.trim()) return;
     
@@ -237,6 +283,7 @@ export function StateVisualization({data, onSubmit}: {data: MachineResponse, onS
 
 
   const handleAction = (action: string, payload?: any) => {
+    setIsWorking(true);
     if (action === 'approveSpec' || action === 'approveArchitecture' || action === 'approveCodeReview') {
       setSpecReviewRejected(false);
 
@@ -344,12 +391,12 @@ return (
         </div>
         {(data.status === 'running' && !finished) && (
     <div>
-      <span className="shimmer-loading">Working</span><AnimatedEllipsis />
+      <WorkingIndicator status={workingStatus} isWorking={isWorking} error={workingError} actionButton={!!workingError} actionNode={stateRetry.actionButton} onActionClick={stateRetry.action} />
     </div>
   )}
   {finished && (
     <div>
-      <span>Code changes applied, review them and commit.</span>
+      <WorkingIndicator disablePulse status="Code changes applied." />
     </div>
   )}
   {(data.status === 'pending' && !finished) && (

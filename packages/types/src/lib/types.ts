@@ -35,6 +35,7 @@ export const TYPES = {
   TrainingDataDao: Symbol.for('TrainingDataDao'),
   LoggingService: Symbol.for('LoggingService'),
   LarryCodingAgentFactory: Symbol.for('LarryCodingAgentFactory'),
+  LarryStream: Symbol.for('LarryStream'),
 };
 
 export type ResearchAssistant = (
@@ -1148,3 +1149,26 @@ export type RequestContext = {
   user?: User | null | undefined;
   requestId?: string | null | undefined;
 };
+
+export type StreamCallback<T = unknown> = (data: T) => void;
+
+export type LarryNotification = {
+  type: 'info' | 'error';
+  message: string;
+  metadata: Record<string, any>;
+}
+
+export interface StreamEntry {
+  value: unknown;
+  subscribers: Set<StreamCallback<unknown>>;
+}
+
+export interface Subscription<T = unknown> {
+  unsubscribe: () => void;
+  getValue: () => T | null;
+}
+
+export interface LarryStream {
+  subscribe: (id: string, callback: StreamCallback<LarryNotification>) => Subscription<LarryNotification>;
+  publish: (opts: { id: string; payload: LarryNotification }) => void;
+}

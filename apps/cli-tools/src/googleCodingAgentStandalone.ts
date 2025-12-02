@@ -5,7 +5,7 @@ import {
   Larry,
   LarryResponse,
 } from '@codestrap/developer-foundations-agents-vickie-bennie';
-import { container, LarryAgentFactory } from '@codestrap/developer-foundations-di';
+import { container } from '@codestrap/developer-foundations-di';
 import {
   Context,
   MachineDao,
@@ -13,6 +13,7 @@ import {
   TYPES,
 } from '@codestrap/developer-foundations-types';
 import { SupportedCodingAgents, SupportedEngines } from '@codestrap/developer-foundations-types';
+import { LarryAgentFactory } from '@codestrap/larry-config';
 import 'dotenv/config';
 import { uuidv4 } from '@codestrap/developer-foundations-utils';
 

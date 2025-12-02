@@ -3,14 +3,33 @@ import { onMessage, postMessage } from '../lib/vscode';
 import { useExtensionDispatch, useExtensionStore } from '../store/store';
 import { handleForwardedSSE } from '../lib/extension-sse-bridge';
 import { useSaveThreadId } from '../hooks/useSaveThreadId';
+import { invalidateMachineQuery } from '../store/query-sync';
 
 export function BootChannel() {
   const dispatch = useExtensionDispatch();
-  const { clientRequestId } = useExtensionStore();
+  const { clientRequestId, apiUrl, currentThreadId } = useExtensionStore();
   const { fetch: saveThreadId } = useSaveThreadId();
   useEffect(() => {
     const handleMessage = (msg: any) => {
       if (!msg || typeof msg !== 'object') return;
+      
+      // Handle refetch_machine from artifact editor (via extension relay)
+      if (msg.type === 'refetch_machine') {
+        console.log('📨 Received refetch_machine, invalidating query...');
+        if (apiUrl && currentThreadId) {
+          invalidateMachineQuery(apiUrl, currentThreadId);
+        }
+        // Reset global working state after refetch
+        dispatch({ type: 'SET_GLOBAL_WORKING', payload: false });
+        return;
+      }
+
+      // Handle set_sidebar_working from artifact editor (via extension relay)
+      if (msg.type === 'set_sidebar_working') {
+        console.log('📨 Received set_sidebar_working:', msg.isWorking);
+        dispatch({ type: 'SET_GLOBAL_WORKING', payload: !!msg.isWorking });
+        return;
+      }
       
       if (msg.type === 'worktree_detection') {
         dispatch({
@@ -19,6 +38,8 @@ export function BootChannel() {
             isInWorktree: !!msg.isInWorktree,
             currentThreadId: msg.currentThreadId || undefined,
             worktreeName: msg.worktreeName,
+            worktreePort: Number(msg.worktreePort),
+            mainPort: Number(msg.mainPort),
           },
         });
       }
@@ -48,6 +69,8 @@ export function BootChannel() {
             agents: msg.config.agents,
             workspaceSetupCommand: msg.config.workspaceSetupCommand,
             larryEnvPath: msg.config.larryEnvPath,
+            worktreePort: Number(msg.worktreePort),
+            mainPort: Number(msg.mainPort),
           },
         });
       }
@@ -79,7 +102,7 @@ export function BootChannel() {
         cleanupListener();
       }
     };
-  }, []);
+  }, [clientRequestId, apiUrl, currentThreadId, dispatch, saveThreadId]);
 
   return null;
 }
