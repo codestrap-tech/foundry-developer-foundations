@@ -15,6 +15,7 @@ export type Context = {
   stack?: string[];
   userId?: string,
   solution?: string; // holds the output from the solver which is the solution plan to execute. This is used by individual state functions to assemble their required input parameters
+  onMachineError?: (error: Error) => void; // callback to capture errors in async function implementations
   // Index signature for additional properties
   [key: string]: any;
 };
