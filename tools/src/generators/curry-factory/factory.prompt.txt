@@ -1,0 +1,9 @@
+Create a new factory using the template below that will:
+Manage retrieval of templates based on file paths in the moduleRegistry. 
+The factory should: 
+1. First check for an exact match based on file path in moduleRegistry 
+2. Then check if the path to the folder is in the moduleRegistry 
+3. Load the file for the associated template using fs.promises as a string and return it 
+Rename all the placeholder variables for moduleRegistry, SupportedModules, etc to something contextually relevant for a template factory. 
+The ModuleInterface should also be renamed and have the property: template: string (path to the template to use)
+ 

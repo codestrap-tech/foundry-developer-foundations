@@ -1,4 +1,5 @@
 import { mockProcessEmailEventExecution } from '../__fixtures__/MachineExecutions';
+import { mockGithubGetFileResult, mockGithubCheckinFileResult } from '../__fixtures__/Github';
 import {
   getMockFreeBusyResponse,
   mockCalendarInsert,
@@ -11,6 +12,18 @@ import {
 import { Vickie } from '../Vickie';
 
 let counter = 0;
+
+jest.mock('@codestrap/github', () => ({
+  // override makeGithubClient with a Jest mock
+  makeGithubClient: jest.fn(async () => {
+    // this matches the VersionControlService shape:
+    // { getFile, checkinFile }
+    return {
+      getFile: jest.fn(async () => mockGithubGetFileResult),
+      checkinFile: jest.fn( async () => mockGithubCheckinFileResult),
+    };
+  }),
+}));
 
 jest.mock('@codestrap/developer-foundations-utils', () => ({
   ...jest.requireActual('@codestrap/developer-foundations-utils'),

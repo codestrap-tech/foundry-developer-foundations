@@ -9,3 +9,5 @@ export * from './lib/Vectors';
 export * from './lib/loggingService';
 export * from './lib/utc';
 export * from './lib/markdownParsers';
+// we don't export the factory as it access node fs which can't work in browser
+//client side code use the utils package too
