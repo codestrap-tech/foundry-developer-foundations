@@ -7,6 +7,7 @@ export * from './GetProjectStatusReport';
 export * from './WriteSlackMessage';
 export * from './CreateTask';
 export * from './ResolveUnavailableAttendees';
+export * from './ResolveMeetingConflicts';
 export * from './WriteEmail';
 export * from './ResearchReport';
 export * from './ReadEmails';
