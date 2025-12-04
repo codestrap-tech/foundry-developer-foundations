@@ -19,43 +19,41 @@ if (!process.env.E2E) {
       jest.clearAllMocks();
     });
 
-    it('true should be true', () => {
-      expect(true).toBe(true);
-    });
-
-    it('should identify meeting conflicts', async () => {
-      const emailForCalendarConflictResolution =
-        process.env['TEST_USER_EMAIL'] ?? 'dsmiley@codestrap.me';
-      const timeFrameFrom = new Date();
-      const timeFrameTo = new Date();
-      timeFrameTo.setDate(timeFrameFrom.getDate() + 7);
-
-      console.log(
-        `Checking conflicts for ${emailForCalendarConflictResolution} from ${timeFrameFrom} to ${timeFrameTo}`
-      );
-
-      const result = await client.proposeMeetingConflictResolutions({
-        userEmails: [emailForCalendarConflictResolution],
+    it.each([
+      {
+        email: process.env['TEST_USER_EMAIL'] ?? 'dsmiley@codestrap.me',
+        timeFrameFrom: new Date(),
+        timeFrameTo: new Date(new Date().setDate(new Date().getDate() + 7)),
+      },
+    ])(
+      'should identify meeting conflicts for $email from $timeFrameFrom to $timeFrameTo',
+      async ({
+        email: emailForCalendarConflictResolution,
         timeFrameFrom,
         timeFrameTo,
-        timezone,
-      });
+      }) => {
+        console.log(
+          `Checking conflicts for ${emailForCalendarConflictResolution} from ${timeFrameFrom} to ${timeFrameTo}`
+        );
 
-      console.log(
-        'Propose meeting conflict resolutions:',
-        JSON.stringify(result, null, 2)
-      );
+        const result = await client.proposeMeetingConflictResolutions({
+          userEmails: [emailForCalendarConflictResolution],
+          timeFrameFrom,
+          timeFrameTo,
+          timezone,
+        });
 
-      expect(result).toEqual(
-        expect.arrayContaining([
-          {
-            meetingId: expect.any(String),
-            resolutionBlocks: expect.arrayContaining([
-              { start: expect.any(String), end: expect.any(String) },
-            ]),
-          },
-        ])
-      );
-    });
+        expect(result).toEqual(
+          expect.arrayContaining([
+            {
+              meetingId: expect.any(String),
+              resolutionBlocks: expect.arrayContaining([
+                { start: expect.any(String), end: expect.any(String) },
+              ]),
+            },
+          ])
+        );
+      }
+    );
   });
 }
