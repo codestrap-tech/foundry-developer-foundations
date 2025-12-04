@@ -7,10 +7,8 @@ import {
 } from '@codestrap/developer-foundations-agents-vickie-bennie';
 import { container } from '@codestrap/developer-foundations-di';
 import {
-  Context,
-  MachineDao,
-  ThreadsDao,
   TYPES,
+  LarryStream,
 } from '@codestrap/developer-foundations-types';
 import { SupportedCodingAgents, SupportedEngines } from '@codestrap/developer-foundations-types';
 import { LarryAgentFactory } from '@codestrap/larry-config';
@@ -49,60 +47,34 @@ export async function googleCodingAgent(
 
       return { executionId };
     }
+    
 
-    const machineDao = container.get<MachineDao>(TYPES.MachineDao);
-    const { state } = await machineDao.read(executionId);
-    const { context } = JSON.parse(state!) as { context: Context };
-    // handle human review states
-    if (
-      context.stateId.includes('specReview') ||
-      context.stateId.includes('confirmUserIntent') ||
-      context.stateId.includes('architectureReview') ||
-      context.stateId.includes('codeReview') ||
-      context.stateId.includes('pause')
-    ) {
-      let stateId = context.stateId;
-      // sometimes we land on pause due to race conditions. I need to track them down. Once fixed we should be able to remove this
-      if (context.stateId.includes('pause')) {
-        // reset to the first state that is not pause
-        stateId =
-          context.stack
-            ?.slice()
-            .reverse()
-            .find((item) => !item.includes('pause')) || '';
-      }
-
-      if (!stateId) {
-        throw new Error('unable to resolve stateID');
-      }
-
-      if (
-        !stateId.includes('specReview') &&
-        !stateId.includes('architectureReview') &&
-        !stateId.includes('codeReview') &&
-        !stateId.includes('confirmUserIntent')
-      ) {
-        return;
-      }
-
-      console.log('currentStateId:: ', stateId);
-      console.log(
-        'running next state with contextUpdateInput:: ',
-        contextUpdateInput
-      );
-      await larry.getNextState(
-        undefined,
-        true,
-        executionId,
-        contextUpdateInput,
-        SupportedEngines.GOOGLE_SERVICES_CODE_ASSIST,
-        true
-      );
-    }
+    await larry.getNextState(
+      undefined,
+      true,
+      executionId,
+      contextUpdateInput,
+      SupportedEngines.GOOGLE_SERVICES_CODE_ASSIST,
+      true
+    );
 
     return { executionId };
   } catch (error) {
     console.error('Google Coding Agent Standalone Error:: ', error);
-    return { executionId, error: error.message };
+    const larryStream = container.get<LarryStream>(TYPES.LarryStream);
+    
+    larryStream.publish({
+      id: executionId || 'new-thread-creation',
+      payload: {
+        type: 'error',
+        message: `Error in googleCodingAgent: ${error instanceof Error ? error.message : String(error)}`,
+        metadata: {
+          error: error,
+          executionId: executionId || 'new-thread-creation',
+        },
+      },
+    });
+    
+    return { executionId, error: error instanceof Error ? error.message : String(error) };
   }
 }

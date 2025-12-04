@@ -61,7 +61,6 @@ async function getEffectedFileList(plan: string) {
   You always look for the file list in the spec. Below is an example:
   Files added/modified/required
   - Required: packages/services/palantir/src/lib/doa/communications/communications/upsert.ts
-  - Required: packages/services/palantir/src/lib/doa/communications/communications/upsert.test.ts
   - Added: packages/services/palantir/src/lib/doa/communications/communications/upsert.v2.ts
   - Added: packages/services/palantir/src/lib/doa/communications/communications/upsert.v2.test.ts
   - Modified: packages/types/src/lib/types.ts (Machine)
@@ -78,10 +77,6 @@ For example:
 [
     {
         "file": "packages/services/palantir/src/lib/doa/communications/communications/upsert.ts",
-        "type": "required"
-    },
-    {
-        "file": "packages/services/palantir/src/lib/doa/communications/communications/upsert.test.ts",
         "type": "required"
     },
     {
