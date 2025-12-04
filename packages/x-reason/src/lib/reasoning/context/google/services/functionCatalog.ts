@@ -69,7 +69,6 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                 description:
                     "Use this tool to confirm with the user their intentions and requests for code changes including new code to be generated",
                 implementation: async (context: Context, event?: MachineEvent, task?: string) => {
-                    throw new Error('specReview implementation in function catalog called');
                     const result = await specReview(context, event, task);
                     const payload = getPayload(context, result);
                     console.log(`specReview returned: ${JSON.stringify(result)}`);
