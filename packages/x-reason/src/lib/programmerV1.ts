@@ -131,7 +131,20 @@ function generateStateConfig(
         // it's up to the function to dispatch the CONTINUE event on the machine to capture results
         // in the vent payload and continue execution
         console.log('Executing function:', functionName);
-        retrievedFunction.implementation(context, event, state.task);
+        try {
+          Promise.resolve(retrievedFunction.implementation(context, event, state.task))
+            .catch((error) => {
+              console.error(`Async error in ${functionName}:`, error);
+              if (context.onMachineError) {
+                context.onMachineError(error);
+              }
+            });
+        } catch (error) {
+          console.error(`Sync error in ${functionName}:`, error);
+          if (context.onMachineError) {
+            context.onMachineError(error as Error);
+          }
+        }
       },
     }
     : {

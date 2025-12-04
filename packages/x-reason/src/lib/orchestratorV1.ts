@@ -34,6 +34,7 @@ export async function getState(
   const { programmer, aiTransition, evaluate, functionCatalog } = xReasonFactory(xreason)({});
   let currentState: State<Context, MachineEvent> | undefined;
   let pendingAsyncOperationsCount = 0;
+  let machineError: Error | null = null;
 
   const dispatch = (action: ActionType) => {
     console.log(`route dispatch callback called`);
@@ -111,11 +112,14 @@ export async function getState(
     solution: sanitizeJSONString(solution.plan),
     stack: [],
     ...workflow,//capture any incoming updates from the UI Layer
+    onMachineError: (error: Error) => { machineError = error; },
   };
 
   // if a state definition is defined we want to use it and transfer the updated state to it
   if (stateDefinition) {
     inputContext = stateDefinition.context;
+    // Restore the error callback since functions can't be serialized to JSON (lost when saved to DB)
+    inputContext.onMachineError = (error: Error) => { machineError = error; };
     // Map the values passed by the consumer onto the context.
     if (workflow) {
       const keys = Object.keys(workflow);
@@ -274,7 +278,7 @@ export async function getState(
   let iterations = 0;
   // this effectively acts as a timeout. Be sure to adjust if you have long running functions in your states!
   const MAX_ITERATIONS = 300;
-  while (!done() && iterations < MAX_ITERATIONS || pendingAsyncOperationsCount > 0) {
+  while ((!done() && !machineError && iterations < MAX_ITERATIONS) || pendingAsyncOperationsCount > 0) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     log(solution.id, `awaiting results`);
@@ -285,6 +289,49 @@ export async function getState(
 
   if (iterations >= MAX_ITERATIONS) {
     console.warn("Exceeded maximum iterations while awaiting results.");
+  }
+
+  // If an error occurred in a function implementation, throw it to bubble up to the caller.
+  // 
+  // Why this is necessary:
+  // xstate's state machine uses a fire-and-forget pattern for entry/exit actions. In programmerV1.ts,
+  // function implementations are invoked synchronously without awaiting their promises:
+  //   entry: (context) => { retrievedFunction.implementation(context, event, task); }
+  // 
+  // This means:
+  // 1. If the implementation is async and throws an error, it becomes an unhandled promise rejection
+  // 2. xstate doesn't capture this rejection - it only manages synchronous operations
+  // 3. The error never propagates through the state machine's normal error handling
+  // 4. Without explicit handling, the unhandled rejection crashes the process
+  //
+  // xstate's Standard Error Pattern (Why it doesn't work for us):
+  // By default, xstate handles errors via state transitions:
+  //   invoke: {
+  //     src: async (context) => { /* ... */ },
+  //     onError: { target: 'errorState' }  // Transitions to error state
+  //   }
+  // However, this approach:
+  // - Persists an error state to the database (breaks retry from same state)
+  // - Handles errors within the state machine (not externally)
+  // - Requires error state definitions in the machine config
+  //
+  // Our Alternative Approach (Error Bubbling):
+  // Instead of transitioning to an error state, we:
+  // 1. Capture async errors via explicit callbacks in programmerV1.ts
+  // 2. Store the error in machineError variable (outside the state machine)
+  // 3. Exit the machine loop when an error is captured
+  // 4. Throw the error explicitly here to bubble it to the caller
+  // 5. Caller (Larry.ts, Vickie.ts, Bennie.ts) handles it with try-catch
+  //
+  // Error Flow (Comparison):
+  // Standard xstate:  Error → errorState → Machine done → Result with error flag
+  // Our approach:     Error → Captured in callback → machineError set → Loop exits → throw → 
+  //                   Caller catches → Caller handles
+  //
+  if (machineError) {
+    const errorMessage = (machineError as Error).message || String(machineError);
+    log(solution.id, `Machine error: ${errorMessage}`);
+    throw machineError;
   }
 
   const context = getContext();
