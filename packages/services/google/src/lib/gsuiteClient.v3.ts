@@ -28,10 +28,6 @@ export async function makeGSuiteClientV3(
         calendar: v2Client.getCalendarClient(),
         calendarSummaries: calendarSummaries.calendars,
       });
-      console.log(
-        '🚀 ~ makeGSuiteClientV3 ~ result:',
-        JSON.stringify(result, null, 2)
-      );
 
       return result;
     },
