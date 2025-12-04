@@ -23,14 +23,24 @@ export async function proposeMeetingConflictResolutionsDelegate(
 
   return await Promise.all(
     flatEvents.map(async (event) => {
-      const resolutionBlocks = await fetchResolutionBlocks(event);
-      return {
-        meetingId: event.id,
-        resolutionBlocks: resolutionBlocks.map((block) => ({
-          start: block.start,
-          end: block.end,
-        })),
-      };
+      try {
+        const resolutionBlocks = await fetchResolutionBlocks(event);
+        return {
+          meetingId: event.id,
+          resolutionBlocks: resolutionBlocks.map((block) => ({
+            start: block.start,
+            end: block.end,
+          })),
+        };
+      } catch (e) {
+        console.error(
+          `Error fetching resolution blocks for event ${event.id}: ${e}`
+        );
+        return {
+          meetingId: event.id,
+          resolutionBlocks: [],
+        };
+      }
     })
   );
 
