@@ -44,7 +44,7 @@ export interface ExtensionState {
   mainPort: number;
 
   // Global working state (set by artifact editor when proceed is clicked)
-  isGlobalWorking: boolean;
+  isLarryWorking: boolean;
 
   // Client request ID for tracking requests
   clientRequestId: string;
@@ -86,7 +86,7 @@ export type ExtensionAction =
       };
     }
   | { type: 'SET_SELECTED_AGENT'; payload: string }
-  | { type: 'SET_GLOBAL_WORKING'; payload: boolean }
+  | { type: 'SET_LARRY_WORKING'; payload: boolean }
   | { type: 'RESET_STATE' };
 
 // Initial state
@@ -105,7 +105,7 @@ const initialState: ExtensionState = {
   currentThreadArtifacts: {},
   isLoadingWorktreeInfo: true,
   isLoadingApp: true,
-  isGlobalWorking: false,
+  isLarryWorking: false,
   clientRequestId:
     typeof crypto !== 'undefined' && 'randomUUID' in crypto
       ? crypto.randomUUID()
@@ -211,10 +211,10 @@ function extensionReducer(
           : `http://localhost:${state.mainPort}${agentRoute}`,
       };
 
-    case 'SET_GLOBAL_WORKING':
+    case 'SET_LARRY_WORKING':
       return {
         ...state,
-        isGlobalWorking: action.payload,
+        isLarryWorking: action.payload,
       };
 
     case 'RESET_STATE':

@@ -16,6 +16,8 @@ import { BookText, MessageSquareCode } from 'lucide-preact';
 import { hydrateQueryCache } from '../../store/query-sync';
 import type { LarryState } from '../../store/larry-state';
 import type { MachineResponse } from '../../lib/backend-types';
+import { useNextMachineState } from '../../hooks/useNextState';
+import { useMachineQuery } from '../../hooks/useMachineQuery';
 
 interface EditorState {
   currentContent: string;
@@ -54,8 +56,11 @@ export function EditorModule() {
   // Dirty = current content differs from normalized baseline (only after init complete)
   const isDirty = initPhase.current === 'ready' && originalContent.current !== editorState.currentContent;
 
-  // Get machine status from larryState
-  const machineStatus = (editorState.larryState?.machineData as MachineResponse | undefined)?.status;
+  const {data: machineData, refetch: refetchMachineData} = useMachineQuery(editorState.larryState?.apiUrl || '', editorState.larryState?.currentThreadId || '');
+  const {fetch: fetchNextState} = useNextMachineState(editorState.larryState?.apiUrl || '');
+
+  console.log('machineData in editor module', machineData);
+  const machineStatus = machineData?.status;
 
   // Get the full stateKey from machine data (e.g., "specReview|abc123")
   const getFullStateKey = (): string | undefined => {
@@ -111,9 +116,11 @@ export function EditorModule() {
           break;
 
         case 'query_cache_hydrate':
-          // Hydrate query cache from sidebar sync
           if (msg.queryCache) {
             hydrateQueryCache(msg.queryCache);
+            setTimeout(() => {
+              refetchMachineData();
+            }, 1000);
           }
           break;
       }
@@ -125,7 +132,7 @@ export function EditorModule() {
     return cleanup;
   }, []);
 
-  // Handle MDXEditor content change
+
   const handleContentChange = (newContent: string) => {
     if (initPhase.current === 'normalizing') {
       // First change is MDXEditor normalization - save immediately
@@ -196,8 +203,7 @@ export function EditorModule() {
     }
 
     setFooterLocked(true);
-    // Tell sidebar to show working indicator BEFORE API call
-    postMessage({ type: 'set_sidebar_working', isWorking: true });
+    postMessage({ type: 'set_larry_working', isWorking: true });
 
     // Build user message
     const userMessage = isDirty 
@@ -215,27 +221,14 @@ export function EditorModule() {
       lastMessage.user = userMessage;
     }
 
-    // Call API directly
-    try {
-      await fetch(`${apiUrl}/machines/${threadId}/next`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Idempotency-Key': Math.random().toString(36).substring(2, 15),
-        },
-        body: JSON.stringify({
-          contextUpdate: {
-            [fullStateKey]: { approved: true, messages },
-          },
-        }),
-      });
 
-      // Notify extension to tell sidebar to refetch
-      postMessage({ type: 'proceed_complete' });
+    try {
+      setFooterLocked(true);
+      await fetchNextState({ machineId: threadId, contextUpdate: { [fullStateKey]: { approved: true, messages } } });
     } catch (error) {
       console.error('Failed to call proceed:', error);
       setFooterLocked(false);
-      postMessage({ type: 'set_sidebar_working', isWorking: false });
+      postMessage({ type: 'set_larry_working', isWorking: false });
     }
   };
 
@@ -325,3 +318,4 @@ export function EditorModule() {
     </div>
   );
 }
+

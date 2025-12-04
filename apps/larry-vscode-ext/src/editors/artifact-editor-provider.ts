@@ -122,17 +122,10 @@ export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
         }
         break;
 
-      case 'proceed_complete':
-        // Relay to sidebar to refetch machine data
-        this.extensionState.view?.webview.postMessage({
-          type: 'refetch_machine',
-        });
-        break;
-
-      case 'set_sidebar_working':
+      case 'set_larry_working':
         // Relay working state to sidebar so it shows working indicator
         this.extensionState.view?.webview.postMessage({
-          type: 'set_sidebar_working',
+          type: 'set_larry_working',
           isWorking: message.isWorking,
         });
         break;

@@ -12,22 +12,9 @@ export function BootChannel() {
   useEffect(() => {
     const handleMessage = (msg: any) => {
       if (!msg || typeof msg !== 'object') return;
-      
-      // Handle refetch_machine from artifact editor (via extension relay)
-      if (msg.type === 'refetch_machine') {
-        console.log('📨 Received refetch_machine, invalidating query...');
-        if (apiUrl && currentThreadId) {
-          invalidateMachineQuery(apiUrl, currentThreadId);
-        }
-        // Reset global working state after refetch
-        dispatch({ type: 'SET_GLOBAL_WORKING', payload: false });
-        return;
-      }
 
-      // Handle set_sidebar_working from artifact editor (via extension relay)
-      if (msg.type === 'set_sidebar_working') {
-        console.log('📨 Received set_sidebar_working:', msg.isWorking);
-        dispatch({ type: 'SET_GLOBAL_WORKING', payload: !!msg.isWorking });
+      if (msg.type === 'set_larry_working') {
+        dispatch({ type: 'SET_LARRY_WORKING', payload: !!msg.isWorking });
         return;
       }
       

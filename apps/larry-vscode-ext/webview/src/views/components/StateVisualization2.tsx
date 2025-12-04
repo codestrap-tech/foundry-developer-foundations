@@ -97,7 +97,7 @@ interface StateVisualization2Props {
 }
 
 export function StateVisualization2({ data }: StateVisualization2Props) {
-  const { apiUrl, isGlobalWorking } = useExtensionStore();
+  const { apiUrl, isLarryWorking } = useExtensionStore();
   const { fetch: fetchGetNextState } = useNextMachineState(apiUrl);
   
   // Working indicator state
@@ -154,6 +154,13 @@ export function StateVisualization2({ data }: StateVisualization2Props) {
       setIsWorking(false);
     }
   }, [data.status]);
+
+  useEffect(() => {
+    setIsWorking(isLarryWorking);
+    if (isLarryWorking) {
+      setWorkingStatus('Working on it');
+    }
+  }, [isLarryWorking])
 
   // ============================================================================
   // Collapse State Management
@@ -311,8 +318,7 @@ export function StateVisualization2({ data }: StateVisualization2Props) {
           })}
         </div>
 
-        {/* Working indicator - show when running, global working, or error */}
-        {(data.status === 'running' || isGlobalWorking || workingError) && !finished && (
+        {(data.status === 'running' || isWorking || workingError) && !finished && (
           <div>
             <WorkingIndicator
               status={workingStatus}
