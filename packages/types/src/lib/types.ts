@@ -18,6 +18,7 @@ export const TYPES = {
   TelemetryDao: Symbol.for('TelemetryDao'),
   ThreadsDao: Symbol.for('ThreadsDao'),
   SQLLiteThreadsDao: Symbol.for('SQLLiteThreadsDao'),
+  ConflictResolutionRulesDao: Symbol.for('ConflictResolutionRulesDao'),
   RfpRequestsDao: Symbol.for('RfpRequestsDao'),
   RangrRfpRequestsDao: Symbol.for('RangrRfpRequestsDao'),
   ResearchAssistant: Symbol.for('ResearchAssistant'),
@@ -29,6 +30,7 @@ export const TYPES = {
   Gpt4oService: Symbol.for('Gpt4oService'),
   GeminiSearchStockMarket: Symbol.for('GeminiSearchStockMarket'),
   OfficeService: Symbol.for('OfficeService'),
+  OfficeServiceV3: Symbol.for('OfficeServiceV3'),
   VersionControlService: Symbol.for('VersionControlService'),
   MessageService: Symbol.for('MessageService'),
   EmbeddingsService: Symbol.for('EmbeddingsService'),
@@ -290,10 +292,10 @@ export type MeetingRequest = {
   participants: Array<string>;
   subject: string;
   timeframe_context:
-  | 'user defined exact date/time'
-  | 'as soon as possible'
-  | 'this week'
-  | 'next week';
+    | 'user defined exact date/time'
+    | 'as soon as possible'
+    | 'this week'
+    | 'next week';
   localDateString?: string;
   duration_minutes: number;
   working_hours: {
@@ -332,13 +334,13 @@ type GptSpecificToolChoice = {
 
 type GptTool = {
   function?:
-  | {
-    name: string;
-    description?: string | undefined;
-    strict?: boolean | undefined;
-    parameters: Map<string, string>;
-  }
-  | undefined;
+    | {
+        name: string;
+        description?: string | undefined;
+        strict?: boolean | undefined;
+        parameters: Map<string, string>;
+      }
+    | undefined;
 };
 
 type GptToolChoice = {
@@ -761,9 +763,9 @@ export type VersionControlService = {
     repo: string;
     path: string;
     message: string;
-    content: string | Buffer;   // raw content, will be base64-encoded
+    content: string | Buffer; // raw content, will be base64-encoded
     branch?: string;
-    sha?: string;               // required for updates
+    sha?: string; // required for updates
     committer?: { name: string; email: string };
     author?: { name: string; email: string };
   }) => Promise<{
@@ -802,6 +804,12 @@ export type OfficeServiceV2 = {
   searchDriveFiles: (params: DriveSearchParams) => Promise<DriveSearchOutput>;
   getDriveClient: () => drive_v3.Drive;
 } & OfficeServiceV1;
+
+export type OfficeServiceV3 = {
+  proposeMeetingConflictResolutions: (
+    input: ProposeMeetingConflictResolutionsInput
+  ) => Promise<ProposeMeetingConflictResolutionsOutput>;
+} & OfficeServiceV2;
 
 // V1 Google Workspace service surface (Calendar + Gmail operations and raw clients)
 export type OfficeServiceV1 = {
@@ -1041,6 +1049,12 @@ export type CommsDao = {
   read: (id: string) => Promise<Communications>;
 };
 
+export type ConflictResolutionRulesDao = {
+  upsert: (userEmail: string, rules: string[]) => Promise<string[]>;
+  delete: (userEmail: string) => Promise<void>;
+  read: (userEmail: string) => Promise<string[]>;
+};
+
 export type ThreadsDao = {
   upsert: (messages: string, appId: string, id?: string) => Promise<Threads>;
   delete: (id: string) => Promise<void>;
@@ -1148,3 +1162,15 @@ export type RequestContext = {
   user?: User | null | undefined;
   requestId?: string | null | undefined;
 };
+
+export interface ProposeMeetingConflictResolutionsInput {
+  userEmails: string[];
+  timeFrameFrom: Date;
+  timeFrameTo: Date;
+  timezone: string;
+}
+
+export type ProposeMeetingConflictResolutionsOutput = Array<{
+  meetingId: string;
+  resolutionBlocks: { start: string; end: string; score?: number }[];
+}>;

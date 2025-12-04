@@ -28,6 +28,7 @@ import {
 import {
   makeCommsDao,
   makeThreadsDao,
+  makeConflictResolutionRulesDao,
 } from '@codestrap/developer-foundations-services-palantir';
 import {
   makeGSuiteClientV2,
@@ -78,6 +79,10 @@ container.bind(TYPES.CommsDao).toConstantValue(makeCommsDao());
 container.bind(TYPES.TelemetryDao).toConstantValue(makeTelemetryDao());
 
 container.bind(TYPES.ThreadsDao).toConstantValue(makeThreadsDao());
+
+container
+  .bind(TYPES.ConflictResolutionRulesDao)
+  .toConstantValue(makeConflictResolutionRulesDao());
 
 container.bind(TYPES.RfpRequestsDao).toConstantValue(makeRfpRequestsDao());
 
