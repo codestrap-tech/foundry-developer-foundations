@@ -1,3 +1,4 @@
+import { ProposeMeetingConflictResolutionsOutput } from '@codestrap/developer-foundations-types';
 import { makeGSuiteClientV3 } from './gsuiteClient.v3';
 
 if (!process.env.E2E) {
@@ -7,7 +8,7 @@ if (!process.env.E2E) {
 } else {
   describe('resolveMeetingConflicts E2E tests', () => {
     let client: Awaited<ReturnType<typeof makeGSuiteClientV3>>;
-    const timezone = 'America/Los_Angeles';
+    const timezone = 'Europe/Warsaw';
 
     beforeAll(async () => {
       // Force Node's wall-clock to PT so Date('YYYY-MM-DDTHH:mm:ss') is deterministic.
@@ -45,13 +46,23 @@ if (!process.env.E2E) {
 
         expect(result).toEqual(
           expect.arrayContaining([
-            {
-              meetingId: expect.any(String),
+            expect.objectContaining({
+              email: expect.any(String),
+              end: expect.any(String),
+              durationMinutes: expect.any(Number),
+              id: expect.any(String),
+              meetingLink: expect.any(String),
+              participants: expect.arrayContaining([expect.any(String)]),
+              start: expect.any(String),
+              subject: expect.any(String),
               resolutionBlocks: expect.arrayContaining([
-                { start: expect.any(String), end: expect.any(String) },
+                expect.objectContaining({
+                  start: expect.any(String),
+                  end: expect.any(String),
+                }),
               ]),
-            },
-          ])
+            }),
+          ] as ProposeMeetingConflictResolutionsOutput)
         );
       }
     );
