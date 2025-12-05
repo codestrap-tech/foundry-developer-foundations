@@ -736,6 +736,7 @@ export type EventSummary = {
 };
 
 export type CalendarSummary = {
+  id?: string;
   email: string;
   events: EventSummary[];
 };
@@ -1170,7 +1171,9 @@ export interface ProposeMeetingConflictResolutionsInput {
   timezone: string;
 }
 
-export type ProposeMeetingConflictResolutionsOutput = Array<{
-  meetingId: string;
-  resolutionBlocks: { start: string; end: string; score?: number }[];
-}>;
+export type ProposeMeetingConflictResolutionsOutput = Array<
+  EventSummary & {
+    email: string;
+    resolutionBlocks: { start: string; end: string; score?: number }[];
+  }
+>;

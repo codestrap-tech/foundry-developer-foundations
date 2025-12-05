@@ -14,7 +14,24 @@ export async function proposeMeetingConflictResolutionsDelegate(
     calendarSummaries: CalendarSummary[];
   }
 ): Promise<ProposeMeetingConflictResolutionsOutput> {
-  const flatEvents = args.calendarSummaries.flatMap((summary) =>
+  const calendarSummariesWithConflicts = args.calendarSummaries.map(
+    (summary) => {
+      return {
+        ...summary,
+        events: summary.events.filter((eventA) => {
+          return summary.events.some((eventB) => {
+            return (
+              eventA.id !== eventB.id &&
+              Date.parse(eventA.start) < Date.parse(eventB.end) &&
+              Date.parse(eventA.end) > Date.parse(eventB.start)
+            );
+          });
+        }),
+      };
+    }
+  );
+
+  const allEvents = calendarSummariesWithConflicts.flatMap((summary) =>
     summary.events.map((event) => ({
       email: summary.email,
       ...event,
@@ -22,22 +39,19 @@ export async function proposeMeetingConflictResolutionsDelegate(
   );
 
   return await Promise.all(
-    flatEvents.map(async (event) => {
+    allEvents.map(async (event) => {
       try {
         const resolutionBlocks = await fetchResolutionBlocks(event);
         return {
-          meetingId: event.id,
-          resolutionBlocks: resolutionBlocks.map((block) => ({
-            start: block.start,
-            end: block.end,
-          })),
+          ...event,
+          resolutionBlocks,
         };
       } catch (e) {
         console.error(
           `Error fetching resolution blocks for event ${event.id}: ${e}`
         );
         return {
-          meetingId: event.id,
+          ...event,
           resolutionBlocks: [],
         };
       }
@@ -51,6 +65,7 @@ export async function proposeMeetingConflictResolutionsDelegate(
       8,
       17
     );
+
     return findOptimalMeetingTimeV2({
       calendar: args.calendar,
       attendees: event.participants,
