@@ -17,6 +17,7 @@ import {
   MachineDao,
   LoggingService,
   SupportedEngines,
+  ProposeMeetingConflictResolutionsOutput,
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 
@@ -300,7 +301,8 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
 
         log(
           id,
-          `Sending updated context for the following email thread ${messages[0]?.subject
+          `Sending updated context for the following email thread ${
+            messages[0]?.subject
           }
                     contextUpdate:
                     ${JSON.stringify(contextUpdate)}
@@ -479,16 +481,16 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
     const system = `You are a helpful AI executive assistant named Vickie.
         You are professional in your tone, personable, and always start your messages with the phrase, "Hi, I'm Vickie, Code's AI Executive Assistant" or similar.
         You can get creative on your greeting, taking into account the dat of the week. Today is ${new Date().toLocaleDateString(
-      'en-US',
-      { weekday: 'long' }
-    )}. 
+          'en-US',
+          { weekday: 'long' }
+        )}. 
         You can also take into account the time of year such as American holidays like Halloween, Thanksgiving, Christmas, etc. 
         You always obey the users instructions and understand the people you work for are busy executives and sometimes need help in their personal lives
         These tasks are not beneath you. At CodeStrap, where you work we adopt the motto made famous by Kim Scott: we move couches.
         It means we all pull together to get things done.
         The current local date/time is ${new Date().toLocaleString('en-US', {
-      timeZone: 'America/Los_Angeles',
-    })}.
+          timeZone: 'America/Los_Angeles',
+        })}.
         The current day/time in your timezone is: ${new Date().toString()}`;
     const user = `
                 Based on the following user query
@@ -610,9 +612,7 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
       endpoint: `/api/v2/ontologies/${process.env.ONTOLOGY_ID}/queries/resolveMeetingConflicts/execute`,
     },
   })
-  public async resolveMeetingConflicts(
-    task: string
-  ): Promise<VickieResponse> {
+  public async resolveMeetingConflicts(task: string): Promise<VickieResponse> {
     try {
       const timeZone = 'America/Los_Angeles';
 
@@ -680,7 +680,8 @@ For example:
       const users = parsed.users;
       const codeStrapUsers = users.filter(
         (user) =>
-          user.indexOf('codestrap.me') >= 0 || user.indexOf('codestrap.com') >= 0
+          user.indexOf('codestrap.me') >= 0 ||
+          user.indexOf('codestrap.com') >= 0
       );
 
       if (codeStrapUsers.length === 0) {
@@ -689,7 +690,7 @@ For example:
           executionId: uuidv4(),
           message: 'No CodeStrap users found in the request',
           error: 'No valid users',
-          taskList: '',
+          taskList: 'ERROR',
         };
       }
 
@@ -704,48 +705,24 @@ For example:
         TYPES.OfficeServiceV3
       );
 
-      const identifyResult = await officeServiceV3.proposeMeetingConflictResolutions(
-        input
-      );
+      const identifyResult =
+        await officeServiceV3.proposeMeetingConflictResolutions(input);
 
-      const officeService = await container.getAsync<OfficeService>(
-        TYPES.OfficeService
-      );
+      const {
+        scheduledCount,
+        errors,
+      }: { scheduledCount: number; errors: string[] } =
+        await performRescheduling(identifyResult, codeStrapUsers);
 
-      let scheduledCount = 0;
-      const scheduledMeetings: string[] = [];
-      const errors: string[] = [];
-
-      // For each conflict with resolution blocks, schedule a meeting
-      for (const conflict of identifyResult) {
-        if (conflict.resolutionBlocks && conflict.resolutionBlocks.length > 0) {
-          const firstBlock = conflict.resolutionBlocks[0];
-          try {
-            const schedulingResult = await officeService.scheduleMeeting({
-              summary: `Resolved Meeting Conflict - ${conflict.meetingId}`,
-              description: `Meeting scheduled to resolve conflict for meeting ${conflict.meetingId}`,
-              start: firstBlock.start,
-              end: firstBlock.end,
-              attendees: codeStrapUsers,
-            });
-
-            scheduledCount++;
-            scheduledMeetings.push(
-              `Meeting ${conflict.meetingId} scheduled: ${schedulingResult.htmlLink}`
-            );
-          } catch (e) {
-            const errorMsg = `Failed to schedule meeting for conflict ${conflict.meetingId}: ${(e as Error).message}`;
-            errors.push(errorMsg);
-            console.error(errorMsg);
-          }
-        }
-      }
-
-      const message = `${identifyResult.length} conflicts have been identified with possible resolutions for users ${users.join(
+      const message = `${
+        identifyResult.length
+      } conflicts have been identified with possible resolutions for users ${users.join(
         ', '
       )} for the time frame from ${parsed.timeFrameFrom} to ${
         parsed.timeFrameTo
-      }. ${scheduledCount} meeting(s) scheduled.${errors.length > 0 ? ` Errors: ${errors.join('; ')}` : ''}`;
+      }. ${scheduledCount} meeting(s) scheduled.${
+        errors.length > 0 ? ` Errors: ${errors.join('; ')}` : ''
+      }`;
 
       return {
         status: errors.length > 0 && scheduledCount === 0 ? 400 : 200,
@@ -765,4 +742,44 @@ For example:
       };
     }
   }
+}
+async function performRescheduling(
+  identifyResult: ProposeMeetingConflictResolutionsOutput,
+  codeStrapUsers: string[]
+) {
+  const officeService = await container.getAsync<OfficeService>(
+    TYPES.OfficeService
+  );
+
+  let scheduledCount = 0;
+  const scheduledMeetings: string[] = [];
+  const errors: string[] = [];
+
+  // For each conflict with resolution blocks, schedule a meeting
+  for (const conflict of identifyResult) {
+    if (conflict.resolutionBlocks && conflict.resolutionBlocks.length > 0) {
+      const firstBlock = conflict.resolutionBlocks[0];
+      try {
+        const schedulingResult = await officeService.scheduleMeeting({
+          summary: `Resolved Meeting Conflict - ${conflict.meetingId}`,
+          description: `Meeting scheduled to resolve conflict for meeting ${conflict.meetingId}`,
+          start: firstBlock.start,
+          end: firstBlock.end,
+          attendees: codeStrapUsers,
+        });
+
+        scheduledCount++;
+        scheduledMeetings.push(
+          `Meeting ${conflict.meetingId} scheduled: ${schedulingResult.htmlLink}`
+        );
+      } catch (e) {
+        const errorMsg = `Failed to schedule meeting for conflict ${
+          conflict.meetingId
+        }: ${(e as Error).message}`;
+        errors.push(errorMsg);
+        console.error(errorMsg);
+      }
+    }
+  }
+  return { scheduledCount, errors };
 }
