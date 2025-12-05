@@ -150,6 +150,18 @@ const Schemas = {
       error: Type.Optional(Type.String()),
     }),
   },
+  resolveMeetingConflicts: {
+    input: Type.Object({
+      task: Type.String(),
+    }),
+    output: Type.Object({
+      status: Type.Integer(),
+      message: Type.String(),
+      executionId: Type.String(),
+      taskList: Type.Optional(Type.String()),
+      error: Type.Optional(Type.String()),
+    }),
+  },
 };
 
 // Unified configuration for all environments
@@ -203,6 +215,7 @@ function createComputeModule(): ComputeModuleType {
       submitRfpResponse: Schemas.submitRfpResponse,
       sendThreadMessage: Schemas.sendThreadMessage,
       processEmailEvent: Schemas.processEmailEvent,
+      resolveMeetingConflicts: Schemas.resolveMeetingConflicts,
     },
   })
     .register('processEmailEvent', async ({ payload }) => {
@@ -438,6 +451,21 @@ function createComputeModule(): ComputeModuleType {
           const result = await larry.askLarry(query, userId, threadId);
           return result;
         });
+      } catch (e) {
+        console.log((e as Error).stack);
+        return {
+          status: 500,
+          message: `Error: ${(e as Error).message}`,
+          executionId: 'error',
+          taskList: 'error',
+          error: `Error: ${(e as Error).message}`,
+        };
+      }
+    })
+    .register('resolveMeetingConflicts', async ({ task }) => {
+      try {
+        const result = await vickie.resolveMeetingConflicts(task);
+        return result;
       } catch (e) {
         console.log((e as Error).stack);
         return {
