@@ -18,10 +18,12 @@ import type { LarryState } from '../../store/larry-state';
 import type { MachineResponse } from '../../lib/backend-types';
 import { useNextMachineState } from '../../hooks/useNextState';
 import { useMachineQuery } from '../../hooks/useMachineQuery';
+import { useReadFile } from '../../hooks/useReadFile';
 
 interface EditorState {
   currentContent: string;
   fileName: string;
+  filePath: string;
   contentLoaded: boolean;
   stateKey: string | undefined;
   larryState: LarryState | undefined;
@@ -43,6 +45,7 @@ export function EditorModule() {
   const [editorState, setEditorState] = useState<EditorState>({
     currentContent: '',
     fileName: '',
+    filePath: '',
     contentLoaded: false,
     stateKey: undefined,
     larryState: undefined,
@@ -58,6 +61,7 @@ export function EditorModule() {
 
   const {data: machineData, refetch: refetchMachineData} = useMachineQuery(editorState.larryState?.apiUrl || '', editorState.larryState?.currentThreadId || '');
   const {fetch: fetchNextState} = useNextMachineState(editorState.larryState?.apiUrl || '');
+  const {fetch: getContentFile} = useReadFile();
 
   console.log('machineData in editor module', machineData);
   const machineStatus = machineData?.status;
@@ -95,6 +99,7 @@ export function EditorModule() {
           setEditorState({
             currentContent: msg.content,
             fileName: msg.fileName,
+            filePath: msg.filePath,
             contentLoaded: true,
             stateKey: msg.stateKey,
             larryState: msg.larryState,
@@ -121,6 +126,21 @@ export function EditorModule() {
             setTimeout(() => {
               refetchMachineData();
             }, 1000);
+            // Reload file content from disk to ensure we have latest version
+            if (editorState.filePath) {
+              getContentFile(editorState.filePath).then(content => {
+                setEditorState(prev => ({
+                  ...prev,
+                  currentContent: content,
+                }));
+                // Update baseline if we're in ready phase
+                if (initPhase.current === 'ready') {
+                  originalContent.current = content;
+                }
+              }).catch(error => {
+                console.error('Failed to reload file content:', error);
+              });
+            }
           }
           break;
       }
@@ -182,9 +202,6 @@ export function EditorModule() {
     
     // Force save current content immediately
     postMessage({ type: 'edit', content: editorState.currentContent });
-    
-    // Small delay to ensure save is processed
-    await new Promise(resolve => setTimeout(resolve, 100));
 
     const fullStateKey = getFullStateKey();
     const stateData = getStateData();
@@ -205,7 +222,10 @@ export function EditorModule() {
     setFooterLocked(true);
     postMessage({ type: 'set_larry_working', isWorking: true });
 
-    // Build user message
+    // 2s delay to ensure save is processed
+    // and also synced with Docker container
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
     const userMessage = isDirty 
       ? 'I have reviewed and modified the specification. Approved.'
       : 'Looks good, approved.';

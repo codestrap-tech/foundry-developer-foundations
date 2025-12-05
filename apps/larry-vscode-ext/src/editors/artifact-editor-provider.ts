@@ -86,6 +86,7 @@ export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
       type: 'initialContent',
       content: document.getText(),
       fileName,
+      filePath: document.fileName,
       stateKey,
       // Send cached state from sidebar
       larryState: this.extensionState.larryState,
@@ -119,6 +120,27 @@ export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
           await vscode.workspace.applyEdit(edit);
           // Save the document to disk so the server can read the updated content
         await document.save();
+        }
+        break;
+
+      case 'readFile':
+        // Read file from workspace and send content back
+        const filePath = message.filePath as string;
+        try {
+          const fileUri = vscode.Uri.file(filePath);
+          const fileContent = await vscode.workspace.fs.readFile(fileUri);
+          panel.webview.postMessage({
+            type: 'fileContent',
+            filePath,
+            content: new TextDecoder().decode(fileContent),
+          });
+        } catch (error) {
+          console.error('Failed to read file:', error);
+          panel.webview.postMessage({
+            type: 'fileReadError',
+            filePath,
+            error: error instanceof Error ? error.message : String(error),
+          });
         }
         break;
 

@@ -776,7 +776,6 @@ label {
 .work-status-loader__error {
 	font-size: 13px;
 	color: var(--vscode-errorForeground, #f48771);
-	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }

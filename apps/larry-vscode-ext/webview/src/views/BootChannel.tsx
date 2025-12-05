@@ -89,7 +89,7 @@ export function BootChannel() {
         cleanupListener();
       }
     };
-  }, [clientRequestId, apiUrl, currentThreadId, dispatch, saveThreadId]);
+  }, [clientRequestId, apiUrl, dispatch, saveThreadId]);
 
   return null;
 }
