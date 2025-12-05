@@ -1,6 +1,6 @@
 /* JSX */
 /* @jsxImportSource preact */
-import { useState, useEffect, useRef } from 'preact/hooks';
+import { useState, useEffect, useRef, useMemo } from 'preact/hooks';
 import { 
   MDXEditor, 
   headingsPlugin, 
@@ -25,7 +25,6 @@ interface EditorState {
   fileName: string;
   filePath: string;
   contentLoaded: boolean;
-  stateKey: string | undefined;
   larryState: LarryState | undefined;
 }
 
@@ -47,7 +46,6 @@ export function EditorModule() {
     fileName: '',
     filePath: '',
     contentLoaded: false,
-    stateKey: undefined,
     larryState: undefined,
   });
   const [footerLocked, setFooterLocked] = useState(false);
@@ -63,25 +61,20 @@ export function EditorModule() {
   const {fetch: fetchNextState} = useNextMachineState(editorState.larryState?.apiUrl || '');
   const {fetch: getContentFile} = useReadFile();
 
-  console.log('machineData in editor module', machineData);
   const machineStatus = machineData?.status;
 
-  // Get the full stateKey from machine data (e.g., "specReview|abc123")
-  const getFullStateKey = (): string | undefined => {
-    const machineData = editorState.larryState?.machineData as MachineResponse | undefined;
-    if (!machineData?.context || !editorState.stateKey) return undefined;
+
+  const fullStateKey = useMemo(() => {
+    const larryStateMachineData = editorState.larryState?.machineData as MachineResponse | undefined;
     
-    const contextKeys = Object.keys(machineData.context);
-    const matchingKey = contextKeys.find(key => key.startsWith(editorState.stateKey + '|'));
-    return matchingKey;
-  };
+    return larryStateMachineData?.currentState || machineData?.currentState;
+  }, [editorState.larryState?.machineData, machineData?.currentState]);
 
   // Get state data from machine context
   const getStateData = () => {
-    const fullStateKey = getFullStateKey();
-    const machineData = editorState.larryState?.machineData as MachineResponse | undefined;
-    if (!fullStateKey || !machineData?.context) return undefined;
-    return machineData.context[fullStateKey];
+    const larryStateMachineData = editorState.larryState?.machineData as MachineResponse | undefined;
+    if (!fullStateKey || !larryStateMachineData?.context || machineData?.context) return undefined;
+    return larryStateMachineData.context[fullStateKey] || machineData?.context?.[fullStateKey];
   };
 
   // Listen for messages from extension
@@ -95,13 +88,12 @@ export function EditorModule() {
           if (msg.queryCache) {
             hydrateQueryCache(msg.queryCache);
           }
-          
+
           setEditorState({
             currentContent: msg.content,
             fileName: msg.fileName,
             filePath: msg.filePath,
             contentLoaded: true,
-            stateKey: msg.stateKey,
             larryState: msg.larryState,
           });
           setFooterLocked(false);
@@ -194,6 +186,7 @@ export function EditorModule() {
 
   // Handle proceed action
   const handleProceed = async () => {
+    console.log('running handleProceed');
     // Clear any pending debounce and save immediately
     if (debounceTimerRef.current !== null) {
       clearTimeout(debounceTimerRef.current);
@@ -203,7 +196,6 @@ export function EditorModule() {
     // Force save current content immediately
     postMessage({ type: 'edit', content: editorState.currentContent });
 
-    const fullStateKey = getFullStateKey();
     const stateData = getStateData();
     const threadId = editorState.larryState?.currentThreadId;
     const apiUrl = editorState.larryState?.apiUrl;
@@ -214,7 +206,6 @@ export function EditorModule() {
         fullStateKey,
         apiUrl,
         larryState: editorState.larryState,
-        stateKey: editorState.stateKey,
       });
       return;
     }
@@ -227,7 +218,7 @@ export function EditorModule() {
     await new Promise(resolve => setTimeout(resolve, 2000));
 
     const userMessage = isDirty 
-      ? 'I have reviewed and modified the specification. Approved.'
+      ? 'I have reviewed and modified the specification. Please proceed.'
       : 'Looks good, approved.';
 
     // Update messages array
@@ -253,8 +244,8 @@ export function EditorModule() {
   };
 
   // Determine review type
-  const isSpecReview = editorState.fileName.startsWith('spec-');
-  const isArchitectureReview = editorState.fileName.startsWith('architecture-');
+  const isSpecReview = machineData?.currentState?.includes('specReview');
+  const isArchitectureReview = machineData?.currentState?.includes('architectureReview');
 
   // Unlock footer when machine status returns to awaiting human
   useEffect(() => {
@@ -266,16 +257,18 @@ export function EditorModule() {
   // Only show footer when awaiting human review and not locked
   const showFooter = machineStatus === 'awaiting_human' && !footerLocked;
 
+  const isProceedDisabled = !editorState.larryState?.currentThreadId || !editorState.larryState?.apiUrl || !fullStateKey;
+
   return (
     <div className="editor-module">
       <div className="editor-header">
         <h2 className="editor-title">
           {isSpecReview ? (
-            <span><BookText /> Specification Review</span>
+            <span><BookText className="editor-title--icon" /> Specification Review</span>
           ) : isArchitectureReview ? (
-            <span><MessageSquareCode /> Architecture Review</span>
+            <span><MessageSquareCode className="editor-title--icon" /> Architecture Review</span>
           ) : (
-            <span>Review</span>
+            <span>Larry AI Editor</span>
           )}
         </h2>
       </div>
@@ -323,9 +316,9 @@ export function EditorModule() {
       {showFooter && (
         <div className="editor-footer">
           <button
-            className="btn btn-primary"
+            className={`btn ${!isProceedDisabled ? 'btn-primary' : 'btn-disabled'}`}
             onClick={handleProceed}
-            disabled={!editorState.larryState?.currentThreadId || !editorState.larryState?.apiUrl || !getFullStateKey()}
+            disabled={isProceedDisabled}
           >
             Proceed
           </button>

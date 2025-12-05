@@ -10,7 +10,8 @@ let githubService: VersionControlService | undefined;
 
 async function getGithubClient(): Promise<VersionControlService> {
     if (!githubService) {
-        githubService = await container.getAsync<VersionControlService>(TYPES.VersionControlService);
+        const makeGithubClient = container.get<() => Promise<VersionControlService>>(TYPES.VersionControlService);
+        githubService = await makeGithubClient()
     }
 
     return githubService as VersionControlService;

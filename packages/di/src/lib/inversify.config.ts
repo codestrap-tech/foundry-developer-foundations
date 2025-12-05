@@ -121,7 +121,7 @@ container
 
   container
   .bind(TYPES.VersionControlService)
-  .toConstantValue(makeGithubClient());
+  .toConstantValue(makeGithubClient)
 
 container
   .bind(TYPES.MessageService)

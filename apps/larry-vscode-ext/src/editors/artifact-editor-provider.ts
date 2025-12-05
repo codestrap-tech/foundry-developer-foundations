@@ -61,18 +61,6 @@ export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
   }
 
   /**
-   * Determines the state key based on filename
-   */
-  private getStateKeyFromFileName(fileName: string): string | undefined {
-    if (fileName.startsWith('spec-')) {
-      return 'specReview';
-    } else if (fileName.startsWith('architecture-')) {
-      return 'architectureReview';
-    }
-    return undefined;
-  }
-
-  /**
    * Sends initial content to webview with cached LarryState and query cache
    */
   private sendInitialContent(
@@ -80,14 +68,12 @@ export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
     document: vscode.TextDocument
   ): void {
     const fileName = path.basename(document.fileName);
-    const stateKey = this.getStateKeyFromFileName(fileName);
 
     webview.postMessage({
       type: 'initialContent',
       content: document.getText(),
       fileName,
       filePath: document.fileName,
-      stateKey,
       // Send cached state from sidebar
       larryState: this.extensionState.larryState,
       queryCache: this.extensionState.queryCache,

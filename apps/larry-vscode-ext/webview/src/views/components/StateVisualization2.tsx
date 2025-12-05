@@ -94,9 +94,10 @@ function getDeduplicatedStack(stack: string[] | undefined): string[] {
 
 interface StateVisualization2Props {
   data: MachineResponse;
+  userQuestion: string | undefined;
 }
 
-export function StateVisualization2({ data }: StateVisualization2Props) {
+export function StateVisualization2({ data, userQuestion }: StateVisualization2Props) {
   const { apiUrl, isLarryWorking } = useExtensionStore();
   const { fetch: fetchGetNextState } = useNextMachineState(apiUrl);
   
@@ -273,10 +274,19 @@ export function StateVisualization2({ data }: StateVisualization2Props) {
         <div className="space-y-4">
           {/* Welcome message */}
           {data.context?.solution && (
-            <GeneralMessageBubble
-              content="Hello! I'm **Larry**, your AI Coding assistant. \n I'm working in organized, state based way. Below you will see the states I'm in and the actions I'm taking."
+<div>
+<GeneralMessageBubble
+              content={`Hello! I'm **Larry**, your AI Coding assistant. 
+I'm working in organized, state based way. Below you will see the states I'm in and the actions I'm taking.`}
               topActions={null}
             />
+            {userQuestion && (
+              <GeneralMessageBubble
+                content={`**Task:** ${userQuestion}`}
+                topActions={null}
+              />
+            )}
+  </div>
           )}
 
           {/* State stack */}

@@ -57,7 +57,7 @@
         "displayName": "Larry Artifact Editor",
         "selector": [
           {
-            "filenamePattern": "**/.larry/artifacts/**"
+            "filenamePattern": "**/.larry/artifacts/**/*.md"
           }
         ],
         "priority": "default"

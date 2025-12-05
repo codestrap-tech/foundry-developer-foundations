@@ -380,6 +380,9 @@ label {
 	gap: 4px;
 	align-items: center;
 	justify-content: space-between;
+	padding: 1px 2px;
+    border-radius: 4px;
+    background: var(--vscode-commandCenter-activeBackground);
 }
 
 .threadsTabsList__items {
@@ -422,6 +425,8 @@ label {
 .threadsTabsList__addIcon {
 	width: 16px;
 	height: 16px;
+	position: relative;
+    top: 2px;
 }
 
 .refresh-extension {
@@ -837,4 +842,8 @@ label {
 		opacity: 1;
 		transform: translateY(0);
 	}
+}
+
+.btn-disabled {
+	cursor: not-allowed !important;
 }

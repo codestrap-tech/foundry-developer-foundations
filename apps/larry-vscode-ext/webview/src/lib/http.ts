@@ -1,4 +1,4 @@
-import type { ThreadsListResponse, MachineResponse } from './backend-types';
+import type { ThreadsListResponse, MachineResponse, ThreadResponse, ThreadMessage, ThreadRawResponse } from './backend-types';
 
 export async function fetchJSON<T>(
   url: string,
@@ -34,6 +34,25 @@ export async function fetchThreads(
   baseUrl: string
 ): Promise<ThreadsListResponse> {
   return fetchJSON<ThreadsListResponse>(`${baseUrl}/threads`);
+}
+
+export async function fetchThread(
+  baseUrl: string,
+  threadId: string
+): Promise<ThreadResponse> {
+  const thread = await fetchJSON<ThreadRawResponse>(`${baseUrl}/threads/${threadId}`);
+  
+  if (thread.messages) {
+    return {
+      ...thread,
+      messages: JSON.parse(thread.messages) as ThreadMessage[]
+    }
+  }
+
+  return {
+    ...thread,
+    messages: []
+  }
 }
 
 export async function fetchMachine(

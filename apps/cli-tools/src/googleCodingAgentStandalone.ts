@@ -38,9 +38,7 @@ export async function googleCodingAgent(
       executionId = uuidv4();
 
       result = await larry.askLarry(
-        `# User Question
-        ${answer}
-        `,
+        `# User Question:${answer}`,
         process.env.FOUNDRY_TEST_USER
       );
       executionId = result.executionId;

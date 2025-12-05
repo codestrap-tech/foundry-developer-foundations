@@ -22,6 +22,23 @@ export interface ThreadsListResponse {
   requestId: string;
 }
 
+export interface ThreadRawResponse {
+  id: UUID;
+  appId: string;
+  messages: string;
+}
+
+export interface ThreadResponse {
+  id: UUID;
+  appId: string;
+  messages: ThreadMessage[];
+}
+
+export interface ThreadMessage {
+  role: 'user' | 'system';
+  content: string;
+}
+
 // Minimal Context representation (opaque bag)
 export type Context = Record<string, any> & {
   requestId?: string;

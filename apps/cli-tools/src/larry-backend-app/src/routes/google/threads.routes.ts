@@ -48,6 +48,17 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
     }
   });
 
+  // GET /threads/:threadId
+  r.get('/threads/:threadId', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { threadId } = req.params;
+      const thread = await threadsDao.read(threadId);
+      res.json(thread);
+    } catch (err) {
+      next(err);
+    }
+  });
+
   // POST /threads/new
   r.post(
     '/threads/new',

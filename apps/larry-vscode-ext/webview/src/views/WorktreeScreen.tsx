@@ -1,9 +1,8 @@
 /* JSX */
 /* @jsxImportSource preact */
-import { useState, useEffect } from 'preact/hooks';
+import { useState, useEffect, useMemo } from 'preact/hooks';
 import { useExtensionDispatch, useExtensionStore } from '../store/store';
 import { createThread } from '../lib/http';
-import { AnimatedEllipsis } from './components/AnimatedEllipsis';
 import { useThreadsQuery } from '../hooks/useThreadsQuery';
 import { useMachineQuery } from '../hooks/useMachineQuery';
 import { StateVisualization2 as StateVisualization } from './components/StateVisualization2';
@@ -12,6 +11,8 @@ import { PlusIcon } from 'lucide-preact';
 import { useLarryStream } from '../hooks/useLarryStream';
 import type { LarryUpdateEvent } from '../hooks/useLarryStream';
 import WorkingIndicator from './components/WorkingIndicator';
+import { useThread } from '../hooks/useThread';
+import { getUserQuestion } from '../lib/findUserQuestion';
 
 export function WorktreeScreen() {
   const [firstMessage, setFirstMessage] = useState('');
@@ -67,6 +68,9 @@ export function WorktreeScreen() {
 
   // Read threads data to get the session label
   const { data: threadsData } = useThreadsQuery(apiUrl);
+  const { data: threadData } = useThread(apiUrl, currentThreadId);
+
+  const userQuestion = useMemo(() => getUserQuestion(threadData?.messages || []), [threadData]);
 
   const { threads: localThreads } = useWorktreeThreads(currentWorktreeName);
   
@@ -87,16 +91,11 @@ export function WorktreeScreen() {
     setIsWorking(true);
     await createThread({
       baseUrl: apiUrl,
-      worktreeName: currentWorktreeName || 'test-001',
+      worktreeName: currentWorktreeName,
       userTask: firstMessage.trim(),
       label: firstMessage.trim(),
       clientRequestId: clientRequestId,
     });
-    // Now we wait for thread.created via SSE -> handled in onThreadCreated
-  }
-
-  const handleSubmit = async (input: string) => {
-    
   }
 
   const handleAddThread = () => {
@@ -129,6 +128,10 @@ export function WorktreeScreen() {
   if (currentThreadId && machineData) {
     return (
       <div className="min-h-screen">
+        <div className="mb-2">
+          <small className="label-text">Worktree session:</small>
+          <h4 className="h6 m-0">{sessionLabel}</h4>
+        </div>
         <div className="threadsTabsList">
           <div className="threadsTabsList__items">
             {localThreads?.map((threadId, index) => (
@@ -139,14 +142,14 @@ export function WorktreeScreen() {
             <PlusIcon className="threadsTabsList__addIcon" />
           </div>
         </div>
-        <div className="mb-2">
-          <h4 className="h6 m-0">{sessionLabel}</h4>
+        <div className="mb-2 worktreeScreen-execution-id">
+          <div>Execution ID:</div>
           <small>{currentThreadId}</small>
         </div>
         {isLoading ? (
           <WorkingIndicator status="Loading thread..." isWorking />
         ) : (
-          <StateVisualization data={machineData} onSubmit={handleSubmit} />
+          <StateVisualization userQuestion={userQuestion} data={machineData} />
         )}
       </div>
     );
