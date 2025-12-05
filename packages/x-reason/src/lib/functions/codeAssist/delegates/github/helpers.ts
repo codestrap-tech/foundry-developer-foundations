@@ -33,10 +33,7 @@ async function withGithubRetry<T>(
   let lastError: unknown;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      // On retry (attempt > 1), clear cache to get fresh token
-      if (attempt > 1) {
-        clearGithubServiceCache();
-      }
+      clearGithubServiceCache();
       const service = await getGithubClient();
       return await fn(service);
     } catch (e) {

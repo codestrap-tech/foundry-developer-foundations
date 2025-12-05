@@ -34,10 +34,7 @@ export interface ThreadResponse {
   messages: ThreadMessage[];
 }
 
-export interface ThreadMessage {
-  role: 'user' | 'system';
-  content: string;
-}
+export type ThreadMessage = Record<'user' | 'system', string>;
 
 // Minimal Context representation (opaque bag)
 export type Context = Record<string, any> & {

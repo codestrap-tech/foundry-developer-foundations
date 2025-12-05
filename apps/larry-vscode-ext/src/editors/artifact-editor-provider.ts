@@ -3,6 +3,7 @@ import * as path from 'path';
 import type { ExtensionState } from '../types';
 import { DEFAULT_MAIN_PORT, DEFAULT_WORKTREE_PORT } from '../types';
 import { generateCSP } from '../webview/webview-provider';
+import { readFileContent } from '../workspace/files';
 
 /**
  * Custom editor provider for Larry artifact files (.larry/artifact/**)
@@ -110,21 +111,17 @@ export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
         break;
 
       case 'readFile':
-        // Read file from workspace and send content back
-        const filePath = message.filePath as string;
         try {
-          const fileUri = vscode.Uri.file(filePath);
-          const fileContent = await vscode.workspace.fs.readFile(fileUri);
           panel.webview.postMessage({
             type: 'fileContent',
-            filePath,
-            content: new TextDecoder().decode(fileContent),
+            filePath: document.uri.fsPath,
+            content: document.getText(),
           });
         } catch (error) {
           console.error('Failed to read file:', error);
           panel.webview.postMessage({
             type: 'fileReadError',
-            filePath,
+            filePath: document.uri.fsPath,
             error: error instanceof Error ? error.message : String(error),
           });
         }

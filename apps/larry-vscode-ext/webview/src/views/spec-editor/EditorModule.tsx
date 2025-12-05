@@ -71,10 +71,17 @@ export function EditorModule() {
   }, [editorState.larryState?.machineData, machineData?.currentState]);
 
   // Get state data from machine context
-  const getStateData = () => {
+  const stateData = useMemo(() => {
     const larryStateMachineData = editorState.larryState?.machineData as MachineResponse | undefined;
-    if (!fullStateKey || !larryStateMachineData?.context || machineData?.context) return undefined;
+    if (!fullStateKey || (!larryStateMachineData?.context || !machineData?.context)) return undefined;
     return larryStateMachineData.context[fullStateKey] || machineData?.context?.[fullStateKey];
+  }, [fullStateKey, editorState.larryState?.machineData, machineData?.context]);
+
+
+  const reloadCurrentContent = () => {
+    console.log('reloadCurrentContent');
+    console.log(editorState);
+    console.log(machineData);
   };
 
   // Listen for messages from extension
@@ -96,6 +103,7 @@ export function EditorModule() {
             contentLoaded: true,
             larryState: msg.larryState,
           });
+
           setFooterLocked(false);
           break;
 
@@ -110,6 +118,7 @@ export function EditorModule() {
           if (updatedStatus === 'awaiting_human') {
             setFooterLocked(false);
           }
+          
           break;
 
         case 'query_cache_hydrate':
@@ -117,22 +126,8 @@ export function EditorModule() {
             hydrateQueryCache(msg.queryCache);
             setTimeout(() => {
               refetchMachineData();
+              reloadCurrentContent();
             }, 1000);
-            // Reload file content from disk to ensure we have latest version
-            if (editorState.filePath) {
-              getContentFile(editorState.filePath).then(content => {
-                setEditorState(prev => ({
-                  ...prev,
-                  currentContent: content,
-                }));
-                // Update baseline if we're in ready phase
-                if (initPhase.current === 'ready') {
-                  originalContent.current = content;
-                }
-              }).catch(error => {
-                console.error('Failed to reload file content:', error);
-              });
-            }
           }
           break;
       }
@@ -196,7 +191,6 @@ export function EditorModule() {
     // Force save current content immediately
     postMessage({ type: 'edit', content: editorState.currentContent });
 
-    const stateData = getStateData();
     const threadId = editorState.larryState?.currentThreadId;
     const apiUrl = editorState.larryState?.apiUrl;
     
@@ -232,10 +226,12 @@ export function EditorModule() {
       lastMessage.user = userMessage;
     }
 
+    const isSpecReview = fullStateKey?.includes('specReview');
+    const isApproved = isSpecReview && isDirty ? false : true;
 
     try {
       setFooterLocked(true);
-      await fetchNextState({ machineId: threadId, contextUpdate: { [fullStateKey]: { approved: true, messages } } });
+      await fetchNextState({ machineId: threadId, contextUpdate: { [fullStateKey]: { approved: isApproved, messages } } });
     } catch (error) {
       console.error('Failed to call proceed:', error);
       setFooterLocked(false);
@@ -276,6 +272,7 @@ export function EditorModule() {
       <div className="editor-container">
         {editorState.contentLoaded && (
           <MDXEditor
+            key={editorState.currentContent}
             markdown={editorState.currentContent}
             onChange={handleContentChange}
             className="dark-theme"

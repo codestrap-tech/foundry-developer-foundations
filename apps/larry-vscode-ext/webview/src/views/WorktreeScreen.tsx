@@ -24,7 +24,9 @@ export function WorktreeScreen() {
   const dispatch = useExtensionDispatch();
   const { apiUrl, clientRequestId, currentThreadId, currentWorktreeName } = useExtensionStore();
 
-  const { data: machineData, isLoading, refetch } = useMachineQuery(apiUrl, currentThreadId);
+  const { data: machineData, isLoading } = useMachineQuery(apiUrl, currentThreadId);
+
+  console.log('machineData', machineData);
 
   let timeout: NodeJS.Timeout | undefined;
   const onLarryUpdate = (notification: LarryUpdateEvent) => {

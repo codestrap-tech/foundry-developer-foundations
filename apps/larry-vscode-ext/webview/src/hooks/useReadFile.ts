@@ -34,7 +34,7 @@ export function useReadFile() {
     return new Promise((resolve, reject) => {
       pendingResolvers.current.set(filePath, resolve);
       pendingRejectors.current.set(filePath, reject);
-      
+      console.log('fetching file', filePath);
       postMessage({
         type: 'readFile',
         filePath,

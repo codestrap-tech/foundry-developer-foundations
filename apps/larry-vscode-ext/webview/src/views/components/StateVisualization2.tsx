@@ -1,9 +1,9 @@
 /* JSX */
 /* @jsxImportSource preact */
 import { useState, useEffect, useRef } from "preact/hooks";
-import { MachineResponse, MachineStatus, FetchNextStateFn, StateComponentProps } from "../../lib/backend-types";
+import { MachineResponse, StateComponentProps } from "../../lib/backend-types";
 import { ConfirmUserIntent2 } from "./states/ConfirmUserIntent2.tsx";
-import { ChevronRight, RotateCcw } from "lucide-preact";
+import { ChevronRight, CircleUser, RotateCcw, Sparkles } from "lucide-preact";
 import { ChevronDown } from "lucide-preact";
 import { useExtensionStore } from "../../store/store";
 import { SpecReview2 } from "./states/SpecReview2.tsx";
@@ -14,6 +14,7 @@ import { CodeReview2 } from "./states/CodeReview2.tsx";
 import { GenerateEditMachine } from "./states/generateEditMachine.tsx";
 import { LarryUpdateEvent, useLarryStream } from "../../hooks/useLarryStream.ts";
 import WorkingIndicator from "./WorkingIndicator.tsx";
+import { setMachineQuery } from "../../hooks/useMachineQuery.ts";
 
 // ============================================================================
 // State Component Registry
@@ -159,6 +160,7 @@ export function StateVisualization2({ data, userQuestion }: StateVisualization2P
   useEffect(() => {
     setIsWorking(isLarryWorking);
     if (isLarryWorking) {
+      setMachineQuery(apiUrl, data.id, 'running');
       setWorkingStatus('Working on it');
     }
   }, [isLarryWorking])
@@ -248,6 +250,7 @@ export function StateVisualization2({ data, userQuestion }: StateVisualization2P
 
   const continueToNextState = () => {
     setIsWorking(true);
+    setMachineQuery(apiUrl, data.id, 'running');
     fetchGetNextState({ machineId: data.id, contextUpdate: {} });
   };
 
@@ -257,7 +260,6 @@ export function StateVisualization2({ data, userQuestion }: StateVisualization2P
     deduplicatedStack.includes('success');
 
   const handleWorkingIndicatorAction = () => {
-    setIsWorking(true);
     setWorkingError(undefined);
     setWorkingStatus('Retrying...');
     continueToNextState();
@@ -275,17 +277,18 @@ export function StateVisualization2({ data, userQuestion }: StateVisualization2P
           {/* Welcome message */}
           {data.context?.solution && (
 <div>
-<GeneralMessageBubble
-              content={`Hello! I'm **Larry**, your AI Coding assistant. 
-I'm working in organized, state based way. Below you will see the states I'm in and the actions I'm taking.`}
-              topActions={null}
-            />
             {userQuestion && (
               <GeneralMessageBubble
-                content={`**Task:** ${userQuestion}`}
+                content={userQuestion}
+                icon={<CircleUser size={16} />}
                 topActions={null}
               />
             )}
+            <GeneralMessageBubble
+              icon={<Sparkles size={16} />}
+              content={`Let's handle that, below you will see the states I'm in and the actions I'm taking to help you out with your task.`}
+              topActions={null}
+            />
   </div>
           )}
 

@@ -263,6 +263,15 @@ label {
 	border: 1px solid rgba(255, 255, 255, 0.2);
 	border-radius: 4px;
 }
+.generalMessageBubble.hasIcon {
+	padding-left: 35px;
+}
+
+.generalMessageBubbleWrapper .icon {
+	position: absolute;
+	margin-top: 14px;
+    margin-left: 11px;
+}
 
 .generalMessageBubble.hasTopActions {
 	border-top-left-radius: 0;
