@@ -18,6 +18,8 @@ import {SupportedCodingAgents, SupportedEngines } from '@codestrap/developer-fou
 import { LarryAgentFactory } from '@codestrap/larry-config';
 import 'dotenv/config';
 import { uuidv4 } from '@codestrap/developer-foundations-utils';
+import { makeGSuiteClientV3 } from '@codestrap/developer-foundations-services-google';
+
 import { applyEdits } from './assets/applyEdits';
 
 export async function googleCodingAgent(executionId?: string, contextUpdateInput?: string, task?: string) {

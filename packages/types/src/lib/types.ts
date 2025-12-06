@@ -1,42 +1,42 @@
-import { ComputeModule } from '@palantir/compute-module';
-import type { Client } from '@osdk/client';
-import { Type, Static } from '@sinclair/typebox';
-import { StateValue } from 'xstate';
-import { calendar_v3, gmail_v1, drive_v3 } from 'googleapis';
-import { User as FoundryUser } from '@osdk/foundry.admin';
+import { ComputeModule } from "@palantir/compute-module";
+import type { Client } from "@osdk/client";
+import { Type, Static } from "@sinclair/typebox";
+import { StateValue } from "xstate";
+import { calendar_v3, gmail_v1, drive_v3 } from "googleapis";
+import { User as FoundryUser } from "@osdk/foundry.admin";
 
 export const TYPES = {
-  FoundryClient: Symbol.for('FoundryClient'),
-  RangrClient: Symbol.for('RangrClient'),
-  WeatherService: Symbol.for('WeatherService'),
-  EnergyService: Symbol.for('EnergyService'),
-  WorldDao: Symbol.for('WorldDao'),
-  UserDao: Symbol.for('UserDao'),
-  MachineDao: Symbol.for('MachineDao'),
-  TicketDao: Symbol.for('TicketDao'),
-  CommsDao: Symbol.for('CommsDao'),
-  TelemetryDao: Symbol.for('TelemetryDao'),
-  ThreadsDao: Symbol.for('ThreadsDao'),
-  SQLLiteThreadsDao: Symbol.for('SQLLiteThreadsDao'),
-  ConflictResolutionRulesDao: Symbol.for('ConflictResolutionRulesDao'),
-  RfpRequestsDao: Symbol.for('RfpRequestsDao'),
-  RangrRfpRequestsDao: Symbol.for('RangrRfpRequestsDao'),
-  ResearchAssistant: Symbol.for('ResearchAssistant'),
-  CodingResearchAssistant: Symbol.for('CodingResearchAssistant'),
-  CodingArchitect: Symbol.for('CodingArchitect'),
-  MemoryRecallDao: Symbol.for('MemoryRecallDao'),
-  ContactsDao: Symbol.for('ContactsDao'),
-  GeminiService: Symbol.for('GeminiService'),
-  Gpt4oService: Symbol.for('Gpt4oService'),
-  GeminiSearchStockMarket: Symbol.for('GeminiSearchStockMarket'),
-  OfficeService: Symbol.for('OfficeService'),
-  OfficeServiceV3: Symbol.for('OfficeServiceV3'),
-  VersionControlService: Symbol.for('VersionControlService'),
-  MessageService: Symbol.for('MessageService'),
-  EmbeddingsService: Symbol.for('EmbeddingsService'),
-  TrainingDataDao: Symbol.for('TrainingDataDao'),
-  LoggingService: Symbol.for('LoggingService'),
-  LarryCodingAgentFactory: Symbol.for('LarryCodingAgentFactory'),
+  FoundryClient: Symbol.for("FoundryClient"),
+  RangrClient: Symbol.for("RangrClient"),
+  WeatherService: Symbol.for("WeatherService"),
+  EnergyService: Symbol.for("EnergyService"),
+  WorldDao: Symbol.for("WorldDao"),
+  UserDao: Symbol.for("UserDao"),
+  MachineDao: Symbol.for("MachineDao"),
+  TicketDao: Symbol.for("TicketDao"),
+  CommsDao: Symbol.for("CommsDao"),
+  TelemetryDao: Symbol.for("TelemetryDao"),
+  ThreadsDao: Symbol.for("ThreadsDao"),
+  SQLLiteThreadsDao: Symbol.for("SQLLiteThreadsDao"),
+  ConflictResolutionRulesDao: Symbol.for("ConflictResolutionRulesDao"),
+  RfpRequestsDao: Symbol.for("RfpRequestsDao"),
+  RangrRfpRequestsDao: Symbol.for("RangrRfpRequestsDao"),
+  ResearchAssistant: Symbol.for("ResearchAssistant"),
+  CodingResearchAssistant: Symbol.for("CodingResearchAssistant"),
+  CodingArchitect: Symbol.for("CodingArchitect"),
+  MemoryRecallDao: Symbol.for("MemoryRecallDao"),
+  ContactsDao: Symbol.for("ContactsDao"),
+  GeminiService: Symbol.for("GeminiService"),
+  Gpt4oService: Symbol.for("Gpt4oService"),
+  GeminiSearchStockMarket: Symbol.for("GeminiSearchStockMarket"),
+  OfficeService: Symbol.for("OfficeService"),
+  OfficeServiceV3: Symbol.for("OfficeServiceV3"),
+  VersionControlService: Symbol.for("VersionControlService"),
+  MessageService: Symbol.for("MessageService"),
+  EmbeddingsService: Symbol.for("EmbeddingsService"),
+  TrainingDataDao: Symbol.for("TrainingDataDao"),
+  LoggingService: Symbol.for("LoggingService"),
+  LarryCodingAgentFactory: Symbol.for("LarryCodingAgentFactory"),
 };
 
 export type ResearchAssistant = (
@@ -292,10 +292,10 @@ export type MeetingRequest = {
   participants: Array<string>;
   subject: string;
   timeframe_context:
-    | 'user defined exact date/time'
-    | 'as soon as possible'
-    | 'this week'
-    | 'next week';
+    | "user defined exact date/time"
+    | "as soon as possible"
+    | "this week"
+    | "next week";
   localDateString?: string;
   duration_minutes: number;
   working_hours: {
@@ -809,6 +809,9 @@ export type OfficeServiceV3 = {
   proposeMeetingConflictResolutions: (
     input: ProposeMeetingConflictResolutionsInput
   ) => Promise<ProposeMeetingConflictResolutionsOutput>;
+  createGoogleSlides: (
+      input: CreateGoogleSlidesInput
+    ) => Promise<CreateGoogleSlidesOutput>;
 } & OfficeServiceV2;
 
 // V1 Google Workspace service surface (Calendar + Gmail operations and raw clients)
@@ -847,61 +850,61 @@ export type ServiceAccountCredentials = {
  */
 export const DRIVE_MIME_TYPES = {
   // Documents
-  PDF: 'application/pdf',
-  DOCX: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  DOC: 'application/msword',
-  TXT: 'text/plain',
+  PDF: "application/pdf",
+  DOCX: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  DOC: "application/msword",
+  TXT: "text/plain",
 
   // Spreadsheets
-  XLSX: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  XLS: 'application/vnd.ms-excel',
-  CSV: 'text/csv',
+  XLSX: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  XLS: "application/vnd.ms-excel",
+  CSV: "text/csv",
 
   // Presentations
-  PPTX: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-  PPT: 'application/vnd.ms-powerpoint',
+  PPTX: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  PPT: "application/vnd.ms-powerpoint",
 
   // Images
-  JPG: 'image/jpeg',
-  JPEG: 'image/jpeg',
-  PNG: 'image/png',
-  GIF: 'image/gif',
-  SVG: 'image/svg+xml',
+  JPG: "image/jpeg",
+  JPEG: "image/jpeg",
+  PNG: "image/png",
+  GIF: "image/gif",
+  SVG: "image/svg+xml",
 
   // Google Workspace Files
-  GOOGLE_DOC: 'application/vnd.google-apps.document',
-  GOOGLE_SHEET: 'application/vnd.google-apps.spreadsheet',
-  GOOGLE_SLIDE: 'application/vnd.google-apps.presentation',
-  GOOGLE_FORM: 'application/vnd.google-apps.form',
-  GOOGLE_DRAWING: 'application/vnd.google-apps.drawing',
+  GOOGLE_DOC: "application/vnd.google-apps.document",
+  GOOGLE_SHEET: "application/vnd.google-apps.spreadsheet",
+  GOOGLE_SLIDE: "application/vnd.google-apps.presentation",
+  GOOGLE_FORM: "application/vnd.google-apps.form",
+  GOOGLE_DRAWING: "application/vnd.google-apps.drawing",
 
   // Archives
-  ZIP: 'application/zip',
-  RAR: 'application/x-rar-compressed',
+  ZIP: "application/zip",
+  RAR: "application/x-rar-compressed",
 
   // Audio/Video
-  MP4: 'video/mp4',
-  MP3: 'audio/mpeg',
-  WAV: 'audio/wav',
+  MP4: "video/mp4",
+  MP3: "audio/mpeg",
+  WAV: "audio/wav",
 } as const;
 
 /**
  * Date field types for Google Drive search
  */
 export enum DriveDateField {
-  CREATED_TIME = 'createdTime',
-  MODIFIED_TIME = 'modifiedTime',
+  CREATED_TIME = "createdTime",
+  MODIFIED_TIME = "modifiedTime",
 }
 
 /**
  * Safe ordering fields and formats for Drive file queries.
  */
 export type DriveOrderField =
-  | 'modifiedTime'
-  | 'createdTime'
-  | 'viewedByMeTime'
-  | 'name';
-export type SortDir = 'asc' | 'desc';
+  | "modifiedTime"
+  | "createdTime"
+  | "viewedByMeTime"
+  | "name";
+export type SortDir = "asc" | "desc";
 export type DriveOrderBy = DriveOrderField | `${DriveOrderField} ${SortDir}`;
 
 // DriveFile interface
@@ -1153,8 +1156,8 @@ export type GetNextStateResult = {
 };
 
 export enum SupportedFoundryClients {
-  PUBLIC = 'public',
-  PRIVATE = 'private',
+  PUBLIC = "public",
+  PRIVATE = "private",
 }
 
 export type RequestContext = {
@@ -1174,3 +1177,39 @@ export type ProposeMeetingConflictResolutionsOutput = Array<{
   meetingId: string;
   resolutionBlocks: { start: string; end: string; score?: number }[];
 }>;
+export type GoogleSlideContentTargetType = "OBJECT_ID" | "PLACEHOLDER";
+export interface GoogleSlideContentItem {
+  targetType: GoogleSlideContentTargetType; // Required
+  objectId?: string; // Required if targetType is "OBJECT_ID"
+  placeholder?: string; // Required if targetType is "PLACEHOLDER"
+  text: string; // Required
+}
+export interface GoogleSlideCreationInput {
+  templateId: string; // URL or fileId of the Google Slide deck
+  name?: string; // Optional custom name for the new slide deck
+  content: GoogleSlideContentItem[]; // Array of content items to fill
+}
+
+export type CreateGoogleSlidesInput = GoogleSlideCreationInput[];
+export interface GoogleSlideCreationSuccess {
+  inputIndex: number;
+  templateId: string; // Normalized fileId
+  presentationId: string; // Same as fileId of the copied deck
+  fileId: string; // Alias of presentationId for Drive semantics
+  name: string; // Final name in Drive
+  webViewLink: string; // Link to view in browser
+  webContentLink?: string; // Link for download (if available)
+  createdAt: string; // ISO timestamp
+  warnings?: string[]; // e.g., missing objectIds, skipped content items
+}
+export interface GoogleSlideCreationFailure {
+  inputIndex: number;
+  templateId?: string;
+  errorCode: string;
+  errorMessage: string;
+  details?: unknown;
+}
+export interface CreateGoogleSlidesOutput {
+  successes: GoogleSlideCreationSuccess[];
+  failures: GoogleSlideCreationFailure[];
+}
