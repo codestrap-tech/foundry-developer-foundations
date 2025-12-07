@@ -2,7 +2,7 @@
   "name": "larry-vscode-ext",
   "displayName": "Larry Coding Assistant",
   "description": "Chat with Larry inside VS Code",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "Codestrap",
   "private": true,
   "engines": {

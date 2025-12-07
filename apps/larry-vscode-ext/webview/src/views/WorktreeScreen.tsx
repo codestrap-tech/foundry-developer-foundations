@@ -5,7 +5,7 @@ import { useExtensionDispatch, useExtensionStore } from '../store/store';
 import { createThread } from '../lib/http';
 import { useThreadsQuery } from '../hooks/useThreadsQuery';
 import { useMachineQuery } from '../hooks/useMachineQuery';
-import { StateVisualization2 as StateVisualization } from './components/StateVisualization2';
+import { StateVisualization } from './components/StateVisualization';
 import { useWorktreeThreads } from '../hooks/useWorktreeThreads';
 import { PlusIcon } from 'lucide-preact';
 import { useLarryStream } from '../hooks/useLarryStream';
