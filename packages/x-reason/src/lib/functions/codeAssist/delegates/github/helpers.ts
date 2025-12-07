@@ -6,19 +6,9 @@ import { TYPES, VersionControlService } from "@codestrap/developer-foundations-t
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-let githubService: VersionControlService | undefined;
-
 async function getGithubClient(): Promise<VersionControlService> {
-    if (!githubService) {
-        const makeGithubClient = container.get<() => Promise<VersionControlService>>(TYPES.VersionControlService);
-        githubService = await makeGithubClient()
-    }
-
-    return githubService as VersionControlService;
-}
-
-function clearGithubServiceCache(): void {
-    githubService = undefined;
+  const makeGithubClient = container.get<() => Promise<VersionControlService>>(TYPES.VersionControlService);
+  return makeGithubClient()
 }
 
 /**
@@ -33,7 +23,6 @@ async function withGithubRetry<T>(
   let lastError: unknown;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      clearGithubServiceCache();
       const service = await getGithubClient();
       return await fn(service);
     } catch (e) {

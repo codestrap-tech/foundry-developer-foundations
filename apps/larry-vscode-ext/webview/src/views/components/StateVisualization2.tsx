@@ -5,7 +5,7 @@ import { MachineResponse, StateComponentProps } from "../../lib/backend-types";
 import { ConfirmUserIntent2 } from "./states/ConfirmUserIntent2.tsx";
 import { ChevronRight, CircleUser, RotateCcw, Sparkles } from "lucide-preact";
 import { ChevronDown } from "lucide-preact";
-import { useExtensionStore } from "../../store/store";
+import { useExtensionDispatch, useExtensionStore } from "../../store/store";
 import { SpecReview2 } from "./states/SpecReview2.tsx";
 import { useNextMachineState } from "../../hooks/useNextState.ts";
 import { ArchitectureReview2 } from "./states/ArchitectureReview/ArchitectureReview2.tsx";
@@ -100,6 +100,7 @@ interface StateVisualization2Props {
 
 export function StateVisualization2({ data, userQuestion }: StateVisualization2Props) {
   const { apiUrl, isLarryWorking } = useExtensionStore();
+  const dispatch = useExtensionDispatch();
   const { fetch: fetchGetNextState } = useNextMachineState(apiUrl);
   
   // Working indicator state
@@ -116,6 +117,10 @@ export function StateVisualization2({ data, userQuestion }: StateVisualization2P
     action: () => null,
   });
 
+  const dispatchLarryStatus = (isWorking: boolean) => {
+    dispatch({ type: 'SET_LARRY_WORKING', payload: isWorking });
+  }
+
   // Collapse state management
   const [collapsedStates, setCollapsedStates] = useState<Set<string>>(new Set());
   const currentStateRef = useRef<HTMLDivElement>(null);
@@ -129,7 +134,7 @@ export function StateVisualization2({ data, userQuestion }: StateVisualization2P
       setWorkingStatus(event.payload.message);
     } else if (event.payload.type === 'error') {
       setWorkingStatus(event.payload.message);
-      setIsWorking(false);
+      dispatchLarryStatus(false);
       setWorkingError(JSON.stringify(event.payload.metadata.error));
     }
   };
@@ -153,10 +158,11 @@ export function StateVisualization2({ data, userQuestion }: StateVisualization2P
   // Reset working state when machine status changes
   useEffect(() => {
     if (data.status !== 'running') {
-      setIsWorking(false);
+      dispatchLarryStatus(false);
     }
   }, [data.status]);
 
+  // sync global state to local isWorking state
   useEffect(() => {
     setIsWorking(isLarryWorking);
     if (isLarryWorking) {
@@ -249,7 +255,7 @@ export function StateVisualization2({ data, userQuestion }: StateVisualization2P
   // ============================================================================
 
   const continueToNextState = () => {
-    setIsWorking(true);
+    dispatchLarryStatus(true);
     setMachineQuery(apiUrl, data.id, 'running');
     fetchGetNextState({ machineId: data.id, contextUpdate: {} });
   };

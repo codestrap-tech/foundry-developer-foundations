@@ -17,7 +17,7 @@ import { hydrateQueryCache } from '../../store/query-sync';
 import type { LarryState } from '../../store/larry-state';
 import type { MachineResponse } from '../../lib/backend-types';
 import { useNextMachineState } from '../../hooks/useNextState';
-import { useMachineQuery } from '../../hooks/useMachineQuery';
+import { setMachineQuery, useMachineQuery } from '../../hooks/useMachineQuery';
 import { useReadFile } from '../../hooks/useReadFile';
 
 interface EditorState {
@@ -79,9 +79,15 @@ export function EditorModule() {
 
 
   const reloadCurrentContent = () => {
-    console.log('reloadCurrentContent');
-    console.log(editorState);
-    console.log(machineData);
+    getContentFile(editorState.filePath).then(content => {
+      setEditorState(prev => ({
+        ...prev,
+        currentContent: content,
+      }));
+      if (initPhase.current === 'ready') {
+        originalContent.current = content;
+      }
+    });
   };
 
   // Listen for messages from extension
@@ -181,7 +187,6 @@ export function EditorModule() {
 
   // Handle proceed action
   const handleProceed = async () => {
-    console.log('running handleProceed');
     // Clear any pending debounce and save immediately
     if (debounceTimerRef.current !== null) {
       clearTimeout(debounceTimerRef.current);
@@ -206,6 +211,7 @@ export function EditorModule() {
 
     setFooterLocked(true);
     postMessage({ type: 'set_larry_working', isWorking: true });
+    setMachineQuery(apiUrl, threadId, 'running');
 
     // 2s delay to ensure save is processed
     // and also synced with Docker container
@@ -272,7 +278,7 @@ export function EditorModule() {
       <div className="editor-container">
         {editorState.contentLoaded && (
           <MDXEditor
-            key={editorState.currentContent}
+            key={originalContent.current}
             markdown={editorState.currentContent}
             onChange={handleContentChange}
             className="dark-theme"

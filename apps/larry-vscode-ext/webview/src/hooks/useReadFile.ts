@@ -8,20 +8,20 @@ export function useReadFile() {
 
   useEffect(() => {
     const cleanup = onMessage((msg: any) => {
-      if (msg.type === 'fileContent' && msg.filePath) {
-        const resolver = pendingResolvers.current.get(msg.filePath);
+      if (msg.type === 'fileContent') {
+        const resolver = pendingResolvers.current.get('file');
         if (resolver) {
           resolver(msg.content);
-          pendingResolvers.current.delete(msg.filePath);
-          pendingRejectors.current.delete(msg.filePath);
+          pendingResolvers.current.delete('file');
+          pendingRejectors.current.delete('file');
         }
       }
       if (msg.type === 'fileReadError' && msg.filePath) {
-        const rejector = pendingRejectors.current.get(msg.filePath);
+        const rejector = pendingRejectors.current.get('file');
         if (rejector) {
           rejector(new Error(msg.error));
-          pendingResolvers.current.delete(msg.filePath);
-          pendingRejectors.current.delete(msg.filePath);
+          pendingResolvers.current.delete('file');
+          pendingRejectors.current.delete('file');
         }
       }
     });
@@ -32,9 +32,8 @@ export function useReadFile() {
 
   const fetch = (filePath: string): Promise<string> => {
     return new Promise((resolve, reject) => {
-      pendingResolvers.current.set(filePath, resolve);
-      pendingRejectors.current.set(filePath, reject);
-      console.log('fetching file', filePath);
+      pendingResolvers.current.set('file', resolve);
+      pendingRejectors.current.set('file', reject);
       postMessage({
         type: 'readFile',
         filePath,
