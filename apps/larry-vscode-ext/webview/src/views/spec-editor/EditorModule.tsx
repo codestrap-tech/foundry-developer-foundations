@@ -19,6 +19,7 @@ import type { MachineResponse } from '../../lib/backend-types';
 import { useNextMachineState } from '../../hooks/useNextState';
 import { setMachineQuery, useMachineQuery } from '../../hooks/useMachineQuery';
 import { useReadFile } from '../../hooks/useReadFile';
+import { buildContextUpdate } from './nextStateContextBuilder';
 
 interface EditorState {
   currentContent: string;
@@ -217,27 +218,11 @@ export function EditorModule() {
     // and also synced with Docker container
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const userMessage = isDirty 
-      ? 'I have reviewed and modified the specification. Please proceed.'
-      : 'Looks good, approved.';
-
-    // Update messages array
-    const messages = stateData?.messages ? [...stateData.messages] : [];
-    const lastMessage = messages
-      .slice()
-      .reverse()
-      .find((item: any) => item.user === undefined);
-    
-    if (lastMessage) {
-      lastMessage.user = userMessage;
-    }
-
-    const isSpecReview = fullStateKey?.includes('specReview');
-    const isApproved = isSpecReview && isDirty ? false : true;
+    const contextUpdate = buildContextUpdate(isDirty, fullStateKey, stateData);
 
     try {
       setFooterLocked(true);
-      await fetchNextState({ machineId: threadId, contextUpdate: { [fullStateKey]: { approved: isApproved, messages } } });
+      await fetchNextState({ machineId: threadId, contextUpdate: { [fullStateKey]: contextUpdate } });
     } catch (error) {
       console.error('Failed to call proceed:', error);
       setFooterLocked(false);

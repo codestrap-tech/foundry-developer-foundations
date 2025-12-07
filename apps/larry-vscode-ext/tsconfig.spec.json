@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc/apps/larry-vscode-ext/spec",
+    "types": ["jest", "node", "vscode"],
+    "esModuleInterop": true,
+    "emitDecoratorMetadata": true
+  },
+  "files": ["../../jest.preset.js"],
+  "include": [
+    "webview/**/*.spec.ts",
+    "webview/**/*.spec.tsx",
+    "webview/**/*.d.ts"
+  ]
+}
+
