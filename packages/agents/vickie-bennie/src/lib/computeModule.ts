@@ -152,7 +152,10 @@ const Schemas = {
   },
   resolveMeetingConflicts: {
     input: Type.Object({
-      task: Type.String(),
+      users: Type.Array(Type.String()),
+      timeFrameFrom: Type.String(),
+      timeFrameTo: Type.String(),
+      timezone: Type.String(),
     }),
     output: Type.Object({
       status: Type.Integer(),
@@ -462,21 +465,28 @@ function createComputeModule(): ComputeModuleType {
         };
       }
     })
-    .register('resolveMeetingConflicts', async ({ task }) => {
-      try {
-        const result = await vickie.resolveMeetingConflicts(task);
-        return result;
-      } catch (e) {
-        console.log((e as Error).stack);
-        return {
-          status: 500,
-          message: `Error: ${(e as Error).message}`,
-          executionId: 'error',
-          taskList: 'error',
-          error: `Error: ${(e as Error).message}`,
-        };
+    .register(
+      'resolveMeetingConflicts',
+      async ({ users, timeFrameFrom, timeFrameTo, timezone }) => {
+        try {
+          return await vickie.resolveMeetingConflicts(
+            users,
+            timeFrameFrom,
+            timeFrameTo,
+            timezone
+          );
+        } catch (e) {
+          console.log((e as Error).stack);
+          return {
+            status: 500,
+            message: `Error: ${(e as Error).message}`,
+            executionId: 'error',
+            taskList: 'error',
+            error: `Error: ${(e as Error).message}`,
+          };
+        }
       }
-    })
+    )
     .on('responsive', () => console.log('Larry is ready'));
 
   module.on('responsive', () => {

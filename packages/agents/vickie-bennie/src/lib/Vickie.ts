@@ -610,7 +610,9 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
       endpoint: `/api/v2/ontologies/${process.env.ONTOLOGY_ID}/queries/resolveMeetingConflicts/execute`,
     },
   })
-  public async resolveMeetingConflicts(task: string): Promise<VickieResponse> {
-    return await resolveMeetingConflictsFn(task);
+  public async resolveMeetingConflicts(
+    ...args: Parameters<typeof resolveMeetingConflictsFn>
+  ): Promise<VickieResponse> {
+    return await resolveMeetingConflictsFn(...args);
   }
 }

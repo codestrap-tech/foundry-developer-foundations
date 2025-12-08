@@ -1,6 +1,5 @@
 import {
   GeminiService,
-  OfficeService,
   OfficeServiceV3,
   ProposeMeetingConflictResolutionsInput,
   ProposeMeetingConflictResolutionsOutput,
@@ -27,73 +26,6 @@ export interface ParsedConflictRequest {
 }
 
 /**
- * Extracts key details from a conflict resolution request using an LLM
- */
-async function extractConflictDetails(
-  task: string
-): Promise<ParsedConflictRequest> {
-  const geminiService = container.get<GeminiService>(TYPES.GeminiService);
-
-  const timeZone = 'America/Los_Angeles';
-  const currentDate = new Date();
-
-  const system = `You are a helpful virtual assistant tasked with identifying meeting conflicts for specified users and resolving them.
-    You are professional in your tone, personable, and always start your messages with the phrase, "Hi, I'm Vickie, Code's AI EA" or similar. 
-    You can get creative on your greeting, taking into account the day of the week. Today is ${currentDate.toLocaleDateString(
-      'en-US',
-      { weekday: 'long' }
-    )}. 
-    You can also take into account the time of year such as American holidays like Halloween, Thanksgiving, Christmas, etc. 
-    The current local date/time is ${currentDate.toLocaleString('en-US', {
-      timeZone: 'America/Los_Angeles',
-    })}. 
-    Time zone is ${timeZone}.
-    Working day is from 8 AM to 5 PM.
-    When resolving meeting conflicts you always extract the key details from the input task.`;
-
-  const user = `
-# Task
-Using the conflict resolution request from the end user extract the key details. You must extract:
-1. The users we are resolving conflicts for
-2. The time frame for the conflict resolution (default to today if not specified)
-3. The frame should start from current local date/time if not specified
-
-# The conflict resolution request from the end user is:
-${task}
-
-Let's take this step by step.
-1. First determine if any users mentioned in the input task most likely match the users below. If so return the matching user(s) in the user array
-Connor Deeks <connor.deeks@codestrap.me> - Connor Deeks in the CEO and board member in charge of platform leads, business strategy, and investor relations.
-Dorian Smiley <dsmiley@codestrap.me> - Dorian is the CTO who manages the software engineers and is responsible for technology strategy, execution, and the lead applied AI engineer.
-2. Insert any explicit email addresses into the user array
-3. Extract the time frame based on the conflict resolution request from the end user.
-If not time frame can be extracted for this conflict resolution request use "today" starting from now till the end of the day. Time zone is ${timeZone}
-Use ISO 8601 format for the time frame.
-Consider working day from 8 AM to 5 PM.
-
-You can only respond in JSON in the following format:
-{
-    users: Array<string>;
-    timeFrameFrom: string;
-    timeFrameTo: string;
-}
-
-For example:
-{
-    "users": ["connor.deeks@codestrap.me", "dsmiley@codestrap.me"],
-    "timeFrameFrom": "2025-04-11T16:00:00Z",
-    "timeFrameTo": "2025-12-05T01:00:00Z"
-}
-`;
-
-  const response = await geminiService(user, system);
-  const clean = extractJsonFromBackticks(response);
-  const parsed = JSON.parse(clean) as ParsedConflictRequest;
-
-  return parsed;
-}
-
-/**
  * Filters users to only include CodeStrap users
  */
 function filterCodeStrapUsers(users: string[]): string[] {
@@ -105,24 +37,24 @@ function filterCodeStrapUsers(users: string[]): string[] {
 
 /**
  * Performs rescheduling for identified conflicts
+ * @param users - The users to resolve conflicts for
+ * @param timeFrameFrom - The start time of the time frame to resolve conflicts for in ISO 8601 format, defaults to now
+ * @param timeFrameTo - The end time of the time frame to resolve conflicts for in ISO 8601 format, defaults to now + 24 hours
+ * @param timezone - The timezone to resolve conflicts for, defaults to 'America/Los_Angeles'
  */
-
-
-
 export async function resolveMeetingConflicts(
-  task: string
+  users: string[],
+  timeFrameFrom = new Date().toISOString(),
+  timeFrameTo = new Date(
+    new Date().getTime() + 24 * 60 * 60 * 1000
+  ).toISOString(),
+  timezone = 'America/Los_Angeles'
 ): Promise<VickieResponse> {
   try {
-    const officeService = await container.getAsync<OfficeService>(
-      TYPES.OfficeService
-    );
     const officeServiceV3 = await container.getAsync<OfficeServiceV3>(
       TYPES.OfficeServiceV3
     );
-    // Extract conflict details from the task
-    const parsed = await extractConflictDetails(task);
 
-    const users = parsed.users;
     const codeStrapUsers = filterCodeStrapUsers(users);
 
     if (codeStrapUsers.length === 0) {
@@ -137,9 +69,9 @@ export async function resolveMeetingConflicts(
 
     const input: ProposeMeetingConflictResolutionsInput = {
       userEmails: codeStrapUsers,
-      timeFrameFrom: new Date(parsed.timeFrameFrom),
-      timeFrameTo: new Date(parsed.timeFrameTo),
-      timezone: 'America/Los_Angeles',
+      timeFrameFrom: new Date(timeFrameFrom),
+      timeFrameTo: new Date(timeFrameTo),
+      timezone,
     };
 
     // Identify conflicts and propose resolutions
