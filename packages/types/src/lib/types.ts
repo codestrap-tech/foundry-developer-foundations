@@ -292,10 +292,10 @@ export type MeetingRequest = {
   participants: Array<string>;
   subject: string;
   timeframe_context:
-    | "user defined exact date/time"
-    | "as soon as possible"
-    | "this week"
-    | "next week";
+  | "user defined exact date/time"
+  | "as soon as possible"
+  | "this week"
+  | "next week";
   localDateString?: string;
   duration_minutes: number;
   working_hours: {
@@ -334,13 +334,13 @@ type GptSpecificToolChoice = {
 
 type GptTool = {
   function?:
-    | {
-        name: string;
-        description?: string | undefined;
-        strict?: boolean | undefined;
-        parameters: Map<string, string>;
-      }
-    | undefined;
+  | {
+    name: string;
+    description?: string | undefined;
+    strict?: boolean | undefined;
+    parameters: Map<string, string>;
+  }
+  | undefined;
 };
 
 type GptToolChoice = {
@@ -736,6 +736,7 @@ export type EventSummary = {
 };
 
 export type CalendarSummary = {
+  id?: string;
   email: string;
   events: EventSummary[];
 };
@@ -810,8 +811,8 @@ export type OfficeServiceV3 = {
     input: ProposeMeetingConflictResolutionsInput
   ) => Promise<ProposeMeetingConflictResolutionsOutput>;
   createGoogleSlides: (
-      input: CreateGoogleSlidesInput
-    ) => Promise<CreateGoogleSlidesOutput>;
+    input: CreateGoogleSlidesInput
+  ) => Promise<CreateGoogleSlidesOutput>;
 } & OfficeServiceV2;
 
 // V1 Google Workspace service surface (Calendar + Gmail operations and raw clients)
@@ -1173,10 +1174,6 @@ export interface ProposeMeetingConflictResolutionsInput {
   timezone: string;
 }
 
-export type ProposeMeetingConflictResolutionsOutput = Array<{
-  meetingId: string;
-  resolutionBlocks: { start: string; end: string; score?: number }[];
-}>;
 export type GoogleSlideContentTargetType = "OBJECT_ID" | "PLACEHOLDER";
 export interface GoogleSlideContentItem {
   targetType: GoogleSlideContentTargetType; // Required
@@ -1194,8 +1191,11 @@ export interface GoogleSlide {
    * Optional ordering hint ─ used to sort slides before creating them.
    * If omitted, the implementation may treat it as 0 or use array order.
    */
-  slideNumber?: number;
-  content: GoogleSlideContentItem[]; // All placeholder fills for this slide
+  slideNumber: number;
+  targetType: string;
+  placeholder?: string;
+  objectId?: string; // (Currently unsupported for duplication mode)
+  text: string; // All placeholder fills for this slide
 }
 
 /**
@@ -1231,3 +1231,10 @@ export interface CreateGoogleSlidesOutput {
   successes: GoogleSlideCreationSuccess[];
   failures: GoogleSlideCreationFailure[];
 }
+
+export type ProposeMeetingConflictResolutionsOutput = Array<
+  EventSummary & {
+    email: string;
+    resolutionBlocks: { start: string; end: string; score?: number }[];
+  }
+>;

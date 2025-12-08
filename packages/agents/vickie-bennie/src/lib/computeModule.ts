@@ -150,6 +150,21 @@ const Schemas = {
       error: Type.Optional(Type.String()),
     }),
   },
+  resolveMeetingConflicts: {
+    input: Type.Object({
+      users: Type.Array(Type.String()),
+      timeFrameFrom: Type.String(),
+      timeFrameTo: Type.String(),
+      timezone: Type.String(),
+    }),
+    output: Type.Object({
+      status: Type.Integer(),
+      message: Type.String(),
+      executionId: Type.String(),
+      taskList: Type.Optional(Type.String()),
+      error: Type.Optional(Type.String()),
+    }),
+  },
 };
 
 // Unified configuration for all environments
@@ -203,6 +218,7 @@ function createComputeModule(): ComputeModuleType {
       submitRfpResponse: Schemas.submitRfpResponse,
       sendThreadMessage: Schemas.sendThreadMessage,
       processEmailEvent: Schemas.processEmailEvent,
+      resolveMeetingConflicts: Schemas.resolveMeetingConflicts,
     },
   })
     .register('processEmailEvent', async ({ payload }) => {
@@ -449,6 +465,28 @@ function createComputeModule(): ComputeModuleType {
         };
       }
     })
+    .register(
+      'resolveMeetingConflicts',
+      async ({ users, timeFrameFrom, timeFrameTo, timezone }) => {
+        try {
+          return await vickie.resolveMeetingConflicts(
+            users,
+            timeFrameFrom,
+            timeFrameTo,
+            timezone
+          );
+        } catch (e) {
+          console.log((e as Error).stack);
+          return {
+            status: 500,
+            message: `Error: ${(e as Error).message}`,
+            executionId: 'error',
+            taskList: 'error',
+            error: `Error: ${(e as Error).message}`,
+          };
+        }
+      }
+    )
     .on('responsive', () => console.log('Larry is ready'));
 
   module.on('responsive', () => {

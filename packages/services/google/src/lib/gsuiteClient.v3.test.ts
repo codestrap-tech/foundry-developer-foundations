@@ -31,6 +31,15 @@ describe('makeGSuiteClientV3', () => {
     freebusy: { query: jest.fn().mockResolvedValue({ data: {} }) },
   } as unknown as calendar_v3.Calendar;
 
+  const userEmail = faker.internet.email();
+  const mockEvent = {
+    email: userEmail,
+    start: faker.date.recent().toISOString(),
+    end: faker.date.soon().toISOString(),
+    durationMinutes: faker.number.int({ min: 5, max: 120 }),
+    participants: [userEmail],
+  } as Partial<CalendarSummary>;
+
   const mockDriveClient = {} as any; // shape not important here because we mock the delegate
 
   const mockV2Client = {
@@ -39,13 +48,8 @@ describe('makeGSuiteClientV3', () => {
       calendars: [
         {
           events: [
-            {
-              id: faker.string.uuid(),
-              start: faker.date.past(),
-              end: faker.date.future(),
-              durationMinutes: faker.number.int({ min: 5, max: 120 }),
-              participants: [faker.internet.email()],
-            } as Partial<CalendarSummary>,
+            { ...mockEvent, id: faker.string.uuid() },
+            { ...mockEvent, id: faker.string.uuid() },
           ],
         },
       ],
@@ -77,7 +81,7 @@ describe('makeGSuiteClientV3', () => {
 
     // when
     const result = await client.proposeMeetingConflictResolutions({
-      userEmails: [faker.internet.email()],
+      userEmails: [userEmail],
       timeFrameFrom: faker.date.past(),
       timeFrameTo: faker.date.future(),
       timezone: 'America/Los_Angeles',
@@ -86,12 +90,16 @@ describe('makeGSuiteClientV3', () => {
     // then
     expect(result).toEqual(
       expect.arrayContaining([
-        {
-          meetingId: expect.any(String),
+        expect.objectContaining({
+          ...mockEvent,
+          id: expect.any(String),
           resolutionBlocks: expect.arrayContaining([
-            { start: expect.any(String), end: expect.any(String) },
+            expect.objectContaining({
+              start: expect.any(String),
+              end: expect.any(String),
+            }),
           ]),
-        },
+        }),
       ])
     );
   });
@@ -107,6 +115,7 @@ describe('makeGSuiteClientV3', () => {
         name: 'Test Deck',
         content: [
           {
+            slideNumber: 1,
             targetType: 'PLACEHOLDER',
             placeholder: '{{TITLE}}',
             text: 'Hello Slides',
