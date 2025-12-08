@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import type { ExtensionState } from '../types';
-import { DEFAULT_MAIN_PORT, DEFAULT_WORKTREE_PORT, PORT_RANGE } from '../types';
 import { handleWebviewMessage } from './message-handlers';
 import { notifyWorktreeChange } from '../workspace/worktree';
 
@@ -10,27 +9,20 @@ import { notifyWorktreeChange } from '../workspace/worktree';
 
 /**
  * Generates the Content Security Policy for the webview
+ *
+ * Note: We use broad `http:` and `https:` for connect-src instead of
+ * enumerating specific ports. This matches VS Code's own CSP approach
+ * and ensures localhost connections work reliably.
  */
-export function generateCSP(
-  webview: vscode.Webview,
-  nonce: string,
-  mainPort: number,
-  worktreePort: number
-): string {
-  const worktreePorts = Array.from({ length: PORT_RANGE }, (_, i) =>
-    `http://localhost:${worktreePort + i}`
-  ).join(' ');
-  const mainPorts = Array.from({ length: PORT_RANGE }, (_, i) =>
-    `http://localhost:${mainPort + i}`
-  ).join(' ');
-
+export function generateCSP(webview: vscode.Webview, nonce: string): string {
   return [
     "default-src 'none'",
     `img-src ${webview.cspSource} https: data:`,
     `style-src ${webview.cspSource} 'unsafe-inline'`,
     `font-src ${webview.cspSource} https:`,
     `script-src 'nonce-${nonce}' ${webview.cspSource}`,
-    `connect-src 'self' ${webview.cspSource} ${worktreePorts} ${mainPorts}`,
+    // Allow http: and https: for API connections (matches VS Code's approach)
+    `connect-src ${webview.cspSource} http: https: ws:`,
   ].join('; ');
 }
 
@@ -39,9 +31,7 @@ export function generateCSP(
  */
 function generateWebviewHTML(
   webview: vscode.Webview,
-  extensionUri: vscode.Uri,
-  mainPort: number,
-  worktreePort: number
+  extensionUri: vscode.Uri
 ): string {
   const scriptUri = webview.asWebviewUri(
     vscode.Uri.joinPath(extensionUri, 'media', 'webview.js')
@@ -52,9 +42,9 @@ function generateWebviewHTML(
   const overridesUri = webview.asWebviewUri(
     vscode.Uri.joinPath(extensionUri, 'media', 'overrides.css')
   );
-  
+
   const nonce = String(Date.now());
-  const csp = generateCSP(webview, nonce, mainPort, worktreePort);
+  const csp = generateCSP(webview, nonce);
 
   return `<!DOCTYPE html>
 <html>
@@ -77,7 +67,7 @@ function generateWebviewHTML(
 
 /**
  * Creates a WebviewViewProvider for the Larry extension
- * 
+ *
  * @param context - VS Code extension context
  * @param state - Shared extension state
  * @returns WebviewViewProvider instance
@@ -89,10 +79,10 @@ export function createWebviewProvider(
   return {
     resolveWebviewView(view: vscode.WebviewView) {
       console.log('🎯 Larry webview opened by user - initializing...');
-      
+
       // Store view reference in state
       state.view = view;
-      
+
       // Configure webview options
       view.webview.options = {
         enableScripts: true,
@@ -104,9 +94,7 @@ export function createWebviewProvider(
       // Set webview HTML content
       view.webview.html = generateWebviewHTML(
         view.webview,
-        context.extensionUri,
-        state.mainPort || DEFAULT_MAIN_PORT,
-        state.worktreePort || DEFAULT_WORKTREE_PORT
+        context.extensionUri
       );
 
       // Set up message handler
@@ -115,7 +103,9 @@ export function createWebviewProvider(
       });
 
       // Initialize worktree detection after short delay
-      console.log('🚀 Starting initial config loading and worktree detection...');
+      console.log(
+        '🚀 Starting initial config loading and worktree detection...'
+      );
       setTimeout(async () => {
         try {
           await notifyWorktreeChange(state);
@@ -131,11 +121,12 @@ export function createWebviewProvider(
  * Notifies the webview about worktree changes
  * Call this when workspace folders change
  */
-export async function notifyWorktreeChangeFromProvider(state: ExtensionState): Promise<void> {
+export async function notifyWorktreeChangeFromProvider(
+  state: ExtensionState
+): Promise<void> {
   try {
     await notifyWorktreeChange(state);
   } catch (error) {
     console.error('❌ Error in worktree change handler:', error);
   }
 }
-

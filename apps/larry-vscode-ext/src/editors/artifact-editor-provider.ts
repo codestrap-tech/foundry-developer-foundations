@@ -1,9 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import type { ExtensionState } from '../types';
-import { DEFAULT_MAIN_PORT, DEFAULT_WORKTREE_PORT } from '../types';
 import { generateCSP } from '../webview/webview-provider';
-import { readFileContent } from '../workspace/files';
 
 /**
  * Custom editor provider for Larry artifact files (.larry/artifact/**)
@@ -155,12 +153,7 @@ export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
     );
 
     const nonce = String(Date.now());
-    const csp = generateCSP(
-      webview,
-      nonce,
-      this.extensionState.mainPort || DEFAULT_MAIN_PORT,
-      this.extensionState.worktreePort || DEFAULT_WORKTREE_PORT
-    );
+    const csp = generateCSP(webview, nonce);
 
     return `<!DOCTYPE html>
 <html>

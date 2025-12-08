@@ -1,4 +1,10 @@
-import type { ThreadsListResponse, MachineResponse, ThreadResponse, ThreadMessage, ThreadRawResponse } from './backend-types';
+import type {
+  ThreadsListResponse,
+  MachineResponse,
+  ThreadResponse,
+  ThreadMessage,
+  ThreadRawResponse,
+} from './backend-types';
 
 export async function fetchJSON<T>(
   url: string,
@@ -40,19 +46,21 @@ export async function fetchThread(
   baseUrl: string,
   threadId: string
 ): Promise<ThreadResponse> {
-  const thread = await fetchJSON<ThreadRawResponse>(`${baseUrl}/threads/${threadId}`);
-  
+  const thread = await fetchJSON<ThreadRawResponse>(
+    `${baseUrl}/threads/${threadId}`
+  );
+
   if (thread.messages) {
     return {
       ...thread,
-      messages: JSON.parse(thread.messages) as ThreadMessage[]
-    }
+      messages: JSON.parse(thread.messages) as ThreadMessage[],
+    };
   }
 
   return {
     ...thread,
-    messages: []
-  }
+    messages: [],
+  };
 }
 
 export async function fetchMachine(
@@ -71,19 +79,25 @@ export async function createThread(params: {
   label?: string;
   clientRequestId: string;
 }): Promise<void> {
-  const { baseUrl, worktreeName, userTask, label, clientRequestId } = params;
-  const idem = uuid();
-  const init = withHeaders(
-    {
-      method: 'POST',
-      body: JSON.stringify({ worktreeName, userTask, label }),
-    },
-    {
-      'Content-Type': 'application/json',
-      'Idempotency-Key': idem,
-      'Client-Request-Id': clientRequestId,
-    }
-  );
-  // We don't need the 202 body now - SSE will inform us
-  await fetchJSON(`${baseUrl}/threads/new`, init);
+  try {
+    console.log('Creating thread:', params);
+    const { baseUrl, worktreeName, userTask, label, clientRequestId } = params;
+    const idem = uuid();
+    const init = withHeaders(
+      {
+        method: 'POST',
+        body: JSON.stringify({ worktreeName, userTask, label }),
+      },
+      {
+        'Content-Type': 'application/json',
+        'Idempotency-Key': idem,
+        'Client-Request-Id': clientRequestId,
+      }
+    );
+    // We don't need the 202 body now - SSE will inform us
+    await fetchJSON(`${baseUrl}/threads/new`, init);
+  } catch (error) {
+    console.error('Error creating thread:', error);
+    throw error;
+  }
 }
