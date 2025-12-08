@@ -15,6 +15,8 @@ import {
   MachineDao,
   LoggingService,
   SupportedEngines,
+  OfficeServiceV3,
+  ProposeMeetingConflictResolutionsInput,
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 
@@ -298,7 +300,8 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
 
         log(
           id,
-          `Sending updated context for the following email thread ${messages[0]?.subject
+          `Sending updated context for the following email thread ${
+            messages[0]?.subject
           }
                     contextUpdate:
                     ${JSON.stringify(contextUpdate)}
@@ -477,16 +480,16 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
     const system = `You are a helpful AI executive assistant named Vickie.
         You are professional in your tone, personable, and always start your messages with the phrase, "Hi, I'm Vickie, Code's AI Executive Assistant" or similar.
         You can get creative on your greeting, taking into account the dat of the week. Today is ${new Date().toLocaleDateString(
-      'en-US',
-      { weekday: 'long' }
-    )}. 
+          'en-US',
+          { weekday: 'long' }
+        )}. 
         You can also take into account the time of year such as American holidays like Halloween, Thanksgiving, Christmas, etc. 
         You always obey the users instructions and understand the people you work for are busy executives and sometimes need help in their personal lives
         These tasks are not beneath you. At CodeStrap, where you work we adopt the motto made famous by Kim Scott: we move couches.
         It means we all pull together to get things done.
         The current local date/time is ${new Date().toLocaleString('en-US', {
-      timeZone: 'America/Los_Angeles',
-    })}.
+          timeZone: 'America/Los_Angeles',
+        })}.
         The current day/time in your timezone is: ${new Date().toString()}`;
     const user = `
                 Based on the following user query
@@ -589,5 +592,89 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
       executionId: communication.id,
       taskList: communication.taskList,
     };
+  }
+
+  @Trace({
+    resource: {
+      service_name: 'vickie',
+      service_instance_id: 'production',
+      telemetry_sdk_name: 'xreason-functions',
+      telemetry_sdk_version: '7.0.2',
+      host_hostname: 'codestrap.usw-3.palantirfoundry.com',
+      host_architecture: 'prod',
+    },
+    operationName: 'resolveMeetingConflicts',
+    kind: 'Server',
+    samplingDecision: 'RECORD_AND_SAMPLE',
+    samplingRate: 1.0,
+    attributes: {
+      endpoint: `/api/v2/ontologies/${process.env.ONTOLOGY_ID}/queries/resolveMeetingConflicts/execute`,
+    },
+  })
+  public async resolveMeetingConflicts(
+    users: string[],
+    timeFrameFrom = new Date().toISOString(),
+    timeFrameTo = new Date(
+      new Date().getTime() + 24 * 60 * 60 * 1000
+    ).toISOString(),
+    timezone = 'America/Los_Angeles'
+  ): Promise<VickieResponse> {
+    try {
+      const officeServiceV3 = await container.getAsync<OfficeServiceV3>(
+        TYPES.OfficeServiceV3
+      );
+
+      const codeStrapUsers = filterCodeStrapUsers(users);
+
+      if (codeStrapUsers.length === 0) {
+        return {
+          status: 400,
+          executionId: uuidv4(),
+          message: 'No CodeStrap users found in the request',
+          error: 'No valid users',
+          taskList: 'ERROR',
+        };
+      }
+
+      const input: ProposeMeetingConflictResolutionsInput = {
+        userEmails: codeStrapUsers,
+        timeFrameFrom: new Date(timeFrameFrom),
+        timeFrameTo: new Date(timeFrameTo),
+        timezone,
+      };
+
+      // Identify conflicts and propose resolutions
+      const identifyResult =
+        await officeServiceV3.proposeMeetingConflictResolutions(input);
+
+      // Perform rescheduling calculations
+
+      return {
+        status: 200,
+        executionId: uuidv4(),
+        message: 'Meeting conflicts resolved',
+        taskList: 'SUCCESS',
+      };
+    } catch (e) {
+      console.error('resolveMeetingConflicts error:', (e as Error).message);
+      return {
+        status: 500,
+        executionId: uuidv4(),
+        message: `Error resolving meeting conflicts: ${(e as Error).message}`,
+        error: (e as Error).stack || (e as Error).message,
+        taskList: '',
+      };
+    }
+
+    /**
+     * Filters users to only include CodeStrap users
+     */
+    function filterCodeStrapUsers(users: string[]): string[] {
+      return users.filter(
+        (user) =>
+          user.indexOf('codestrap.me') >= 0 ||
+          user.indexOf('codestrap.com') >= 0
+      );
+    }
   }
 }
