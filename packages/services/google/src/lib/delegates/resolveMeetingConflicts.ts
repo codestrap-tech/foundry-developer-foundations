@@ -1,19 +1,19 @@
 import {
   CalendarSummary,
   EventSummary,
-  ProposeMeetingConflictResolutionsInput,
-  ProposeMeetingConflictResolutionsOutput,
+  MeetingResolutionParameters,
+  MeetingConflictResolutionProposals,
 } from '@codestrap/developer-foundations-types';
 import { calendar_v3 } from 'googleapis';
 import { findOptimalMeetingTimeV2 } from './findOptimalMeetingTime.v2';
 import { workingHoursUTCForDate } from '@codestrap/developer-foundations-utils';
 
 export async function proposeMeetingConflictResolutionsDelegate(
-  args: ProposeMeetingConflictResolutionsInput & {
+  args: MeetingResolutionParameters & {
     calendar: calendar_v3.Calendar;
     calendarSummaries: CalendarSummary[];
   }
-): Promise<ProposeMeetingConflictResolutionsOutput> {
+): Promise<MeetingConflictResolutionProposals> {
   const calendarSummariesWithConflicts = args.calendarSummaries.map(
     (summary) => {
       return {
@@ -41,7 +41,13 @@ export async function proposeMeetingConflictResolutionsDelegate(
   return await Promise.all(
     allEvents.map(async (event) => {
       try {
-        const resolutionBlocks = await fetchResolutionBlocks(event);
+        const resolutionBlocks = (await fetchResolutionBlocks(event)).map(
+          (block) => ({
+            ...block,
+            score: block.score ?? 0,
+          })
+        );
+
         return {
           ...event,
           resolutionBlocks,

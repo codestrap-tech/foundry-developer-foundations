@@ -71,7 +71,11 @@ describe('proposeMeetingConflictResolutionsDelegate', () => {
           ...mockEvent,
           email: userEmail,
           resolutionBlocks: expect.arrayContaining([
-            { start: optimalMeetingTimeStart, end: optimalMeetingTimeEnd },
+            {
+              start: optimalMeetingTimeStart,
+              end: optimalMeetingTimeEnd,
+              score: expect.any(Number),
+            },
           ]),
         }),
       ])

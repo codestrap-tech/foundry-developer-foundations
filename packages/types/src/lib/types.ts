@@ -808,8 +808,8 @@ export type OfficeServiceV2 = {
 
 export type OfficeServiceV3 = {
   proposeMeetingConflictResolutions: (
-    input: ProposeMeetingConflictResolutionsInput
-  ) => Promise<ProposeMeetingConflictResolutionsOutput>;
+    input: MeetingResolutionParameters
+  ) => Promise<MeetingConflictResolutionProposals>;
 } & OfficeServiceV2;
 
 // V1 Google Workspace service surface (Calendar + Gmail operations and raw clients)
@@ -1164,16 +1164,34 @@ export type RequestContext = {
   requestId?: string | null | undefined;
 };
 
-export interface ProposeMeetingConflictResolutionsInput {
+export interface MeetingResolutionParameters {
   userEmails: string[];
   timeFrameFrom: Date;
   timeFrameTo: Date;
   timezone: string;
 }
 
-export type ProposeMeetingConflictResolutionsOutput = Array<
+export interface ResolutionBlock {
+  start: string;
+  end: string;
+  score: number;
+}
+
+export type MeetingConflictResolutionProposals = Array<
   EventSummary & {
     email: string;
-    resolutionBlocks: { start: string; end: string; score?: number }[];
+    resolutionBlocks: ResolutionBlock[];
   }
 >;
+
+export interface ResolvedMeeting extends EventSummary {
+  email: string;
+  rescheduledTo?: ResolutionBlock;
+  status: 'SCHEDULED' | 'UNRESOLVED';
+}
+
+export interface ProposedTimeSlot {
+  start: number;
+  end: number;
+  meetingId: string;
+}

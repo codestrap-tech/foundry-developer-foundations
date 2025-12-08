@@ -2,8 +2,8 @@ import { makeGSuiteClientV2 } from './gsuiteClient.v2';
 import { proposeMeetingConflictResolutionsDelegate } from './delegates/resolveMeetingConflicts';
 import {
   OfficeServiceV3,
-  ProposeMeetingConflictResolutionsInput,
-  ProposeMeetingConflictResolutionsOutput,
+  MeetingResolutionParameters,
+  MeetingConflictResolutionProposals,
 } from '@codestrap/developer-foundations-types';
 
 export async function makeGSuiteClientV3(
@@ -14,8 +14,8 @@ export async function makeGSuiteClientV3(
   return {
     ...v2Client,
     proposeMeetingConflictResolutions: async (
-      args: ProposeMeetingConflictResolutionsInput
-    ): Promise<ProposeMeetingConflictResolutionsOutput> => {
+      args: MeetingResolutionParameters
+    ): Promise<MeetingConflictResolutionProposals> => {
       const calendarSummaries = await v2Client.summarizeCalendars({
         emails: args.userEmails,
         timezone: args.timezone,

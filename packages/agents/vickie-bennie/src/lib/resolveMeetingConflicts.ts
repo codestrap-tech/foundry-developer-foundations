@@ -1,15 +1,7 @@
-import {
-  GeminiService,
-  OfficeServiceV3,
-  ProposeMeetingConflictResolutionsInput,
-  ProposeMeetingConflictResolutionsOutput,
-  TYPES,
-} from '@codestrap/developer-foundations-types';
-import {
-  extractJsonFromBackticks,
-  uuidv4,
-} from '@codestrap/developer-foundations-utils';
+import { OfficeServiceV3, TYPES } from '@codestrap/developer-foundations-types';
+import { uuidv4 } from '@codestrap/developer-foundations-utils';
 import { container } from '@codestrap/developer-foundations-di';
+import { rescheduleConflictingMeetings } from './calculateRescheduling';
 
 export interface VickieResponse {
   status: number;
@@ -67,19 +59,27 @@ export async function resolveMeetingConflicts(
       };
     }
 
-    const input: ProposeMeetingConflictResolutionsInput = {
-      userEmails: codeStrapUsers,
-      timeFrameFrom: new Date(timeFrameFrom),
-      timeFrameTo: new Date(timeFrameTo),
-      timezone,
-    };
-
     // Identify conflicts and propose resolutions
     const identifyResult =
-      await officeServiceV3.proposeMeetingConflictResolutions(input);
+      await officeServiceV3.proposeMeetingConflictResolutions({
+        userEmails: codeStrapUsers,
+        timeFrameFrom: new Date(timeFrameFrom),
+        timeFrameTo: new Date(timeFrameTo),
+        timezone,
+      });
 
-    // Perform rescheduling calculations
-    const { rescheduled, errors } = calculateRescheduling(identifyResult);
+    // 1. Prioritize the meetings with LLM based on the conflict resolution rules
+    // TODO: @kopach - ask gemini to prioritize the meetings
+
+    // 2. Perform rescheduling calculations based on the prioritized meetings
+    const result = rescheduleConflictingMeetings(identifyResult);
+
+    // 3. Apply the rescheduling to the calendar
+    // TODO: @kopach - apply the rescheduling to the calendar
+    console.log(result);
+
+    // 4. Send emails
+    // TODO: @kopach - send emails to the participants with the new meeting times
 
     return {
       status: 200,
@@ -97,13 +97,4 @@ export async function resolveMeetingConflicts(
       taskList: '',
     };
   }
-}
-
-function calculateRescheduling(
-  identifyResult: ProposeMeetingConflictResolutionsOutput
-) {
-  return {
-    rescheduled: 0,
-    errors: [],
-  };
 }
