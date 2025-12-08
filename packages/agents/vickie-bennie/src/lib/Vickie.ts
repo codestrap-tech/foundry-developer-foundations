@@ -19,7 +19,6 @@ import {
   ProposeMeetingConflictResolutionsInput,
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
-import { resolveMeetingConflicts as resolveMeetingConflictsFn } from './resolveMeetingConflicts';
 
 interface VickieResponse {
   status: number;
