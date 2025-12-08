@@ -11,12 +11,29 @@ import {
  * createGoogleSlidesDelegate
  * - input: CreateGoogleSlidesInput
  * - drive: drive_v3.Drive (authenticated)
- * - slides?: slides_v1.Slides (authenticated) -- if not provided create requests via REST client on drive
+ * - slides?: slides_v1.Slides (authenticated)
+ *
+ * Behavior (v3):
+ *  - For each item in the input array, create ONE presentation.
+ *  - The provided template is assumed to be a single-slide template.
+ *  - item.content is now an array of GoogleSlide:
+ *      {
+ *        slideNumber: number;
+ *        content: GoogleSlideContentItem[];
+ *      }
+ *  - For each GoogleSlide in item.content (ordered by slideNumber):
+ *      - For the first slide:
+ *          - Use the template’s first slide (basePageId).
+ *          - Apply all its GoogleSlideContentItem placeholders to that page.
+ *      - For each subsequent slide:
+ *          - Duplicate the base slide into a new page.
+ *          - Apply that slide’s content items to the new page.
  *
  * Implementation notes:
- *  - Pure functions where possible.
- *  - Use Maps for lookups.
- *  - No await inside loops; use Promise.all where needed.
+ *  - Uses placeholders (targetType === "PLACEHOLDER") with page-scoped
+ *    ReplaceAllTextRequest via `pageObjectIds`.
+ *  - OBJECT_ID targeting is not supported for per-slide duplication;
+ *    such items will trigger a validation error.
  */
 
 type DelegateArgs = {
@@ -55,12 +72,17 @@ function validateContentItem(item: GoogleSlideContentItem): string | null {
   if (!item || !item.targetType || typeof item.text !== "string") {
     return "content item missing required fields (targetType and text)";
   }
-  if (item.targetType === "OBJECT_ID" && !item.objectId) {
-    return "content item targetType OBJECT_ID requires objectId";
+
+  // For this “repeat base slide” behavior, we *only* support PLACEHOLDER
+  // because objectIds change when slides are duplicated.
+  if (item.targetType === "OBJECT_ID") {
+    return "targetType OBJECT_ID is not supported when duplicating template slides; use PLACEHOLDER instead";
   }
+
   if (item.targetType === "PLACEHOLDER" && !item.placeholder) {
     return "content item targetType PLACEHOLDER requires placeholder";
   }
+
   return null;
 }
 
@@ -70,6 +92,20 @@ export async function createGoogleSlidesDelegate(
   const { input, drive, slides } = args;
   const successes: GoogleSlideCreationSuccess[] = [];
   const failures: GoogleSlideCreationFailure[] = [];
+
+  if (!slides) {
+    // We absolutely require Slides API access.
+    return {
+      successes: [],
+      failures: input.map((item, index) => ({
+        inputIndex: index,
+        templateId: item.templateId,
+        errorCode: "CONFIG_ERROR",
+        errorMessage:
+          "Slides client not available; createGoogleSlidesDelegate requires an authenticated Slides client.",
+      })),
+    };
+  }
 
   const tasks = input.map((item, index) => async () => {
     const warnings: string[] = [];
@@ -84,17 +120,32 @@ export async function createGoogleSlidesDelegate(
       return;
     }
 
-    // validate content items
-    const invalid = item.content
-      .map((c, i) => ({ err: validateContentItem(c), idx: i }))
-      .filter((x) => x.err);
+    // validate nested content items (per GoogleSlide)
+    const invalid: {
+      slideIdx: number;
+      itemIdx: number;
+      err: string;
+    }[] = [];
+
+    item.content.forEach((slide, slideIdx) => {
+      slide.content.forEach((ci, itemIdx) => {
+        const err = validateContentItem(ci);
+        if (err) {
+          invalid.push({ slideIdx, itemIdx, err });
+        }
+      });
+    });
+
     if (invalid.length > 0) {
       failures.push({
         inputIndex: index,
         templateId: normalized,
         errorCode: "VALIDATION_ERROR",
         errorMessage: `Invalid content items: ${invalid
-          .map((x) => `index:${x.idx} -> ${x.err}`)
+          .map(
+            (x) =>
+              `slide:${x.slideIdx} index:${x.itemIdx} -> ${x.err}`
+          )
           .join("; ")}`,
       });
       return;
@@ -102,16 +153,20 @@ export async function createGoogleSlidesDelegate(
 
     // determine name for copy
     let targetName = item.name;
+
     try {
-      // copy template
+      // 1) Copy the template presentation
       const copyRes = await drive.files.copy({
         fileId: normalized,
         requestBody: { name: targetName },
         fields: "id,name",
       });
+
       const file = copyRes.data;
       const presentationId = file.id!;
-      // if name omitted, fetch original template name to generate default
+      const slidesClient = slides;
+
+      // If name omitted, fetch original template name to generate default
       if (!targetName) {
         const templateMeta = await drive.files.get({
           fileId: normalized,
@@ -126,81 +181,95 @@ export async function createGoogleSlidesDelegate(
         });
       }
 
-      // Build requests for batchUpdate
-      const requests = item.content.flatMap((ci): slides_v1.Schema$Request[] => {
-        if (ci.targetType === "OBJECT_ID") {
-          // InsertTextRequest targeting objectId
-          return [
-            {
-              insertText: {
-                objectId: ci.objectId,
-                text: ci.text,
-              },
-            } as slides_v1.Schema$Request,
-          ];
-        }
-        // PLACEHOLDER => ReplaceAllTextRequest
-        return [
-          {
-            replaceAllText: {
-              containsText: { text: ci.placeholder || "", matchCase: true },
-              replaceText: ci.text,
-            },
-          } as slides_v1.Schema$Request,
-        ];
+      // 2) Load the copied presentation and get the first slide’s pageObjectId
+      const pres = await slidesClient.presentations.get({
+        presentationId,
       });
 
-      // execute batchUpdate
+      const pages = pres.data.slides;
+      if (!pages || pages.length === 0 || !pages[0].objectId) {
+        failures.push({
+          inputIndex: index,
+          templateId: normalized,
+          errorCode: "TEMPLATE_ERROR",
+          errorMessage:
+            "Template presentation has no slides or first slide is missing an objectId.",
+        });
+        return;
+      }
+
+      const basePageId = pages[0].objectId;
+
+      // 3) Build batchUpdate requests:
+      //    item.content is GoogleSlide[]
+      //    - sort by slideNumber (if provided) to get deterministic ordering
+      const orderedSlides = [...item.content].sort((a, b) => {
+        const aNum = typeof a.slideNumber === "number" ? a.slideNumber : 0;
+        const bNum = typeof b.slideNumber === "number" ? b.slideNumber : 0;
+        return aNum - bNum;
+      });
+
+      const requests: slides_v1.Schema$Request[] = [];
+
+      orderedSlides.forEach((slide, slideIdx) => {
+        let targetPageId: string;
+
+        if (slideIdx === 0) {
+          // Use the original first slide for the first logical slide
+          targetPageId = basePageId;
+        } else {
+          // Duplicate the first slide for each additional logical slide
+          const newPageId = `${basePageId}_${slideIdx}`;
+          requests.push({
+            duplicateObject: {
+              objectId: basePageId,
+              objectIds: {
+                [basePageId]: newPageId,
+              },
+            },
+          } as slides_v1.Schema$Request);
+          targetPageId = newPageId;
+        }
+
+        // Apply all content items for this logical slide to the target page
+        slide.content.forEach((ci) => {
+          if (ci.targetType === "PLACEHOLDER") {
+            requests.push({
+              replaceAllText: {
+                containsText: {
+                  text: ci.placeholder || "",
+                  matchCase: true,
+                },
+                replaceText: ci.text,
+                // Critical: restrict replacement to this page only
+                pageObjectIds: [targetPageId],
+              },
+            } as slides_v1.Schema$Request);
+          }
+        });
+      });
+
+      // 4) Execute batchUpdate if we have any requests
       if (requests.length > 0) {
-        const slidesClient = slides;
         try {
-          if (slidesClient) {
-            await slidesClient.presentations.batchUpdate({
-              presentationId,
-              requestBody: { requests },
-            });
-          } else {
-            // fallback to Drive authorized REST call via drive.context (slides API not provided)
-            // Using fetch via googleapis is complex; easiest is throw if slides not provided
-            throw new Error(
-              "Slides client not available to perform batchUpdate"
-            );
-          }
+          await slidesClient.presentations.batchUpdate({
+            presentationId,
+            requestBody: { requests },
+          });
         } catch (err: any) {
-          // Inspect error for missing object IDs (partial failure)
           const msg = err?.message || String(err);
-          // If error mentions not found object, convert to warning and continue; otherwise fail
-          if (/object.*not found|Invalid.*objectId/i.test(msg)) {
-            // convert to warnings for each OBJECT_ID possibly missing
-            item.content
-              .filter((c) => c.targetType === "OBJECT_ID")
-              .forEach((c) =>
-                warnings.push(`objectId not found or skipped: ${c.objectId}`)
-              );
-            // attempt placeholder replacements only if any
-            const placeholderRequests = requests.filter(
-              (r) => "replaceAllText" in r
-            );
-            if (placeholderRequests.length > 0 && slidesClient) {
-              await slidesClient.presentations.batchUpdate({
-                presentationId,
-                requestBody: { requests: placeholderRequests },
-              });
-            }
-          } else {
-            failures.push({
-              inputIndex: index,
-              templateId: normalized,
-              errorCode: err?.code ? String(err.code) : "SLIDES_API_ERROR",
-              errorMessage: `Error applying content: ${msg}`,
-              details: err?.response?.data || undefined,
-            });
-            return;
-          }
+          failures.push({
+            inputIndex: index,
+            templateId: normalized,
+            errorCode: err?.code ? String(err.code) : "SLIDES_API_ERROR",
+            errorMessage: `Error applying slide content: ${msg}`,
+            details: err?.response?.data || undefined,
+          });
+          return;
         }
       }
 
-      // fetch final file metadata
+      // 5) Fetch final file metadata
       const meta = await drive.files.get({
         fileId: presentationId,
         fields: "id,name,webViewLink,webContentLink",
@@ -209,7 +278,7 @@ export async function createGoogleSlidesDelegate(
       successes.push({
         inputIndex: index,
         templateId: normalized,
-        presentationId: presentationId,
+        presentationId,
         fileId: presentationId,
         name: meta.data.name || targetName || "",
         webViewLink: meta.data.webViewLink || "",
@@ -228,7 +297,6 @@ export async function createGoogleSlidesDelegate(
     }
   });
 
-  // run tasks in parallel, but avoid uncontrolled concurrency -- use Promise.all for this spec
   await Promise.all(tasks.map((fn) => fn()));
 
   return { successes, failures };

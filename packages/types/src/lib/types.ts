@@ -1180,17 +1180,35 @@ export type ProposeMeetingConflictResolutionsOutput = Array<{
 export type GoogleSlideContentTargetType = "OBJECT_ID" | "PLACEHOLDER";
 export interface GoogleSlideContentItem {
   targetType: GoogleSlideContentTargetType; // Required
-  objectId?: string; // Required if targetType is "OBJECT_ID"
-  placeholder?: string; // Required if targetType is "PLACEHOLDER"
-  text: string; // Required
+  objectId?: string;                        // (Currently unsupported for duplication mode)
+  placeholder?: string;                     // Required if targetType is "PLACEHOLDER"
+  text: string;                             // Required
 }
+
+/**
+ * A single logical slide in the generated deck.
+ * All content items in this slide are applied to the same pageObjectId.
+ */
+export interface GoogleSlide {
+  /**
+   * Optional ordering hint ─ used to sort slides before creating them.
+   * If omitted, the implementation may treat it as 0 or use array order.
+   */
+  slideNumber?: number;
+  content: GoogleSlideContentItem[]; // All placeholder fills for this slide
+}
+
+/**
+ * One output presentation to create from a template.
+ */
 export interface GoogleSlideCreationInput {
-  templateId: string; // URL or fileId of the Google Slide deck
-  name?: string; // Optional custom name for the new slide deck
-  content: GoogleSlideContentItem[]; // Array of content items to fill
+  templateId: string;      // URL or fileId of the Google Slide deck
+  name?: string;           // Optional custom name for the new slide deck
+  content: GoogleSlide[];  // Logical slides, each mapped to one duplicated page
 }
 
 export type CreateGoogleSlidesInput = GoogleSlideCreationInput[];
+
 export interface GoogleSlideCreationSuccess {
   inputIndex: number;
   templateId: string; // Normalized fileId

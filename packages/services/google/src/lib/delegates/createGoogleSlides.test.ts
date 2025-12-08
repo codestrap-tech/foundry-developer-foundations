@@ -1,104 +1,326 @@
-/**
- * Tests for createGoogleSlides delegate
- *
- * Each test block below should be implemented by the developer.
- * Include Gherkin as comments for each scenario.
- */
+// createGoogleSlides.test.ts
 
-import { createGoogleSlidesDelegate } from "./createGoogleSlides";
-import { drive_v3, slides_v1 } from "googleapis";
+import { drive_v3, slides_v1 } from 'googleapis';
+import {
+  CreateGoogleSlidesInput,
+} from '@codestrap/developer-foundations-types';
+import { createGoogleSlidesDelegate } from './createGoogleSlides';
 
-// NOTE: Tests are intentionally left blank for implementer to wire mocks and assertions.
+// ------------------------------
+// Mocks
+// ------------------------------
+const mockDriveClient = {
+  files: {
+    copy: jest.fn(),
+    get: jest.fn(),
+    update: jest.fn(),
+  },
+} as unknown as drive_v3.Drive;
 
-describe("createGoogleSlidesDelegate", () => {
-  test("Successfully create multiple slide decks with object ID and placeholder content", async () => {
-    /*
-    Gherkin:
-    Feature: Google Slides Creator
-      Scenario: Successfully create multiple slide decks with object ID and placeholder content
-        Given an array of GoogleSlideCreationInput with valid template IDs and mixed content items (object ID and placeholder)
-        When the createGoogleSlides delegate is called
-        Then the output contains a success entry for each input item
-        And each success entry includes presentationId, fileId, name, webViewLink, and createdAt
-        And the content specified by object ID is applied correctly in the new slide decks
-        And the content specified by placeholders is replaced correctly in the new slide decks
-    */
+const mockSlidesClient = {
+  presentations: {
+    get: jest.fn(),
+    batchUpdate: jest.fn(),
+  },
+} as unknown as slides_v1.Slides;
+
+// Mock console methods to avoid noise in tests
+const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation();
+const mockConsoleError = jest.spyOn(console, 'error').mockImplementation();
+
+describe('createGoogleSlidesDelegate', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
   });
 
-  test("Create a slide deck with a custom name", async () => {
-    /*
-    Gherkin:
-    Scenario: Create a slide deck with a custom name
-      Given a GoogleSlideCreationInput with a valid template ID and a specified "name" field
-      When the createGoogleSlides delegate is called
-      Then the created slide deck in Google Drive has the custom name
-    */
+  afterAll(() => {
+    mockConsoleLog.mockRestore();
+    mockConsoleError.mockRestore();
   });
 
-  test("Create a slide deck with a default name when no custom name is provided", async () => {
-    /*
-    Gherkin:
-    Scenario: Create a slide deck with a default name when no custom name is provided
-      Given a GoogleSlideCreationInput with a valid template ID and no "name" field
-      When the createGoogleSlides delegate is called
-      Then the created slide deck in Google Drive has a name in the format "<TemplateName> - <YYYYMMDD-HHmmss>"
-    */
+  describe('happy path – single template, multiple slides via placeholders', () => {
+    beforeEach(() => {
+      // drive.files.copy -> copied presentation
+      (mockDriveClient.files.copy as jest.Mock).mockResolvedValue({
+        data: {
+          id: 'newPresId',
+          name: 'Copied Name',
+        },
+      });
+
+      // drive.files.get for final metadata
+      (mockDriveClient.files.get as jest.Mock).mockResolvedValue({
+        data: {
+          id: 'newPresId',
+          name: 'From PowerPoints to Outcomes – AI Era Enterprise Services',
+          webViewLink:
+            'https://docs.google.com/presentation/d/newPresId/edit',
+          webContentLink:
+            'https://docs.google.com/presentation/d/newPresId/export/pptx',
+        },
+      });
+
+      // slides.presentations.get -> template has one slide with objectId "p1"
+      (mockSlidesClient.presentations.get as jest.Mock).mockResolvedValue({
+        data: {
+          slides: [
+            {
+              objectId: 'p1',
+            },
+          ],
+        },
+      });
+
+      // slides.presentations.batchUpdate -> succeed
+      (mockSlidesClient.presentations.batchUpdate as jest.Mock).mockResolvedValue(
+        {
+          data: {},
+        }
+      );
+    });
+
+    it('creates one presentation and duplicates the first slide for each GoogleSlide entry', async () => {
+      const input: CreateGoogleSlidesInput = [
+        {
+          templateId:
+            'https://docs.google.com/presentation/d/TEMPLATE_ID_HERE/edit',
+          name: 'From PowerPoints to Outcomes – AI Era Enterprise Services',
+          content: [
+            {
+              slideNumber: 1,
+              content: [
+                {
+                  targetType: 'PLACEHOLDER',
+                  placeholder: '{{TITLE}}',
+                  text: 'Slide 1 Title',
+                },
+              ],
+            },
+            {
+              slideNumber: 2,
+              content: [
+                {
+                  targetType: 'PLACEHOLDER',
+                  placeholder: '{{TITLE}}',
+                  text: 'Slide 2 Title',
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const result = await createGoogleSlidesDelegate({
+        input,
+        drive: mockDriveClient,
+        slides: mockSlidesClient,
+      });
+
+      expect(result.failures).toHaveLength(0);
+      expect(result.successes).toHaveLength(1);
+
+      const success = result.successes[0];
+
+      expect(success.presentationId).toBe('newPresId');
+      expect(success.fileId).toBe('newPresId');
+      expect(success.name).toBe(
+        'From PowerPoints to Outcomes – AI Era Enterprise Services'
+      );
+      expect(success.webViewLink).toBe(
+        'https://docs.google.com/presentation/d/newPresId/edit'
+      );
+      expect(success.webContentLink).toBe(
+        'https://docs.google.com/presentation/d/newPresId/export/pptx'
+      );
+
+      // drive.files.copy called with normalized templateId
+      expect(mockDriveClient.files.copy).toHaveBeenCalledTimes(1);
+      expect(mockDriveClient.files.copy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          fileId: 'TEMPLATE_ID_HERE',
+          requestBody: {
+            name: 'From PowerPoints to Outcomes – AI Era Enterprise Services',
+          },
+        })
+      );
+
+      // slides.presentations.get called for the copied deck
+      expect(mockSlidesClient.presentations.get).toHaveBeenCalledTimes(1);
+      expect(mockSlidesClient.presentations.get).toHaveBeenCalledWith({
+        presentationId: 'newPresId',
+      });
+
+      // batchUpdate called once with 3 requests:
+      // 1) replaceAllText on base slide p1 (slideNumber 1)
+      // 2) duplicateObject of p1 -> p1_1 (for slideNumber 2)
+      // 3) replaceAllText on duplicated slide p1_1 (slideNumber 2 content)
+      expect(
+        mockSlidesClient.presentations.batchUpdate
+      ).toHaveBeenCalledTimes(1);
+
+      const batchArgs = (
+        mockSlidesClient.presentations.batchUpdate as jest.Mock
+      ).mock.calls[0][0];
+
+      expect(batchArgs.presentationId).toBe('newPresId');
+      expect(batchArgs.requestBody).toBeDefined();
+
+      const { requests } = batchArgs.requestBody;
+      expect(Array.isArray(requests)).toBe(true);
+      expect(requests).toHaveLength(3);
+
+      const [r0, r1, r2] = requests;
+
+      // r0: replaceAllText on base slide
+      expect(r0.replaceAllText).toBeDefined();
+      expect(r0.replaceAllText.containsText).toEqual({
+        text: '{{TITLE}}',
+        matchCase: true,
+      });
+      expect(r0.replaceAllText.replaceText).toBe('Slide 1 Title');
+      expect(r0.replaceAllText.pageObjectIds).toEqual(['p1']);
+
+      // r1: duplicateObject of base slide
+      expect(r1.duplicateObject).toBeDefined();
+      expect(r1.duplicateObject.objectId).toBe('p1');
+      expect(r1.duplicateObject.objectIds).toEqual({ p1: 'p1_1' });
+
+      // r2: replaceAllText on duplicated slide
+      expect(r2.replaceAllText).toBeDefined();
+      expect(r2.replaceAllText.containsText).toEqual({
+        text: '{{TITLE}}',
+        matchCase: true,
+      });
+      expect(r2.replaceAllText.replaceText).toBe('Slide 2 Title');
+      expect(r2.replaceAllText.pageObjectIds).toEqual(['p1_1']);
+    });
   });
 
-  test("Handle invalid template ID (malformed URL or non-existent ID)", async () => {
-    /*
-    Gherkin:
-    Scenario: Handle invalid template ID (malformed URL or non-existent ID)
-      Given a GoogleSlideCreationInput with an invalid or non-existent template ID
-      When the createGoogleSlides delegate is called
-      Then the output contains a failure entry for that input item
-      And the failure entry has errorCode "VALIDATION_ERROR" or an appropriate API error code
-    */
+  describe('error handling – missing slides client', () => {
+    it('returns CONFIG_ERROR when slides client is not provided', async () => {
+      const input: CreateGoogleSlidesInput = [
+        {
+          templateId: 'TEMPLATE_ID_HERE',
+          name: 'No Slides Client Deck',
+          content: [
+            {
+              slideNumber: 1,
+              content: [
+                {
+                  targetType: 'PLACEHOLDER',
+                  placeholder: '{{TITLE}}',
+                  text: 'Will not be used',
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const result = await createGoogleSlidesDelegate({
+        input,
+        drive: mockDriveClient,
+        slides: undefined,
+      });
+
+      expect(result.successes).toHaveLength(0);
+      expect(result.failures).toHaveLength(1);
+
+      const failure = result.failures[0];
+      expect(failure.errorCode).toBe('CONFIG_ERROR');
+      expect(failure.errorMessage).toMatch(/Slides client not available/i);
+
+      // no Drive or Slides calls
+      expect(mockDriveClient.files.copy).not.toHaveBeenCalled();
+      expect(mockSlidesClient.presentations.get).not.toHaveBeenCalled();
+      expect(
+        mockSlidesClient.presentations.batchUpdate
+      ).not.toHaveBeenCalled();
+    });
   });
 
-  test("Skip content item with missing object ID and log a warning", async () => {
-    /*
-    Gherkin:
-    Scenario: Skip content item with missing object ID and log a warning
-      Given a GoogleSlideCreationInput with a valid template ID and a content item targeting a non-existent objectId
-      When the createGoogleSlides delegate is called
-      Then the output contains a success entry for that input item
-      And the success entry includes a warning in its 'warnings' array indicating the skipped content item
-      And other valid content items for that slide deck are applied successfully
-    */
-  });
+  describe('error handling – validation', () => {
+    it('returns VALIDATION_ERROR when content includes OBJECT_ID targetType', async () => {
+      const input: CreateGoogleSlidesInput = [
+        {
+          templateId: 'TEMPLATE_ID_HERE',
+          name: 'Invalid Content Deck',
+          content: [
+            {
+              slideNumber: 1,
+              content: [
+                {
+                  targetType: 'OBJECT_ID',
+                  objectId: 'S01_TITLE',
+                  text: 'This should fail validation',
+                } as any,
+              ],
+            },
+          ],
+        },
+      ];
 
-  test("Return partial success when some slide decks fail and others succeed", async () => {
-    /*
-    Gherkin:
-    Scenario: Return partial success when some slide decks fail and others succeed
-      Given an array of GoogleSlideCreationInput where some items are valid and some are invalid
-      When the createGoogleSlides delegate is called
-      Then the output contains both success and failure entries
-      And each success entry corresponds to a successfully created slide deck
-      And each failure entry corresponds to a failed slide deck creation with error details
-    */
-  });
+      const result = await createGoogleSlidesDelegate({
+        input,
+        drive: mockDriveClient,
+        slides: mockSlidesClient,
+      });
 
-  test("Handle API rate limits or transient errors during template copy", async () => {
-    /*
-    Gherkin:
-    Scenario: Handle API rate limits or transient errors during template copy
-      Given a valid GoogleSlideCreationInput
-      And the Drive API files.copy call temporarily fails with a rate limit error (e.g., HTTP 429)
-      When the createGoogleSlides delegate is called
-      Then the output contains a failure entry for that input item with an appropriate API error code
-    */
-  });
+      expect(result.successes).toHaveLength(0);
+      expect(result.failures).toHaveLength(1);
 
-  test("Handle API errors during content application", async () => {
-    /*
-    Gherkin:
-    Scenario: Handle API errors during content application
-      Given a valid GoogleSlideCreationInput
-      And the Slides API presentations.batchUpdate call fails for a valid reason (e.g., permission denied)
-      When the createGoogleSlides delegate is called
-      Then the output contains a failure entry for that input item with an appropriate API error code
-    */
+      const failure = result.failures[0];
+      expect(failure.errorCode).toBe('VALIDATION_ERROR');
+      expect(failure.errorMessage).toMatch(/OBJECT_ID is not supported/i);
+
+      expect(mockDriveClient.files.copy).not.toHaveBeenCalled();
+      expect(mockSlidesClient.presentations.get).not.toHaveBeenCalled();
+      expect(
+        mockSlidesClient.presentations.batchUpdate
+      ).not.toHaveBeenCalled();
+    });
+
+    it('returns VALIDATION_ERROR for invalid templateId', async () => {
+      const input: CreateGoogleSlidesInput = [
+        {
+          // too short to pass /^[a-zA-Z0-9_-]{10,}$/ so normalizeTemplateId -> null
+          templateId: 'bad',
+          name: 'Invalid Template Deck',
+          content: [
+            {
+              slideNumber: 1,
+              content: [
+                {
+                  targetType: 'PLACEHOLDER',
+                  placeholder: '{{TITLE}}',
+                  text: 'Won’t be used',
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const result = await createGoogleSlidesDelegate({
+        input,
+        drive: mockDriveClient,
+        slides: mockSlidesClient,
+      });
+
+      expect(result.successes).toHaveLength(0);
+      expect(result.failures).toHaveLength(1);
+
+      const failure = result.failures[0];
+      expect(failure.errorCode).toBe('VALIDATION_ERROR');
+      expect(failure.errorMessage).toMatch(
+        /Invalid Google Drive file ID or URL format/i
+      );
+
+      expect(mockDriveClient.files.copy).not.toHaveBeenCalled();
+      expect(mockSlidesClient.presentations.get).not.toHaveBeenCalled();
+      expect(
+        mockSlidesClient.presentations.batchUpdate
+      ).not.toHaveBeenCalled();
+    });
   });
 });

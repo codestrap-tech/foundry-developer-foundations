@@ -19,6 +19,7 @@ project-graph.json
 **/*-ops.json
 **/*-spec.md
 **/spec-**.md
+**/slides-**.json
 **/generator-prompt-**.md
 **/designDoc-**.md
 **/proposedCodeEdits-**.md
