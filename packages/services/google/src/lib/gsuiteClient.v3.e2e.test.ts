@@ -8,7 +8,7 @@ if (!process.env.E2E) {
 } else {
   describe('resolveMeetingConflicts E2E tests', () => {
     let client: Awaited<ReturnType<typeof makeGSuiteClientV3>>;
-    const timezone = 'Europe/Warsaw';
+    const timezone = 'America/Los_Angeles'; // another example timezone is 'Europe/Warsaw';
 
     beforeAll(async () => {
       // Force Node's wall-clock to PT so Date('YYYY-MM-DDTHH:mm:ss') is deterministic.
