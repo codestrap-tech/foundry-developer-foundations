@@ -2,7 +2,11 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as net from 'net';
 import { findProjectRoot } from '../findProjectRoot';
-import { getDockerImageName, getMainContainerName, getWorktreeContainerName } from '../config/larry-config';
+import {
+  getDockerImageName,
+  getMainContainerName,
+  getWorktreeContainerName,
+} from '../config/larry-config';
 import type { ExtensionState, DockerContainerInfo } from '../types';
 
 const execAsync = promisify(exec);
@@ -47,9 +51,11 @@ export async function findAvailablePort(startPort: number): Promise<number> {
 /**
  * Ensures the Larry Docker image exists, building it if necessary
  */
-export async function ensureLarryDockerImage(projectName: string | undefined): Promise<void> {
+export async function ensureLarryDockerImage(
+  projectName: string | undefined
+): Promise<void> {
   const dockerImageName = getDockerImageName(projectName);
-  
+
   try {
     console.log(`Checking if Docker image ${dockerImageName} exists...`);
     await execAsync(`docker image inspect ${dockerImageName}`);
@@ -61,9 +67,12 @@ export async function ensureLarryDockerImage(projectName: string | undefined): P
       throw new Error('Project root not found for Docker build.');
     }
 
-    await execAsync(`docker build -f Larry.Dockerfile -t ${dockerImageName} .`, {
-      cwd: foundryProjectRoot,
-    });
+    await execAsync(
+      `docker build -f Larry.Dockerfile -t ${dockerImageName} .`,
+      {
+        cwd: foundryProjectRoot,
+      }
+    );
     console.log(`Docker image ${dockerImageName} built successfully`);
   }
 }
@@ -75,16 +84,20 @@ export async function ensureLarryDockerImage(projectName: string | undefined): P
 /**
  * Gets information about a Docker container
  */
-export async function inspectContainer(containerName: string): Promise<DockerContainerInfo | null> {
+export async function inspectContainer(
+  containerName: string
+): Promise<DockerContainerInfo | null> {
   try {
-    const { stdout: inspectOutput } = await execAsync(`docker inspect ${containerName}`);
+    const { stdout: inspectOutput } = await execAsync(
+      `docker inspect ${containerName}`
+    );
     const containerInfo = JSON.parse(inspectOutput);
-    
+
     if (containerInfo.length > 0) {
       const container = containerInfo[0];
       const portKey = Object.keys(container.NetworkSettings.Ports)[0];
       const port = container.NetworkSettings.Ports[portKey]?.[0]?.HostPort;
-      
+
       return {
         id: container.Id,
         name: containerName,
@@ -107,16 +120,21 @@ export async function inspectContainer(containerName: string): Promise<DockerCon
  * Ensures the main Docker container is running
  * Updates state.mainPort and state.mainDockerContainer
  */
-export async function ensureMainDockerRunning(state: ExtensionState): Promise<void> {
+export async function ensureMainDockerRunning(
+  state: ExtensionState
+): Promise<void> {
   const projectName = state.config?.name;
-  
+
   try {
     // Check if main docker is already running
     if (state.mainDockerContainer) {
       const containerInfo = await inspectContainer(state.mainDockerContainer);
       if (containerInfo) {
         state.mainPort = containerInfo.port;
-        console.log('Main docker container already running:', state.mainDockerContainer);
+        console.log(
+          'Main docker container already running:',
+          state.mainDockerContainer
+        );
         return;
       }
       // Container doesn't exist, clear the reference
@@ -134,11 +152,13 @@ export async function ensureMainDockerRunning(state: ExtensionState): Promise<vo
  * Starts the main Docker container
  * Updates state.mainDockerContainer
  */
-export async function startMainDockerContainer(state: ExtensionState): Promise<void> {
+export async function startMainDockerContainer(
+  state: ExtensionState
+): Promise<void> {
   const projectName = state.config?.name;
   const dockerImageName = getDockerImageName(projectName);
   const containerName = getMainContainerName(projectName);
-  
+
   try {
     await ensureLarryDockerImage(projectName);
 
@@ -164,6 +184,7 @@ export async function startMainDockerContainer(state: ExtensionState): Promise<v
       `docker run -d --name ${containerName} \
  -p ${port}:${port} \
  -e PORT=${port} \
+ -e WORKSPACE_ROOT=/workspace \
  -v "${foundryProjectRoot}:/workspace:ro" \
  --user 1001:1001 \
  ${dockerImageName}`
@@ -183,10 +204,12 @@ export async function startMainDockerContainer(state: ExtensionState): Promise<v
 /**
  * Stops the main Docker container
  */
-export async function stopMainDockerContainer(state: ExtensionState): Promise<void> {
+export async function stopMainDockerContainer(
+  state: ExtensionState
+): Promise<void> {
   const projectName = state.config?.name;
   const containerName = getMainContainerName(projectName);
-  
+
   try {
     if (!state.mainDockerContainer) {
       return;
@@ -210,7 +233,7 @@ export async function stopMainDockerContainer(state: ExtensionState): Promise<vo
 /**
  * Starts a Docker container for a worktree
  * Updates state.runningContainers and state.worktreePort
- * 
+ *
  * @returns Container ID
  */
 export async function startWorktreeDockerContainer(
@@ -222,7 +245,7 @@ export async function startWorktreeDockerContainer(
   const projectName = state.config?.name;
   const dockerImageName = getDockerImageName(projectName);
   const containerName = getWorktreeContainerName(projectName, worktreeName);
-  
+
   try {
     // Ensure Docker image exists before running
     await ensureLarryDockerImage(projectName);
@@ -247,6 +270,7 @@ export async function startWorktreeDockerContainer(
  -e PORT=${port} \
  ${threadIdEnv} \
  -e WORKTREE_NAME=${worktreeName} \
+ -e WORKSPACE_ROOT=/workspace \
  -v "${worktreePath}:/workspace:rw" \
  --user 1001:1001 \
  ${dockerImageName}`
@@ -256,7 +280,10 @@ export async function startWorktreeDockerContainer(
     state.runningContainers.set(worktreeName, containerId);
     state.worktreePort = port;
 
-    console.log(`Worktree Larry container started for ${worktreeName}:`, containerId);
+    console.log(
+      `Worktree Larry container started for ${worktreeName}:`,
+      containerId
+    );
     return containerId;
   } catch (error) {
     console.error('Error starting worktree Larry container:', error);
@@ -273,7 +300,7 @@ export async function stopWorktreeDockerContainer(
 ): Promise<void> {
   const projectName = state.config?.name;
   const containerName = getWorktreeContainerName(projectName, worktreeName);
-  
+
   try {
     await execAsync(`docker stop ${containerName}`);
     state.runningContainers.delete(worktreeName);
@@ -292,7 +319,7 @@ export async function removeWorktreeDockerContainer(
   worktreeName: string
 ): Promise<void> {
   const containerName = getWorktreeContainerName(projectName, worktreeName);
-  
+
   try {
     await execAsync(`docker stop ${containerName}`);
   } catch (e) {
@@ -311,10 +338,14 @@ export async function removeWorktreeDockerContainer(
 export async function getWorktreeContainerStatus(
   projectName: string | undefined,
   worktreeName: string
-): Promise<{ isRunning: boolean; containerId: string | undefined; port: number }> {
+): Promise<{
+  isRunning: boolean;
+  containerId: string | undefined;
+  port: number;
+}> {
   const containerName = getWorktreeContainerName(projectName, worktreeName);
   const containerInfo = await inspectContainer(containerName);
-  
+
   if (containerInfo) {
     return {
       isRunning: containerInfo.isRunning,
@@ -322,7 +353,7 @@ export async function getWorktreeContainerStatus(
       port: containerInfo.port,
     };
   }
-  
+
   return {
     isRunning: false,
     containerId: undefined,
@@ -333,7 +364,8 @@ export async function getWorktreeContainerStatus(
 /**
  * Starts an existing stopped container
  */
-export async function startExistingContainer(containerId: string): Promise<void> {
+export async function startExistingContainer(
+  containerId: string
+): Promise<void> {
   await execAsync(`docker start ${containerId}`);
 }
-
