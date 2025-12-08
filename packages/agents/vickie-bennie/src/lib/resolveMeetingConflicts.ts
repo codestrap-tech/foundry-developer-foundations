@@ -72,11 +72,23 @@ export async function resolveMeetingConflicts(
     // TODO: @kopach - ask gemini to prioritize the meetings
 
     // 2. Perform rescheduling calculations based on the prioritized meetings
-    const result = rescheduleConflictingMeetings(identifyResult);
+    const resolvedMeetings = rescheduleConflictingMeetings(identifyResult);
 
     // 3. Apply the rescheduling to the calendar
-    // TODO: @kopach - apply the rescheduling to the calendar
-    console.log(result);
+    for (const meeting of resolvedMeetings) {
+      if (meeting.status === 'SCHEDULED' && meeting.rescheduledTo) {
+        await officeServiceV3.scheduleMeeting({
+          summary: meeting.subject,
+          description: meeting.description,
+          start: meeting.rescheduledTo.start,
+          end: meeting.rescheduledTo.end,
+          attendees: meeting.participants,
+        });
+        console.log(
+          `Rescheduled meeting: ${meeting.subject} to ${meeting.rescheduledTo.start} - ${meeting.rescheduledTo.end}`
+        );
+      }
+    }
 
     // 4. Send emails
     // TODO: @kopach - send emails to the participants with the new meeting times
