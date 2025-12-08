@@ -11,6 +11,7 @@ jest.mock('@codestrap/developer-foundations-di', () => ({
 const mockContainer = container as jest.Mocked<typeof container>;
 const mockOfficeServiceV3 = {
   proposeMeetingConflictResolutions: jest.fn(),
+  scheduleMeeting: jest.fn(),
 } satisfies Partial<OfficeServiceV3>;
 
 describe('resolveMeetingConflicts', () => {
@@ -146,7 +147,7 @@ describe('resolveMeetingConflicts', () => {
     });
   });
 
-  describe('rescheduling calculation', () => {
+  describe('meeting rescheduling', () => {
     it('reschedules a single meeting to highest-scored block', async () => {
       // given
       const userEmail = faker.internet.email({ provider: 'codestrap.me' });
@@ -181,6 +182,7 @@ describe('resolveMeetingConflicts', () => {
           id: meetingId,
           email: userEmail,
           subject: faker.company.buzzNoun(),
+          description: faker.lorem.sentence(),
           start: meetingStart.toISOString(),
           end: meetingEnd.toISOString(),
           durationMinutes: meetingDurationMin,
@@ -202,18 +204,20 @@ describe('resolveMeetingConflicts', () => {
 
       // when
       await resolveMeetingConflicts([userEmail]);
-      const result = mockConsoleLog.mock.lastCall?.at(0);
 
       // then
-      expect(result).toEqual(
-        expect.arrayContaining([
+      expect(mockOfficeServiceV3.scheduleMeeting).toHaveBeenCalledTimes(1);
+      mockMeetings.forEach((meeting) => {
+        expect(mockOfficeServiceV3.scheduleMeeting).toHaveBeenCalledWith(
           expect.objectContaining({
-            id: meetingId,
-            status: 'SCHEDULED',
-            rescheduledTo: higherScoredBlock,
-          }),
-        ])
-      );
+            summary: meeting.subject,
+            description: meeting.description,
+            start: higherScoredBlock.start,
+            end: higherScoredBlock.end,
+            attendees: meeting.participants,
+          })
+        );
+      });
     });
 
     it('reschedules sequentially scheduled meetings without conflicts', async () => {
@@ -266,6 +270,7 @@ describe('resolveMeetingConflicts', () => {
           id: meeting1Id,
           email: userEmail,
           subject: faker.company.buzzNoun(),
+          description: faker.lorem.sentence(),
           start: meeting1Start.toISOString(),
           end: meeting1End.toISOString(),
           durationMinutes: meeting1Duration,
@@ -276,6 +281,7 @@ describe('resolveMeetingConflicts', () => {
           id: meeting2Id,
           email: userEmail,
           subject: faker.company.buzzNoun(),
+          description: faker.lorem.sentence(),
           start: meeting2Start.toISOString(),
           end: meeting2End.toISOString(),
           durationMinutes: meeting2Duration,
@@ -290,23 +296,29 @@ describe('resolveMeetingConflicts', () => {
 
       // when
       await resolveMeetingConflicts([userEmail]);
-      const result = mockConsoleLog.mock.lastCall?.at(0);
 
       // then
-      expect(result).toEqual(
+      expect(mockOfficeServiceV3.scheduleMeeting).toHaveBeenCalledTimes(2);
+      expect(mockOfficeServiceV3.scheduleMeeting.mock.calls).toEqual([
         expect.arrayContaining([
           expect.objectContaining({
-            id: meeting1Id,
-            status: 'SCHEDULED',
-            rescheduledTo: meeting1Block1,
+            summary: mockMeetings[0].subject,
+            description: mockMeetings[0].description,
+            start: meeting1Block1.start,
+            end: meeting1Block1.end,
+            attendees: mockMeetings[0].participants,
           }),
+        ]),
+        expect.arrayContaining([
           expect.objectContaining({
-            id: meeting2Id,
-            status: 'SCHEDULED',
-            rescheduledTo: meeting2Block1,
+            summary: mockMeetings[1].subject,
+            description: mockMeetings[1].description,
+            start: meeting2Block1.start,
+            end: meeting2Block1.end,
+            attendees: mockMeetings[1].participants,
           }),
-        ])
-      );
+        ]),
+      ]);
     });
 
     it('reschedules meetings with priority-based conflict resolution', async () => {
@@ -359,6 +371,7 @@ describe('resolveMeetingConflicts', () => {
           id: meeting1Id,
           email: userEmail,
           subject: faker.company.buzzNoun(),
+          description: faker.lorem.sentence(),
           start: meeting1Start.toISOString(),
           end: meeting1End.toISOString(),
           durationMinutes: meetingDuration,
@@ -372,6 +385,7 @@ describe('resolveMeetingConflicts', () => {
           id: meeting2Id,
           email: userEmail,
           subject: faker.company.buzzNoun(),
+          description: faker.lorem.sentence(),
           start: meeting2Start.toISOString(),
           end: meeting2End.toISOString(),
           durationMinutes: meetingDuration,
@@ -389,23 +403,29 @@ describe('resolveMeetingConflicts', () => {
 
       // when
       await resolveMeetingConflicts([userEmail]);
-      const result = mockConsoleLog.mock.lastCall?.at(0);
 
       // then
-      expect(result).toEqual(
+      expect(mockOfficeServiceV3.scheduleMeeting).toHaveBeenCalledTimes(2);
+      expect(mockOfficeServiceV3.scheduleMeeting.mock.calls).toEqual([
         expect.arrayContaining([
           expect.objectContaining({
-            id: meeting1Id,
-            status: 'SCHEDULED',
-            rescheduledTo: higherScoreAvailableTimeSlot,
+            summary: mockMeetings[0].subject,
+            description: mockMeetings[0].description,
+            start: higherScoreAvailableTimeSlot.start,
+            end: higherScoreAvailableTimeSlot.end,
+            attendees: mockMeetings[0].participants,
           }),
+        ]),
+        expect.arrayContaining([
           expect.objectContaining({
-            id: meeting2Id,
-            status: 'SCHEDULED',
-            rescheduledTo: lowerScoreAvailableTimeSlot,
+            summary: mockMeetings[1].subject,
+            description: mockMeetings[1].description,
+            start: lowerScoreAvailableTimeSlot.start,
+            end: lowerScoreAvailableTimeSlot.end,
+            attendees: mockMeetings[1].participants,
           }),
-        ])
-      );
+        ]),
+      ]);
     });
 
     it('marks meeting with no resolution blocks as unresolved', async () => {
@@ -425,6 +445,7 @@ describe('resolveMeetingConflicts', () => {
           id: meetingId,
           email: userEmail,
           subject: faker.company.buzzNoun(),
+          description: faker.lorem.sentence(),
           start: meetingStart.toISOString(),
           end: meetingEnd.toISOString(),
           durationMinutes: meetingDuration,
@@ -439,17 +460,9 @@ describe('resolveMeetingConflicts', () => {
 
       // when
       await resolveMeetingConflicts([userEmail]);
-      const result = mockConsoleLog.mock.lastCall?.at(0);
 
       // then
-      expect(result).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: meetingId,
-            status: 'UNRESOLVED',
-          }),
-        ])
-      );
+      expect(mockOfficeServiceV3.scheduleMeeting).not.toHaveBeenCalled();
     });
 
     it('reschedules multiple meetings with complex overlapping scenarios', async () => {
@@ -535,6 +548,7 @@ describe('resolveMeetingConflicts', () => {
           id: meeting1Id,
           email: userEmail,
           subject: faker.company.buzzNoun(),
+          description: faker.lorem.sentence(),
           start: meeting1Start.toISOString(),
           end: meeting1End.toISOString(),
           durationMinutes: meeting1Duration,
@@ -549,6 +563,7 @@ describe('resolveMeetingConflicts', () => {
           id: meeting2Id,
           email: userEmail,
           subject: faker.company.buzzNoun(),
+          description: faker.lorem.sentence(),
           start: meeting2Start.toISOString(),
           end: meeting2End.toISOString(),
           durationMinutes: meeting2Duration,
@@ -563,6 +578,7 @@ describe('resolveMeetingConflicts', () => {
           id: meeting3Id,
           email: userEmail,
           subject: faker.company.buzzNoun(),
+          description: faker.lorem.sentence(),
           start: meeting3Start.toISOString(),
           end: meeting3End.toISOString(),
           durationMinutes: meeting3Duration,
@@ -581,28 +597,38 @@ describe('resolveMeetingConflicts', () => {
 
       // when
       await resolveMeetingConflicts([userEmail]);
-      const result = mockConsoleLog.mock.lastCall?.at(0);
 
       // then
-      expect(result).toEqual(
+      expect(mockOfficeServiceV3.scheduleMeeting).toHaveBeenCalledTimes(3);
+      expect(mockOfficeServiceV3.scheduleMeeting.mock.calls).toEqual([
         expect.arrayContaining([
           expect.objectContaining({
-            id: meeting1Id,
-            status: 'SCHEDULED',
-            rescheduledTo: highestScoreAvailableTimeSlot,
+            summary: mockMeetings[0].subject,
+            description: mockMeetings[0].description,
+            start: highestScoreAvailableTimeSlot.start,
+            end: highestScoreAvailableTimeSlot.end,
+            attendees: mockMeetings[0].participants,
           }),
+        ]),
+        expect.arrayContaining([
           expect.objectContaining({
-            id: meeting2Id,
-            status: 'SCHEDULED',
-            rescheduledTo: mediumScoreAvailableTimeSlot,
+            summary: mockMeetings[1].subject,
+            description: mockMeetings[1].description,
+            start: mediumScoreAvailableTimeSlot.start,
+            end: mediumScoreAvailableTimeSlot.end,
+            attendees: mockMeetings[1].participants,
           }),
+        ]),
+        expect.arrayContaining([
           expect.objectContaining({
-            id: meeting3Id,
-            status: 'SCHEDULED',
-            rescheduledTo: lowestScoreAvailableTimeSlot,
+            summary: mockMeetings[2].subject,
+            description: mockMeetings[2].description,
+            start: lowestScoreAvailableTimeSlot.start,
+            end: lowestScoreAvailableTimeSlot.end,
+            attendees: mockMeetings[2].participants,
           }),
-        ])
-      );
+        ]),
+      ]);
     });
   });
 });
