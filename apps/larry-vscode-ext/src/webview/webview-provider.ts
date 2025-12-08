@@ -130,4 +130,3 @@ export async function notifyWorktreeChangeFromProvider(
     console.error('❌ Error in worktree change handler:', error);
   }
 }
-p
