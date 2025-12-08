@@ -166,6 +166,7 @@ export function StateVisualization({ data, userQuestion }: StateVisualizationPro
   // sync global state to local isWorking state
   useEffect(() => {
     setIsWorking(isLarryWorking);
+    setWorkingError(undefined);
     if (isLarryWorking) {
       setMachineQuery(apiUrl, data.id, 'running');
       setWorkingStatus('Working on it');
