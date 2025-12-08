@@ -15,6 +15,8 @@ import {
   MachineDao,
   LoggingService,
   SupportedEngines,
+  OfficeServiceV3,
+  ProposeMeetingConflictResolutionsInput,
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 import { resolveMeetingConflicts as resolveMeetingConflictsFn } from './resolveMeetingConflicts';
@@ -611,8 +613,69 @@ If the user specifies a resolution that can not be resolved to a specific dat/ti
     },
   })
   public async resolveMeetingConflicts(
-    ...args: Parameters<typeof resolveMeetingConflictsFn>
+    users: string[],
+    timeFrameFrom = new Date().toISOString(),
+    timeFrameTo = new Date(
+      new Date().getTime() + 24 * 60 * 60 * 1000
+    ).toISOString(),
+    timezone = 'America/Los_Angeles'
   ): Promise<VickieResponse> {
-    return await resolveMeetingConflictsFn(...args);
+    try {
+      const officeServiceV3 = await container.getAsync<OfficeServiceV3>(
+        TYPES.OfficeServiceV3
+      );
+
+      const codeStrapUsers = filterCodeStrapUsers(users);
+
+      if (codeStrapUsers.length === 0) {
+        return {
+          status: 400,
+          executionId: uuidv4(),
+          message: 'No CodeStrap users found in the request',
+          error: 'No valid users',
+          taskList: 'ERROR',
+        };
+      }
+
+      const input: ProposeMeetingConflictResolutionsInput = {
+        userEmails: codeStrapUsers,
+        timeFrameFrom: new Date(timeFrameFrom),
+        timeFrameTo: new Date(timeFrameTo),
+        timezone,
+      };
+
+      // Identify conflicts and propose resolutions
+      const identifyResult =
+        await officeServiceV3.proposeMeetingConflictResolutions(input);
+
+      // Perform rescheduling calculations
+
+      return {
+        status: 200,
+        executionId: uuidv4(),
+        message: 'Meeting conflicts resolved',
+        taskList: 'SUCCESS',
+      };
+    } catch (e) {
+      console.error('resolveMeetingConflicts error:', (e as Error).message);
+      return {
+        status: 500,
+        executionId: uuidv4(),
+        message: `Error resolving meeting conflicts: ${(e as Error).message}`,
+        error: (e as Error).stack || (e as Error).message,
+        taskList: '',
+      };
+    }
+
+    /**
+     * Filters users to only include CodeStrap users
+     */
+    function filterCodeStrapUsers(users: string[]): string[] {
+      return users.filter(
+        (user) =>
+          user.indexOf('codestrap.me') >= 0 ||
+          user.indexOf('codestrap.com') >= 0
+      );
+    }
   }
 }
