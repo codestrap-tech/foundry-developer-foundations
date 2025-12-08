@@ -18,10 +18,10 @@ export interface LarryConfig {
 
 /**
  * LarryState - Cached state from sidebar webview
- * 
+ *
  * This mirrors the LarryState type in webview/src/store/larry-state.ts
  * Extension caches this to provide to artifact editors.
- * 
+ *
  * See webview/src/store/docs.md for communication architecture.
  */
 export interface LarryState {
@@ -45,50 +45,30 @@ export interface LarryState {
 export interface ExtensionState {
   config: LarryConfig | undefined;
   configLoaded: Promise<void>;
-  
+
   // Docker state
   runningContainers: Map<string, string>; // worktreeName -> containerId
   mainDockerContainer: string | undefined;
-  
+
   // SSE state
   sseWorktree: SSEProxy | undefined;
   sseLarryStreams: Map<string, SSEProxy>;
-  
+
   // Webview
   view: vscode.WebviewView | undefined;
-  
+
   // Ports
   mainPort: number;
   worktreePort: number;
-  
+
   // Shared Larry state (cached from sidebar webview)
   larryState: LarryState | undefined;
-  
+
   // Dehydrated React Query cache (JSON string, from sidebar)
   queryCache: string | undefined;
-  
+
   // Active artifact editor panels (for broadcasting state updates)
   artifactEditorPanels: Set<vscode.WebviewPanel>;
-}
-
-/**
- * Creates initial extension state
- */
-export function createExtensionState(): ExtensionState {
-  return {
-    config: undefined,
-    configLoaded: Promise.resolve(),
-    runningContainers: new Map(),
-    mainDockerContainer: undefined,
-    sseWorktree: undefined,
-    sseLarryStreams: new Map(),
-    view: undefined,
-    mainPort: 4210,
-    worktreePort: 4220,
-    larryState: undefined,
-    queryCache: undefined,
-    artifactEditorPanels: new Set(),
-  };
 }
 
 // ============================================================================
@@ -164,4 +144,3 @@ export interface WebviewMessage {
 export const DEFAULT_MAIN_PORT = 4210;
 export const DEFAULT_WORKTREE_PORT = 4220;
 export const PORT_RANGE = 100;
-

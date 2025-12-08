@@ -1,9 +1,9 @@
 /**
  * Larry VS Code Extension - Entry Point
- * 
+ *
  * This is the minimal entry point that bootstraps the extension.
  * All functionality is delegated to layered modules.
- * 
+ *
  * Architecture:
  * ┌─────────────────────────────────────────────────────────────────┐
  * │                        extension.ts                             │
@@ -43,13 +43,13 @@
  *                    │    types/       │
  *                    │   index.ts      │
  *                    └─────────────────┘
- * 
+ *
  * Flow on Extension Load:
  * 1. activate() is called by VS Code
  * 2. Load larry.config.json → Initialize state
  * 3. Register webview provider
  * 4. Register workspace change watcher
- * 
+ *
  * Flow when Webview Opens:
  * 1. resolveWebviewView() is called
  * 2. Generate HTML with CSP
@@ -57,7 +57,7 @@
  * 4. Detect worktree state
  * 5. Start appropriate Docker container
  * 6. Start SSE connection
- * 
+ *
  * Flow on Workspace Change:
  * 1. Workspace change event fires
  * 2. notifyWorktreeChange() is called
@@ -68,9 +68,12 @@
  */
 
 import * as vscode from 'vscode';
-import { createExtensionState, type ExtensionState } from './types';
+import type { ExtensionState } from './types';
 import { loadLarryConfig } from './config/larry-config';
-import { createWebviewProvider, notifyWorktreeChangeFromProvider } from './webview/webview-provider';
+import {
+  createWebviewProvider,
+  notifyWorktreeChangeFromProvider,
+} from './webview/webview-provider';
 import { stopAllSSEConnections } from './sse/sse-streams';
 import { getMainContainerName } from './config/larry-config';
 import { ArtifactEditorProvider } from './editors/artifact-editor-provider';
@@ -81,6 +84,26 @@ import { exec } from 'child_process';
 // ============================================================================
 
 let extensionState: ExtensionState;
+
+/**
+ * Creates initial extension state
+ */
+export function createExtensionState(): ExtensionState {
+  return {
+    config: undefined,
+    configLoaded: Promise.resolve(),
+    runningContainers: new Map(),
+    mainDockerContainer: undefined,
+    sseWorktree: undefined,
+    sseLarryStreams: new Map(),
+    view: undefined,
+    mainPort: 4210,
+    worktreePort: 4220,
+    larryState: undefined,
+    queryCache: undefined,
+    artifactEditorPanels: new Set(),
+  };
+}
 
 // ============================================================================
 // Activation
@@ -110,7 +133,6 @@ export function activate(context: vscode.ExtensionContext): void {
         throw error;
       });
 
-
     // Register webview provider for sidebar
     const provider = createWebviewProvider(context, extensionState);
     context.subscriptions.push(
@@ -132,9 +154,11 @@ export function activate(context: vscode.ExtensionContext): void {
     );
 
     // Watch for workspace changes to detect worktree changes
-    const workspaceWatcher = vscode.workspace.onDidChangeWorkspaceFolders(() => {
-      notifyWorktreeChangeFromProvider(extensionState);
-    });
+    const workspaceWatcher = vscode.workspace.onDidChangeWorkspaceFolders(
+      () => {
+        notifyWorktreeChangeFromProvider(extensionState);
+      }
+    );
     context.subscriptions.push(workspaceWatcher);
 
     console.log('🚀 Larry Extension activated successfully!');
@@ -150,7 +174,6 @@ export function activate(context: vscode.ExtensionContext): void {
         () => console.log('✅ Activation notification shown'),
         (error) => console.error('❌ Failed to show notification:', error)
       );
-
   } catch (error) {
     console.error('❌ Critical error during extension activation:', error);
     vscode.window.showErrorMessage(
@@ -188,4 +211,3 @@ export function deactivate(): void {
     console.error('Error during deactivation:', error);
   }
 }
-
