@@ -35,8 +35,15 @@ describe('proposeMeetingConflictResolutionsDelegate', () => {
         end: optimalMeetingTimeEnd,
       } as Slot,
     ]);
+
     const userEmail = faker.internet.email();
-    const meetingId = faker.string.uuid();
+
+    const mockEvent = {
+      start: faker.date.recent().toISOString(),
+      end: faker.date.soon().toISOString(),
+      durationMinutes: faker.number.int({ min: 5, max: 120 }),
+      participants: [userEmail],
+    } as EventSummary;
 
     // when
     const result = await proposeMeetingConflictResolutionsDelegate({
@@ -50,13 +57,8 @@ describe('proposeMeetingConflictResolutionsDelegate', () => {
         {
           email: userEmail,
           events: [
-            {
-              id: meetingId,
-              start: faker.date.recent().toISOString(),
-              end: faker.date.soon().toISOString(),
-              durationMinutes: faker.number.int({ min: 5, max: 120 }),
-              participants: [userEmail],
-            } as EventSummary,
+            { ...mockEvent, id: faker.string.uuid() },
+            { ...mockEvent, id: faker.string.uuid() },
           ],
         },
       ],
@@ -65,12 +67,13 @@ describe('proposeMeetingConflictResolutionsDelegate', () => {
     // then
     expect(result).toEqual(
       expect.arrayContaining([
-        {
-          meetingId,
+        expect.objectContaining({
+          ...mockEvent,
+          email: userEmail,
           resolutionBlocks: expect.arrayContaining([
             { start: optimalMeetingTimeStart, end: optimalMeetingTimeEnd },
           ]),
-        },
+        }),
       ])
     );
   });
@@ -81,6 +84,13 @@ describe('proposeMeetingConflictResolutionsDelegate', () => {
     const userEmail = faker.internet.email();
     const meetingId = faker.string.uuid();
 
+    const mockEvent = {
+      start: faker.date.recent().toISOString(),
+      end: faker.date.soon().toISOString(),
+      durationMinutes: faker.number.int({ min: 5, max: 120 }),
+      participants: [userEmail],
+    } as EventSummary;
+
     // when
     const result = await proposeMeetingConflictResolutionsDelegate({
       userEmails: [userEmail],
@@ -92,13 +102,8 @@ describe('proposeMeetingConflictResolutionsDelegate', () => {
         {
           email: userEmail,
           events: [
-            {
-              id: meetingId,
-              start: faker.date.recent().toISOString(),
-              end: faker.date.soon().toISOString(),
-              durationMinutes: faker.number.int({ min: 5, max: 120 }),
-              participants: [userEmail],
-            } as EventSummary,
+            { ...mockEvent, id: meetingId },
+            { ...mockEvent, id: faker.string.uuid() },
           ],
         },
       ],
@@ -112,10 +117,11 @@ describe('proposeMeetingConflictResolutionsDelegate', () => {
     );
     expect(result).toEqual(
       expect.arrayContaining([
-        {
-          meetingId,
+        expect.objectContaining({
+          ...mockEvent,
+          email: userEmail,
           resolutionBlocks: [],
-        },
+        }),
       ])
     );
   });

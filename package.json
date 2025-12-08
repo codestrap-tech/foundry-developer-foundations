@@ -81,7 +81,7 @@
     "marked": "^15.0.12",
     "marked-highlight": "^2.2.2",
     "marked-terminal": "^7.3.0",
-    "next": "~15.2.4",
+    "next": "15.2.6",
     "node-fetch": "^3.3.2",
     "octokit": "^5.0.4",
     "openai": "^4.92.1",
