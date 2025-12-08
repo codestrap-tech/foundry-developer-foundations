@@ -113,7 +113,7 @@ export class Larry extends Text2Action {
         }
       }
     });
-    const workspaceRoot = findWorkspaceRoot(process.cwd());
+    const workspaceRoot = findWorkspaceRoot();
     const readmePath = `${workspaceRoot}${this.agent.readmePath}`;
     if (readmePath && !fs.existsSync(readmePath)) throw new Error(`README file does not exist: ${readmePath}`);
     const readme = await fs.readFileSync(readmePath, 'utf8');
