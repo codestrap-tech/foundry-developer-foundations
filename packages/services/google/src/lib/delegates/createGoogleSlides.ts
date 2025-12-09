@@ -160,6 +160,7 @@ export async function createGoogleSlidesDelegate(
         fileId: normalized,
         requestBody: { name: targetName },
         fields: "id,name",
+        supportsAllDrives: true, //required for shared drive files
       });
 
       const file = copyRes.data;
@@ -171,6 +172,7 @@ export async function createGoogleSlidesDelegate(
         const templateMeta = await drive.files.get({
           fileId: normalized,
           fields: "name",
+          supportsAllDrives: true, //required for shared drive files
         });
         const templateName = templateMeta.data.name || "Template";
         targetName = formatDefaultName(templateName);
@@ -178,6 +180,7 @@ export async function createGoogleSlidesDelegate(
         await drive.files.update({
           fileId: presentationId,
           requestBody: { name: targetName },
+          supportsAllDrives: true, //required for shared drive files
         });
       }
 
@@ -202,25 +205,30 @@ export async function createGoogleSlidesDelegate(
 
       // 3) Build batchUpdate requests:
       //    item.content is GoogleSlide[]
-      //    - sort by slideNumber (if provided) to get deterministic ordering
-      const orderedSlides = [...item.content].sort((a, b) => {
-        const aNum = typeof a.slideNumber === "number" ? a.slideNumber : 0;
-        const bNum = typeof b.slideNumber === "number" ? b.slideNumber : 0;
-        return aNum - bNum;
-      });
+      //    - respect slideNumber if provided, otherwise fall back to JSON order
+      const orderedSlides = [...item.content]
+        .map((slide, index) => ({
+          ...slide,
+          sortKey: typeof slide.slideNumber === 'number' ? slide.slideNumber : index,
+        }))
+        .sort((a, b) => a.sortKey - b.sortKey); // ASC: s1, s2, s3...
 
-      const requests: slides_v1.Schema$Request[] = [];
+      const duplicateRequests: slides_v1.Schema$Request[] = [];
+      const replaceRequests: slides_v1.Schema$Request[] = [];
 
       orderedSlides.forEach((slide, slideIdx) => {
         let targetPageId: string;
 
         if (slideIdx === 0) {
-          // Use the original first slide for the first logical slide
+          // First logical slide uses the original base slide
           targetPageId = basePageId;
         } else {
-          // Duplicate the first slide for each additional logical slide
+          // For each additional logical slide, create a new page
           const newPageId = `${basePageId}_${slideIdx}`;
-          requests.push({
+
+          // IMPORTANT: unshift so duplicates execute in reverse order
+          // (last slide duplicated first) to preserve visual ordering.
+          duplicateRequests.unshift({
             duplicateObject: {
               objectId: basePageId,
               objectIds: {
@@ -228,20 +236,20 @@ export async function createGoogleSlidesDelegate(
               },
             },
           } as slides_v1.Schema$Request);
+
           targetPageId = newPageId;
         }
 
-        // Apply all content items for this logical slide to the target page
+        // Apply all content items for this logical slide to its target page
         slide.content.forEach((ci) => {
-          if (ci.targetType === "PLACEHOLDER") {
-            requests.push({
+          if (ci.targetType === 'PLACEHOLDER') {
+            replaceRequests.push({
               replaceAllText: {
                 containsText: {
-                  text: ci.placeholder || "",
+                  text: ci.placeholder || '',
                   matchCase: true,
                 },
                 replaceText: ci.text,
-                // Critical: restrict replacement to this page only
                 pageObjectIds: [targetPageId],
               },
             } as slides_v1.Schema$Request);
@@ -249,7 +257,11 @@ export async function createGoogleSlidesDelegate(
         });
       });
 
-      // 4) Execute batchUpdate if we have any requests
+      const requests: slides_v1.Schema$Request[] = [
+        ...duplicateRequests,
+        ...replaceRequests,
+      ];
+
       if (requests.length > 0) {
         try {
           await slidesClient.presentations.batchUpdate({
@@ -261,7 +273,7 @@ export async function createGoogleSlidesDelegate(
           failures.push({
             inputIndex: index,
             templateId: normalized,
-            errorCode: err?.code ? String(err.code) : "SLIDES_API_ERROR",
+            errorCode: err?.code ? String(err.code) : 'SLIDES_API_ERROR',
             errorMessage: `Error applying slide content: ${msg}`,
             details: err?.response?.data || undefined,
           });
@@ -273,6 +285,7 @@ export async function createGoogleSlidesDelegate(
       const meta = await drive.files.get({
         fileId: presentationId,
         fields: "id,name,webViewLink,webContentLink",
+        supportsAllDrives: true, //required for shared drive files
       });
 
       successes.push({

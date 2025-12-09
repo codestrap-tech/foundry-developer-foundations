@@ -27,7 +27,12 @@ export async function makeGSuiteClientV3(
   const slidesScopes = [
     'https://www.googleapis.com/auth/presentations',
     // for copying/updating slide decks we typically also need a Drive scope:
-    'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/drive',
+  ];
+
+  const driveScopes = [
+    // for copying/updating slide decks we typically also need a Drive scope:
+    'https://www.googleapis.com/auth/drive',
   ];
 
   const slidesAuth = makeGoogleAuth(credentials, slidesScopes, user);
@@ -36,6 +41,9 @@ export async function makeGSuiteClientV3(
     version: 'v1',
     auth: slidesAuth,
   });
+  const driveAuth = makeGoogleAuth(credentials, driveScopes, user);
+
+  const driveClient = google.drive({ version: 'v3', auth: driveAuth });
 
   return {
     ...v2Client,
@@ -63,7 +71,7 @@ export async function makeGSuiteClientV3(
       return createGoogleSlidesDelegate({
         input,
         // note: this uses the drive client created in v2
-        drive: v2Client.getDriveClient(),
+        drive: driveClient,
         slides: slidesClient,
       });
     },
