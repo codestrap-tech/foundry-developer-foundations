@@ -102,7 +102,7 @@ export async function inspectContainer(
         id: container.Id,
         name: containerName,
         isRunning: container.State.Running,
-        port: port ? parseInt(port, 10) : 0,
+        port: port ? parseInt(port, 10) : 4220,
       };
     }
     return null;
