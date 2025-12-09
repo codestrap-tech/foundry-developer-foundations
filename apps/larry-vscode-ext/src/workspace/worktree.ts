@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
+import os from 'os';
 import type { ExtensionState, LarryConfig } from '../types';
 import {
   createWorktree as gitCreateWorktree,
@@ -25,24 +26,101 @@ import { getCurrentWorktreeId, isInWorktree } from './git';
 const execAsync = promisify(exec);
 
 /**
+ * Builds a comprehensive PATH that includes common locations for Node.js tools.
+ * This is necessary because VSCode launched from Dock/Spotlight has a minimal PATH.
+ */
+function buildExtendedPath(homeDir: string): string {
+  const existingPath = process.env.PATH || '/usr/bin:/bin';
+
+  // Common locations where pnpm, npm, node might be installed
+  const additionalPaths = [
+    // Homebrew (Apple Silicon)
+    '/opt/homebrew/bin',
+    '/opt/homebrew/sbin',
+    // Homebrew (Intel)
+    '/usr/local/bin',
+    '/usr/local/sbin',
+    // pnpm standalone installer
+    `${homeDir}/.local/share/pnpm`,
+    `${homeDir}/Library/pnpm`,
+    // npm global
+    `${homeDir}/.npm-global/bin`,
+    `${homeDir}/.npm/bin`,
+    // nvm - common versions (we add a few recent LTS versions)
+    `${homeDir}/.nvm/versions/node/v22.0.0/bin`,
+    `${homeDir}/.nvm/versions/node/v20.0.0/bin`,
+    `${homeDir}/.nvm/versions/node/v18.0.0/bin`,
+    // fnm (Fast Node Manager)
+    `${homeDir}/.fnm/aliases/default/bin`,
+    `${homeDir}/Library/Application Support/fnm/aliases/default/bin`,
+    // volta
+    `${homeDir}/.volta/bin`,
+    // asdf
+    `${homeDir}/.asdf/shims`,
+    // n (node version manager)
+    '/usr/local/n/versions/node/*/bin',
+    `${homeDir}/n/bin`,
+    // Corepack / yarn / pnpm via corepack
+    `${homeDir}/.corepack/bin`,
+    // Standard paths
+    '/usr/bin',
+    '/bin',
+    '/usr/sbin',
+    '/sbin',
+  ];
+
+  // Combine paths, putting additional paths first so they take precedence
+  const allPaths = [...additionalPaths, ...existingPath.split(':')];
+
+  // Remove duplicates while preserving order
+  const uniquePaths = [...new Set(allPaths)];
+
+  return uniquePaths.join(':');
+}
+
+/**
  * Executes a command in the user's login shell environment.
  * This ensures that shell profile (.zshrc, .bashrc) is loaded,
  * which is necessary for tools like nvm, node-gyp, pnpm, etc.
+ *
+ * Works reliably even when VSCode is launched from Dock/Spotlight
+ * where the environment is minimal.
  */
 async function execInUserShell(
   command: string,
   options: { cwd?: string } = {}
 ): Promise<{ stdout: string; stderr: string }> {
+  // Use os.homedir() which is reliable even without env vars
+  const homeDir = os.homedir();
+
+  // Determine the user's shell - fallback chain for robustness
   const userShell = process.env.SHELL || '/bin/zsh';
-  // Use -l for login shell (loads profile), -c to execute command
-  const shellCommand = `${userShell} -l -c ${JSON.stringify(command)}`;
+
+  // Build extended PATH for when profile loading fails
+  const extendedPath = buildExtendedPath(homeDir);
+
+  // Use -l for login shell (loads profile), -i for interactive (loads rc files), -c to execute command
+  // The -i flag helps with some shells that only load certain configs in interactive mode
+  const shellCommand = `${userShell} -l -i -c ${JSON.stringify(command)}`;
 
   return execAsync(shellCommand, {
     ...options,
     env: {
       ...process.env,
-      // Ensure HOME is set for profile loading
-      HOME: process.env.HOME,
+      // Ensure HOME is set - critical for profile loading
+      HOME: homeDir,
+      // Provide extended PATH as fallback when profile doesn't load correctly
+      PATH: extendedPath,
+      // Some tools need these
+      USER: process.env.USER || os.userInfo().username,
+      SHELL: userShell,
+      // Disable interactive prompts that might hang
+      CI: 'true',
+      // Don't override PNPM_HOME if already set - location varies by install method
+      // Common locations: ~/Library/pnpm (Homebrew) or ~/.local/share/pnpm (standalone)
+      ...(process.env.PNPM_HOME
+        ? {}
+        : { PNPM_HOME: `${homeDir}/Library/pnpm` }),
     },
   });
 }

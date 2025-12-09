@@ -357,7 +357,7 @@ export async function getWorktreeContainerStatus(
   return {
     isRunning: false,
     containerId: undefined,
-    port: 0,
+    port: 4220,
   };
 }
 
