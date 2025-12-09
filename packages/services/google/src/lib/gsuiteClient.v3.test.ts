@@ -116,9 +116,13 @@ describe('makeGSuiteClientV3', () => {
         content: [
           {
             slideNumber: 1,
-            targetType: 'PLACEHOLDER',
-            placeholder: '{{TITLE}}',
-            text: 'Hello Slides',
+            content: [
+              {
+                targetType: 'PLACEHOLDER',
+                placeholder: '{{TITLE}}',
+                text: 'Hello Slides',
+              }
+            ]
           },
         ],
       },

@@ -1191,11 +1191,8 @@ export interface GoogleSlide {
    * Optional ordering hint ─ used to sort slides before creating them.
    * If omitted, the implementation may treat it as 0 or use array order.
    */
-  slideNumber: number;
-  targetType: string;
-  placeholder?: string;
-  objectId?: string; // (Currently unsupported for duplication mode)
-  text: string; // All placeholder fills for this slide
+  slideNumber?: number;
+  content: GoogleSlideContentItem[]; // All placeholder fills for this slide
 }
 
 /**

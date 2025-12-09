@@ -88,16 +88,24 @@ describe('createGoogleSlidesDelegate', () => {
           content: [
             {
               slideNumber: 1,
-              targetType: 'PLACEHOLDER',
-              placeholder: '{{TITLE}}',
-              text: 'Slide 1 Title',
+              content: [
+                {
+                  targetType: 'PLACEHOLDER',
+                  placeholder: '{{TITLE}}',
+                  text: 'Slide 1 Title',
+                },
+              ],
             },
             {
               slideNumber: 2,
-              targetType: 'PLACEHOLDER',
-              placeholder: '{{TITLE}}',
-              text: 'Slide 2 Title',
-            },
+              content: [
+                {
+                  targetType: 'PLACEHOLDER',
+                  placeholder: '{{TITLE}}',
+                  text: 'Slide 2 Title',
+                }
+              ],
+            }
           ],
         },
       ];
@@ -197,9 +205,13 @@ describe('createGoogleSlidesDelegate', () => {
           content: [
             {
               slideNumber: 1,
-              targetType: 'PLACEHOLDER',
-              placeholder: '{{TITLE}}',
-              text: 'Will not be used',
+              content: [
+                {
+                  targetType: 'PLACEHOLDER',
+                  placeholder: '{{TITLE}}',
+                  text: 'Will not be used',
+                },
+              ],
             },
           ],
         },
@@ -236,9 +248,13 @@ describe('createGoogleSlidesDelegate', () => {
           content: [
             {
               slideNumber: 1,
-              targetType: 'OBJECT_ID',
-              objectId: 'S01_TITLE',
-              text: 'This should fail validation',
+              content: [
+                {
+                  targetType: 'OBJECT_ID',
+                  objectId: 'S01_TITLE',
+                  text: 'This should fail validation',
+                },
+              ],
             },
           ],
         },
@@ -273,9 +289,13 @@ describe('createGoogleSlidesDelegate', () => {
           content: [
             {
               slideNumber: 1,
-              targetType: 'PLACEHOLDER',
-              placeholder: '{{TITLE}}',
-              text: 'Won\'t be used',
+              content: [
+                {
+                  targetType: 'PLACEHOLDER',
+                  placeholder: '{{TITLE}}',
+                  text: 'Won\'t be used',
+                },
+              ],
             },
           ],
         },
