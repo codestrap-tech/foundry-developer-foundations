@@ -171,19 +171,19 @@ describe('createGoogleSlidesDelegate', () => {
 
       const [r0, r1, r2] = requests;
 
-      // r0: replaceAllText on base slide
-      expect(r0.replaceAllText).toBeDefined();
-      expect(r0.replaceAllText.containsText).toEqual({
+      // r0: duplicateObject of base slide
+      expect(r0.duplicateObject).toBeDefined();
+      expect(r0.duplicateObject.objectId).toBe('p1');
+      expect(r0.duplicateObject.objectIds).toEqual({ p1: 'p1_1' });
+
+      // replaceAllText on base slide
+      expect(r1.replaceAllText).toBeDefined();
+      expect(r1.replaceAllText.containsText).toEqual({
         text: '{{TITLE}}',
         matchCase: true,
       });
-      expect(r0.replaceAllText.replaceText).toBe('Slide 1 Title');
-      expect(r0.replaceAllText.pageObjectIds).toEqual(['p1']);
-
-      // r1: duplicateObject of base slide
-      expect(r1.duplicateObject).toBeDefined();
-      expect(r1.duplicateObject.objectId).toBe('p1');
-      expect(r1.duplicateObject.objectIds).toEqual({ p1: 'p1_1' });
+      expect(r1.replaceAllText.replaceText).toBe('Slide 1 Title');
+      expect(r1.replaceAllText.pageObjectIds).toEqual(['p1']);
 
       // r2: replaceAllText on duplicated slide
       expect(r2.replaceAllText).toBeDefined();
