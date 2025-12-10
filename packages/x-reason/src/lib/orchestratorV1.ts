@@ -31,6 +31,7 @@ export async function getState(
     xReasonFactory(xreason)({});
   let currentState: State<Context, MachineEvent> | undefined;
   let pendingAsyncOperationsCount = 0;
+  let saveQueue = Promise.resolve();
 
   const dispatch = (action: ActionType) => {
     console.log(`route dispatch callback called`);
@@ -56,22 +57,23 @@ export async function getState(
       const machineDao = container.get<MachineDao>(TYPES.MachineDao);
       // This should capture the result of the last state
       const jsonState = serialize(currentState);
-      try {
-        pendingAsyncOperationsCount++;
+      pendingAsyncOperationsCount++;
+      saveQueue = saveQueue.then(async () => {
         await machineDao.upsert(
           solution.id,
-          // the StateConfig[] returned by the programmer
           JSON.stringify(result),
           jsonState,
           getLog(solution.id) ?? '',
-          '', // we have to send default values for lockOwner and lockUntil or the OSDK will shit a brick. It still can't handle optional params
+          '',
           1
         );
-      } catch (e) {
+      })
+      .catch((e: any) => {
         console.log(e);
-      } finally {
+      })
+      .finally(() => {
         pendingAsyncOperationsCount--;
-      }
+      });
     }
   };
 
