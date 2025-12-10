@@ -74,6 +74,8 @@ export async function getState(
       .finally(() => {
         pendingAsyncOperationsCount--;
       });
+
+      await saveQueue;
     }
   };
 
