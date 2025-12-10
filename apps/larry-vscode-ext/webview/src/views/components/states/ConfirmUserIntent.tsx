@@ -1,13 +1,24 @@
 /* JSX */
 /* @jsxImportSource preact */
-
+import { StateComponentProps } from "../../../lib/backend-types";
 import { GeneralMessageBubble } from "../GeneralMessageBubble";
 
+type ConfirmUserIntentData = {
+  confirmationPrompt: string;
+  userResponse?: string;
+};
 
-export function ConfirmUserIntent({ data, id }: { data: {confirmationPrompt: string}, id: string }) {
+export function ConfirmUserIntent({
+  data,
+}: StateComponentProps<ConfirmUserIntentData>) {
+
   return (
     <div className="confirm-user-intent">
-      <GeneralMessageBubble key={id} content={data.confirmationPrompt} topActions={null} />
+      <GeneralMessageBubble
+        content={data?.confirmationPrompt || ''}
+        topActions={null}
+      />
     </div>
   );
 }
+

@@ -1,49 +1,87 @@
 /* JSX */
 /* @jsxImportSource preact */
-import { useState, useEffect } from 'preact/hooks';
+import { useState, useEffect, useMemo } from 'preact/hooks';
 import { useExtensionDispatch, useExtensionStore } from '../store/store';
 import { createThread } from '../lib/http';
-import { AnimatedEllipsis } from './components/AnimatedEllipsis';
 import { useThreadsQuery } from '../hooks/useThreadsQuery';
 import { useMachineQuery } from '../hooks/useMachineQuery';
 import { StateVisualization } from './components/StateVisualization';
 import { useWorktreeThreads } from '../hooks/useWorktreeThreads';
 import { PlusIcon } from 'lucide-preact';
+import { useLarryStream } from '../hooks/useLarryStream';
+import type { LarryUpdateEvent } from '../hooks/useLarryStream';
+import WorkingIndicator from './components/WorkingIndicator';
+import { useThread } from '../hooks/useThread';
+import { getUserQuestion } from '../lib/findUserQuestion';
 
 export function WorktreeScreen() {
   const [firstMessage, setFirstMessage] = useState('');
   const [provisioning, setProvisioning] = useState(false);
+  const [workingStatus, setWorkingStatus] = useState<string>('Working on it');
+  const [workingError, setWorkingError] = useState<string | undefined>(undefined);
+  const [isWorking, setIsWorking] = useState(false);
   const [previousThreadId, setPreviousThreadId] = useState<string | undefined>(undefined);
   const dispatch = useExtensionDispatch();
   const { apiUrl, clientRequestId, currentThreadId, currentWorktreeName } = useExtensionStore();
-  console.log('CURRENT THREAD ID::', currentThreadId);
+
+  const { data: machineData, isLoading } = useMachineQuery(apiUrl, currentThreadId);
+
+  console.log('machineData', machineData);
+
+  let timeout: NodeJS.Timeout | undefined;
+  const onLarryUpdate = (notification: LarryUpdateEvent) => {
+    clearTimeout(timeout);
+    if (notification.payload.type === 'info') {
+      setWorkingStatus(notification.payload.message);
+
+      timeout = setTimeout(() => {
+        setWorkingStatus('Timed out, please try again');
+        setIsWorking(false);
+        setWorkingError('Timed out, please try again');
+        setProvisioning(false);
+      }, 120000);
+    } else if (notification.payload.type === 'error') {
+      setWorkingStatus(notification.payload.message);
+      setIsWorking(false);
+      setWorkingError(notification.payload.metadata.error);
+      setProvisioning(false);
+    }
+  }
+  const { start: startLarryStream, stop: stopLarryStream } = useLarryStream(apiUrl, 'new-thread-creation', { onUpdate: onLarryUpdate });
   
+  useEffect(() => {
+    startLarryStream();
+    return () => {
+      stopLarryStream();
+    };
+  }, []);
+
   // Stop provisioning when thread is created
   useEffect(() => {
     if (currentThreadId) {
       setProvisioning(false);
+      setIsWorking(false);
+      setWorkingError(undefined);
+      setWorkingStatus('Working on it');
+      clearTimeout(timeout);
     }
   }, [currentThreadId]);
   
-  // Read machine data from React Query cache (set by SSE bridge)
-  const { data: machineData, isLoading } = useMachineQuery(apiUrl, currentThreadId);
 
   // Read threads data to get the session label
   const { data: threadsData } = useThreadsQuery(apiUrl);
+  const { data: threadData } = useThread(apiUrl, currentThreadId);
+
+  const userQuestion = useMemo(() => getUserQuestion(threadData?.messages || []), [threadData]);
 
   const { threads: localThreads } = useWorktreeThreads(currentWorktreeName);
   
-  useEffect(() => {
-    // This effect is only for debug purposes, not doing anything more
-    console.log('MACHINE DATA::')
-    console.log(machineData)
-  }, [machineData, threadsData]);
-  
   // Find current thread label from threads list
   const currentThread = threadsData?.items?.find(t => t.id === currentThreadId);
-  const sessionLabel = currentThread?.label || 'Session 123';
+  const sessionLabel = currentThread?.label || currentWorktreeName;
 
   async function startNewThread() {
+    setWorkingError(undefined);
     if (!firstMessage.trim()) return;
     if (!currentWorktreeName) {
       // NOTE: Ideally extension should pass worktreeName in worktree_detection; otherwise we can prompt the user
@@ -52,18 +90,14 @@ export function WorktreeScreen() {
       return;
     }
     setProvisioning(true);
+    setIsWorking(true);
     await createThread({
       baseUrl: apiUrl,
-      worktreeName: currentWorktreeName || 'test-001',
+      worktreeName: currentWorktreeName,
       userTask: firstMessage.trim(),
       label: firstMessage.trim(),
       clientRequestId: clientRequestId,
     });
-    // Now we wait for thread.created via SSE -> handled in onThreadCreated
-  }
-
-  const handleSubmit = async (input: string) => {
-    
   }
 
   const handleAddThread = () => {
@@ -90,12 +124,16 @@ export function WorktreeScreen() {
   }
 
   if (currentThreadId && !machineData) {
-    return <div>Loading thread...</div>
+    return <WorkingIndicator status="Loading thread..." isWorking />
   }
 
   if (currentThreadId && machineData) {
     return (
       <div className="min-h-screen">
+        <div className="mb-2">
+          <small className="label-text">Worktree session:</small>
+          <h4 className="h6 m-0">{sessionLabel}</h4>
+        </div>
         <div className="threadsTabsList">
           <div className="threadsTabsList__items">
             {localThreads?.map((threadId, index) => (
@@ -106,14 +144,14 @@ export function WorktreeScreen() {
             <PlusIcon className="threadsTabsList__addIcon" />
           </div>
         </div>
-        <div className="mb-2">
-          <h4 className="h4 m-0">{sessionLabel}</h4>
+        <div className="mb-2 worktreeScreen-execution-id">
+          <div>Execution ID:</div>
           <small>{currentThreadId}</small>
         </div>
         {isLoading ? (
-          <div className="color-fg-muted">Loading thread...</div>
+          <WorkingIndicator status="Loading thread..." isWorking />
         ) : (
-          <StateVisualization data={machineData} onSubmit={handleSubmit} />
+          <StateVisualization userQuestion={userQuestion} data={machineData} />
         )}
       </div>
     );
@@ -135,17 +173,18 @@ export function WorktreeScreen() {
         rows={6}
         placeholder="Hello, how can I help you today?"
         value={firstMessage}
+        readOnly={provisioning}
         onInput={(e) => setFirstMessage((e.currentTarget as HTMLTextAreaElement).value)}
       />
       <div>
         {provisioning && (
           <div className="mt-1">
-            <span className="shimmer-loading">Working on it</span><AnimatedEllipsis />
+            <WorkingIndicator status={workingStatus} isWorking={isWorking} error={workingError} />
           </div>
         )}
         {!provisioning && (
           <button className="btn btn-primary" disabled={!firstMessage.trim()} onClick={startNewThread}>
-            Send
+            {workingError ? 'Try again' : 'Send'}
           </button>
         )}
       </div>

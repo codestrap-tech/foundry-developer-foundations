@@ -10,8 +10,9 @@ import {
   TYPES,
   LoggingService,
 } from '@codestrap/developer-foundations-types';
-import type { User } from '@codestrap/developer-foundations-types';
+import type { LarryStream, User } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
+import { findWorkspaceRoot } from '@codestrap/developer-foundations-utils';
 
 export interface LarryResponse {
   status: number;
@@ -25,6 +26,7 @@ export interface LarryResponse {
 // use classes to take advantage of trace decorator
 export class Larry extends Text2Action {
   private agent = container.get<LarryAgentFactoryType>(TYPES.LarryCodingAgentFactory)({});
+  private larryStream = container.get<LarryStream>(TYPES.LarryStream);
 
   @Trace({
     resource: {
@@ -69,6 +71,12 @@ export class Larry extends Text2Action {
         threadId
       );
 
+      console.log(
+        status,
+        taskList,
+        executionId,
+      )
+
       // if we get a bad response skip calling execute task list
       if (status !== 200 || !taskList) {
         log(
@@ -95,11 +103,18 @@ export class Larry extends Text2Action {
       threadId = executionId;
       generatedTaskList = taskList;
     }
-
-    const readmePath = path.resolve(
-      process.cwd(),
-      this.agent.readmePath
-    );
+    this.larryStream.publish({
+      id: 'new-thread-creation',
+      payload: {
+        type: 'info',
+        message: 'Loading LLMified documentation...',
+        metadata: {
+          threadId: threadId || '',
+        }
+      }
+    });
+    const workspaceRoot = findWorkspaceRoot();
+    const readmePath = `${workspaceRoot}${this.agent.readmePath}`;
     if (readmePath && !fs.existsSync(readmePath)) throw new Error(`README file does not exist: ${readmePath}`);
     const readme = await fs.readFileSync(readmePath, 'utf8');
     // save the readme for later so we can retrieve it when creating the design specification
@@ -113,6 +128,16 @@ export class Larry extends Text2Action {
       console.error('error writing readme:: ', error);
     }
 
+    this.larryStream.publish({
+      id: 'new-thread-creation',
+      payload: {
+        type: 'info',
+        message: 'Generating state machine...',
+        metadata: {
+          threadId: threadId || '',
+        }
+      }
+    });
     // if task list is defined and there's no machine where machineExecutionId === threadId, a new solution will be generated
     // else the exiting machine will be rehydrated and the next state sent back
     const results = await this.getNextState(
@@ -132,6 +157,16 @@ export class Larry extends Text2Action {
       system: string;
     }[];
 
+    this.larryStream.publish({
+      id: 'new-thread-creation',
+      payload: {
+        type: 'info',
+        message: 'Calrifying user request...',
+        metadata: {
+          threadId: threadId || '',
+        }
+      }
+    });
     // construct the response
     const system = `You are a helpful AI coding assistant named Larry.
         You are professional in your tone, personable, and always start your messages with the phrase, "Hi, I'm Larry, Code's AI Coding Assistant" or similar.
@@ -229,28 +264,62 @@ export class Larry extends Text2Action {
     userId: string,
     threadId?: string
   ): Promise<LarryResponse> {
-    console.log('createComsTasksList called');
-    // if no threadId create one
-    // call the solver to get back the task list.
-    const communication = await this.createTaskList(
-      query,
-      userId,
-      SupportedEngines.GOOGLE_SERVICES_CODE_ASSIST,
-      undefined,
-      undefined,
-      threadId
-    );
+    const run = async () => {
+      try {
+        this.larryStream.publish({
+          id: 'new-thread-creation',
+          payload: {
+            type: 'info',
+            message: 'Generating x-reason task list',
+            metadata: {
+              threadId: threadId || '',
+            }
+          }
+        });
+        // if no threadId create one
+        // call the solver to get back the task list.
+        const communication = await this.createTaskList(
+          query,
+          userId,
+          SupportedEngines.GOOGLE_SERVICES_CODE_ASSIST,
+          undefined,
+          undefined,
+          threadId
+        );
+    
+        // If incomplete information is provided the solver will return Missing Information
+        // If the request is unsupported the solver will return Unsupported Questions
+        // If it's a complete supported query the solver will return a well formatted task list that we can use to execute
+        return {
+          status: 200,
+          message: 'Task list created',
+          // we match the threadID and threadId and executionId so we can associate conversations between agents and machine executions
+          executionId: communication.id,
+          taskList: communication.taskList,
+        }; 
+      } catch (error) {
+        this.larryStream.publish({
+          id: 'new-thread-creation',
+          payload: {
+            type: 'error',
+            message: 'Error generating x-reason task list',
+            metadata: {
+              threadId: threadId || '',
+              error: error,
+            }
+          }
+        });
+        return {
+          status: 500,
+          message: 'Error creating task list',
+          // we match the threadID and threadId and executionId so we can associate conversations between agents and machine executions
+          executionId: '',
+          taskList: '',
+        }; 
+      }
+    }
 
-    // If incomplete information is provided the solver will return Missing Information
-    // If the request is unsupported the solver will return Unsupported Questions
-    // If it's a complete supported query the solver will return a well formatted task list that we can use to execute
-    return {
-      status: 200,
-      message: 'Task list created',
-      // we match the threadID and threadId and executionId so we can associate conversations between agents and machine executions
-      executionId: communication.id,
-      taskList: communication.taskList,
-    };
+    return run();
   }
 
   @Trace({

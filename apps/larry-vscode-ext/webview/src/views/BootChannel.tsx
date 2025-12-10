@@ -3,14 +3,20 @@ import { onMessage, postMessage } from '../lib/vscode';
 import { useExtensionDispatch, useExtensionStore } from '../store/store';
 import { handleForwardedSSE } from '../lib/extension-sse-bridge';
 import { useSaveThreadId } from '../hooks/useSaveThreadId';
+import { invalidateMachineQuery } from '../store/query-sync';
 
 export function BootChannel() {
   const dispatch = useExtensionDispatch();
-  const { clientRequestId } = useExtensionStore();
+  const { clientRequestId, apiUrl, currentThreadId } = useExtensionStore();
   const { fetch: saveThreadId } = useSaveThreadId();
   useEffect(() => {
     const handleMessage = (msg: any) => {
       if (!msg || typeof msg !== 'object') return;
+
+      if (msg.type === 'set_larry_working') {
+        dispatch({ type: 'SET_LARRY_WORKING', payload: !!msg.isWorking });
+        return;
+      }
       
       if (msg.type === 'worktree_detection') {
         dispatch({
@@ -19,6 +25,8 @@ export function BootChannel() {
             isInWorktree: !!msg.isInWorktree,
             currentThreadId: msg.currentThreadId || undefined,
             worktreeName: msg.worktreeName,
+            worktreePort: Number(msg.worktreePort),
+            mainPort: Number(msg.mainPort),
           },
         });
       }
@@ -48,6 +56,8 @@ export function BootChannel() {
             agents: msg.config.agents,
             workspaceSetupCommand: msg.config.workspaceSetupCommand,
             larryEnvPath: msg.config.larryEnvPath,
+            worktreePort: Number(msg.worktreePort),
+            mainPort: Number(msg.mainPort),
           },
         });
       }
@@ -79,7 +89,7 @@ export function BootChannel() {
         cleanupListener();
       }
     };
-  }, []);
+  }, [clientRequestId, apiUrl, dispatch, saveThreadId]);
 
   return null;
 }

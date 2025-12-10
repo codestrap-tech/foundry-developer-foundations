@@ -22,6 +22,20 @@ export interface ThreadsListResponse {
   requestId: string;
 }
 
+export interface ThreadRawResponse {
+  id: UUID;
+  appId: string;
+  messages: string;
+}
+
+export interface ThreadResponse {
+  id: UUID;
+  appId: string;
+  messages: ThreadMessage[];
+}
+
+export type ThreadMessage = Record<'user' | 'system', string>;
+
 // Minimal Context representation (opaque bag)
 export type Context = Record<string, any> & {
   requestId?: string;
@@ -76,4 +90,34 @@ export interface LocalWorktree {
 export interface DockerStatus {
   isRunning: boolean;
   containerId?: string;
+}
+
+// ============================================================================
+// State Component Types
+// ============================================================================
+
+export type FetchNextStatePayload = {
+  machineId: string;
+  contextUpdate: Record<string, any>;
+};
+
+export type FetchNextStateFn = (payload: FetchNextStatePayload) => Promise<Response>;
+
+/**
+ * Common props passed to all state components in StateVisualization2
+ * Each component handles its own approve/reject/feedback logic internally
+ */
+export interface StateComponentProps<TData = any> {
+  /** State-specific data from machine context */
+  data: TData;
+  /** The state key (e.g., "specReview|abc123") */
+  stateKey: string;
+  /** Machine execution ID */
+  machineId: string;
+  /** Function to advance to next state with context update */
+  fetchGetNextState: FetchNextStateFn;
+  /** Current machine status */
+  machineStatus: MachineStatus;
+  /** Callback to set working indicator */
+  setIsWorking: (working: boolean) => void;
 }

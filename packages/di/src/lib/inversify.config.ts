@@ -43,7 +43,7 @@ import { makeSlackClient } from '@codestrap/developer-foundations-services-slack
 import { createLoggingService } from '@codestrap/developer-foundations-utils';
 import { eiaService } from '@codestrap/developer-foundations-services-eia';
 import { makeGithubClient } from '@codestrap/github';
-import { LarryAgentFactory } from '@codestrap/larry-config';
+import { LarryAgentFactory, makeLarryStream } from '@codestrap/larry-config';
 
 const container = new Container();
 
@@ -121,7 +121,7 @@ container
 
   container
   .bind(TYPES.VersionControlService)
-  .toConstantValue(makeGithubClient());
+  .toConstantValue(makeGithubClient)
 
 container
   .bind(TYPES.MessageService)
@@ -130,5 +130,7 @@ container
   );
 
 container.bind(TYPES.LarryCodingAgentFactory).toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
+
+container.bind(TYPES.LarryStream).toConstantValue(makeLarryStream());
 
 export { container };
