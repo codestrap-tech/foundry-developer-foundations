@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import { TokenStore, UserTokens } from '../types/tokens';
 
-const TOKENS_FILE = path.join(process.cwd(), 'apps/calendar-scheduler/tokens.json');
+const TOKENS_FILE = path.join(process.cwd(), 'tokens.json');
 
 /**
  * Promise-wrapped read from JSON file.
