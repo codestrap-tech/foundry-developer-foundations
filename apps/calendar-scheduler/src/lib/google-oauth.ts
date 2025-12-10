@@ -1,6 +1,10 @@
 import { google } from 'googleapis';
 
-const SCOPES = ['https://www.googleapis.com/auth/calendar'];
+const SCOPES = [
+  'https://www.googleapis.com/auth/calendar',
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile',
+];
 
 /**
  * Create a new OAuth2 client instance.
@@ -41,10 +45,10 @@ export async function exchangeCodeForTokens(code: string) {
 export async function getUserInfo(accessToken: string) {
   const oauth2Client = createOAuth2Client();
   oauth2Client.setCredentials({ access_token: accessToken });
-  
+
   const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
   const { data } = await oauth2.userinfo.get();
-  
+
   return {
     id: data.id!,
     email: data.email!,
@@ -52,4 +56,3 @@ export async function getUserInfo(accessToken: string) {
     picture: data.picture,
   };
 }
-
