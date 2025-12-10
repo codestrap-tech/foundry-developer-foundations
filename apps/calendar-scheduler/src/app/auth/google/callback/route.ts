@@ -1,3 +1,4 @@
+import 'server-only';
 import { NextRequest, NextResponse } from 'next/server';
 import { exchangeCodeForTokens, getUserInfo } from '../../../../lib/google-oauth';
 import { saveUserTokens } from '../../../../lib/token-storage';

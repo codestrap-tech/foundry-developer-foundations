@@ -1,3 +1,4 @@
+import 'server-only';
 import { NextRequest, NextResponse } from 'next/server';
 import { getTodayEvents } from '../../../lib/calendar-service';
 
@@ -9,17 +10,14 @@ export async function GET(request: NextRequest) {
   const userId = request.cookies.get('userId')?.value;
 
   if (!userId) {
-    return NextResponse.json(
-      { error: 'Not authenticated' },
-      { status: 401 }
-    );
+    return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
   }
 
   try {
     const events = await getTodayEvents(userId);
-    
+
     // Map events to a simpler format for the frontend
-    const formattedEvents = events.map(event => ({
+    const formattedEvents = events.map((event) => ({
       id: event.id,
       summary: event.summary || 'Untitled Event',
       description: event.description,
@@ -43,4 +41,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

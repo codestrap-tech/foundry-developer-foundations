@@ -1,3 +1,4 @@
+import 'server-only';
 import { cookies } from 'next/headers';
 import { getUserTokens } from '../lib/token-storage';
 import { getTodayEvents } from '../lib/calendar-service';
@@ -34,7 +35,7 @@ export default async function HomePage({
 
       try {
         const calendarEvents = await getTodayEvents(userId);
-        events = calendarEvents.map(event => ({
+        events = calendarEvents.map((event) => ({
           id: event.id || '',
           summary: event.summary || 'Untitled Event',
           description: event.description || null,
@@ -44,7 +45,8 @@ export default async function HomePage({
         }));
       } catch (error) {
         console.error('Error fetching calendar events:', error);
-        fetchError = error instanceof Error ? error.message : 'Failed to fetch events';
+        fetchError =
+          error instanceof Error ? error.message : 'Failed to fetch events';
       }
     }
   }

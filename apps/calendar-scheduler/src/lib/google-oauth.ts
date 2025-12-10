@@ -23,6 +23,7 @@ export function createOAuth2Client() {
  */
 export function getAuthUrl() {
   const oauth2Client = createOAuth2Client();
+  // TODO: @kopach - random string for state to prevent CSRF and ideally PKCE code challenge
   return oauth2Client.generateAuthUrl({
     access_type: 'offline',
     prompt: 'consent',
@@ -50,6 +51,7 @@ export async function getUserInfo(accessToken: string) {
   const { data } = await oauth2.userinfo.get();
 
   return {
+    // TODO: @kopach - parse response to be more strict
     id: data.id!,
     email: data.email!,
     name: data.name,

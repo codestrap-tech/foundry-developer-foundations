@@ -13,8 +13,8 @@
   --color-error: #ef4444;
   --color-border: #2a2a3a;
   --color-border-light: #3a3a4a;
-  --font-sans: 'DM Sans', system-ui, -apple-system, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-sans: var(--font-dm-sans), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
