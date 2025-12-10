@@ -1,5 +1,9 @@
 import { resolveMeetingConflicts } from '../resolveMeetingConflicts';
-import { OfficeServiceV3, TYPES } from '@codestrap/developer-foundations-types';
+import {
+  OfficeServiceV3,
+  TYPES,
+  GeminiService,
+} from '@codestrap/developer-foundations-types';
 import { faker } from '@faker-js/faker';
 import { container } from '@codestrap/developer-foundations-di';
 
@@ -14,6 +18,8 @@ const mockOfficeServiceV3 = {
   scheduleMeeting: jest.fn(),
 } satisfies Partial<OfficeServiceV3>;
 
+const mockGeminiService = jest.fn<GeminiService>();
+
 describe('resolveMeetingConflicts', () => {
   const mockConsoleError = jest.spyOn(console, 'error').mockImplementation();
   const mockConsoleLog = jest.spyOn(console, 'log').mockImplementation();
@@ -25,6 +31,17 @@ describe('resolveMeetingConflicts', () => {
       }
       throw new Error(`Unknown type: ${String(type)}`);
     });
+
+    mockContainer.get.mockImplementation((type) => {
+      if (type === TYPES.GeminiService) {
+        return mockGeminiService;
+      }
+      throw new Error(`Unknown type: ${String(type)}`);
+    });
+
+    mockGeminiService.mockResolvedValue(
+      JSON.stringify({ prioritizedMeetingIds: [] })
+    );
 
     faker.seed(75206);
     faker.setDefaultRefDate(new Date('2025-04-11'));
@@ -629,6 +646,345 @@ describe('resolveMeetingConflicts', () => {
           }),
         ]),
       ]);
+    });
+  });
+
+  describe('meeting prioritization', () => {
+    it('calls GeminiService to prioritize meetings', async () => {
+      // given
+      const userEmail = faker.internet.email({ provider: 'codestrap.me' });
+      const meeting1Id = faker.string.uuid();
+      const meeting2Id = faker.string.uuid();
+      const mockMeetings = [
+        {
+          id: meeting1Id,
+          email: userEmail,
+          subject: 'Team Standup',
+          description: 'Daily standup',
+          start: '2025-04-11T09:00:00-07:00',
+          end: '2025-04-11T09:30:00-07:00',
+          durationMinutes: 30,
+          participants: [userEmail],
+          resolutionBlocks: [
+            {
+              start: '2025-04-11T11:00:00-07:00',
+              end: '2025-04-11T11:30:00-07:00',
+              score: 90,
+            },
+          ],
+        },
+        {
+          id: meeting2Id,
+          email: userEmail,
+          subject: 'Client Demo',
+          description: 'Demo for client',
+          start: '2025-04-11T09:00:00-07:00',
+          end: '2025-04-11T10:00:00-07:00',
+          durationMinutes: 60,
+          participants: [userEmail, 'client@acme.com'],
+          resolutionBlocks: [
+            {
+              start: '2025-04-11T11:00:00-07:00',
+              end: '2025-04-11T12:00:00-07:00',
+              score: 90,
+            },
+          ],
+        },
+      ];
+
+      mockOfficeServiceV3.proposeMeetingConflictResolutions.mockResolvedValue(
+        mockMeetings
+      );
+
+      // Mock Gemini to prioritize external meeting first
+      mockGeminiService.mockResolvedValue(
+        JSON.stringify({
+          prioritizedMeetingIds: [meeting2Id, meeting1Id],
+        })
+      );
+
+      // when
+      await resolveMeetingConflicts([userEmail]);
+
+      // then
+      expect(mockGeminiService).toHaveBeenCalledTimes(1);
+      const [userPrompt, systemPrompt] = mockGeminiService.mock.calls[0];
+      expect(systemPrompt).toContain('scheduling assistant');
+      expect(userPrompt).toContain('Conflict Resolution Rules');
+      expect(userPrompt).toContain(meeting1Id);
+      expect(userPrompt).toContain(meeting2Id);
+    });
+
+    it('reorders meetings based on Gemini prioritization', async () => {
+      // given
+      const userEmail = faker.internet.email({ provider: 'codestrap.me' });
+      const meeting1Id = faker.string.uuid();
+      const meeting2Id = faker.string.uuid();
+      const meeting3Id = faker.string.uuid();
+
+      const mockMeetings = [
+        {
+          id: meeting1Id,
+          email: userEmail,
+          subject: 'Internal Meeting',
+          description: 'Internal team meeting',
+          start: '2025-04-11T09:00:00-07:00',
+          end: '2025-04-11T09:30:00-07:00',
+          durationMinutes: 30,
+          participants: [userEmail],
+          resolutionBlocks: [
+            {
+              start: '2025-04-11T11:00:00-07:00',
+              end: '2025-04-11T11:30:00-07:00',
+              score: 90,
+            },
+          ],
+        },
+        {
+          id: meeting2Id,
+          email: userEmail,
+          subject: 'External Client Meeting',
+          description: 'Meeting with external client',
+          start: '2025-04-11T09:00:00-07:00',
+          end: '2025-04-11T10:00:00-07:00',
+          durationMinutes: 60,
+          participants: [userEmail, 'client@acme.com'],
+          resolutionBlocks: [
+            {
+              start: '2025-04-11T11:30:00-07:00',
+              end: '2025-04-11T12:30:00-07:00',
+              score: 90,
+            },
+          ],
+        },
+        {
+          id: meeting3Id,
+          email: userEmail,
+          subject: 'Focus Time',
+          description: 'Personal focus time',
+          start: '2025-04-11T09:00:00-07:00',
+          end: '2025-04-11T10:00:00-07:00',
+          durationMinutes: 60,
+          participants: [userEmail],
+          resolutionBlocks: [
+            {
+              start: '2025-04-11T13:00:00-07:00',
+              end: '2025-04-11T14:00:00-07:00',
+              score: 90,
+            },
+          ],
+        },
+      ];
+
+      mockOfficeServiceV3.proposeMeetingConflictResolutions.mockResolvedValue(
+        mockMeetings
+      );
+
+      // Mock Gemini to prioritize: external > internal > personal
+      mockGeminiService.mockResolvedValue(
+        JSON.stringify({
+          prioritizedMeetingIds: [meeting2Id, meeting1Id, meeting3Id],
+        })
+      );
+
+      // when
+      await resolveMeetingConflicts([userEmail]);
+
+      // then
+      expect(mockOfficeServiceV3.scheduleMeeting).toHaveBeenCalledTimes(3);
+      // Verify order: external meeting scheduled first (gets best slot)
+      expect(mockOfficeServiceV3.scheduleMeeting.mock.calls[0][0].summary).toBe(
+        'External Client Meeting'
+      );
+      expect(mockOfficeServiceV3.scheduleMeeting.mock.calls[1][0].summary).toBe(
+        'Internal Meeting'
+      );
+      expect(mockOfficeServiceV3.scheduleMeeting.mock.calls[2][0].summary).toBe(
+        'Focus Time'
+      );
+    });
+
+    it('falls back to original order when Gemini fails', async () => {
+      // given
+      const userEmail = faker.internet.email({ provider: 'codestrap.me' });
+      const meeting1Id = faker.string.uuid();
+      const meeting2Id = faker.string.uuid();
+      const mockMeetings = [
+        {
+          id: meeting1Id,
+          email: userEmail,
+          subject: 'Meeting 1',
+          description: 'First meeting',
+          start: '2025-04-11T09:00:00-07:00',
+          end: '2025-04-11T09:30:00-07:00',
+          durationMinutes: 30,
+          participants: [userEmail],
+          resolutionBlocks: [
+            {
+              start: '2025-04-11T11:00:00-07:00',
+              end: '2025-04-11T11:30:00-07:00',
+              score: 90,
+            },
+          ],
+        },
+        {
+          id: meeting2Id,
+          email: userEmail,
+          subject: 'Meeting 2',
+          description: 'Second meeting',
+          start: '2025-04-11T09:00:00-07:00',
+          end: '2025-04-11T10:00:00-07:00',
+          durationMinutes: 60,
+          participants: [userEmail],
+          resolutionBlocks: [
+            {
+              start: '2025-04-11T11:30:00-07:00',
+              end: '2025-04-11T12:30:00-07:00',
+              score: 90,
+            },
+          ],
+        },
+      ];
+
+      mockOfficeServiceV3.proposeMeetingConflictResolutions.mockResolvedValue(
+        mockMeetings
+      );
+
+      // Mock Gemini to throw an error
+      mockGeminiService.mockRejectedValueOnce(
+        new Error('Gemini service unavailable')
+      );
+
+      // when
+      await resolveMeetingConflicts([userEmail]);
+
+      // then
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        expect.stringContaining('Error prioritizing meetings with Gemini'),
+        expect.stringContaining('Gemini service unavailable')
+      );
+      // Should still schedule meetings in original order
+      expect(mockOfficeServiceV3.scheduleMeeting).toHaveBeenCalledTimes(2);
+      expect(mockOfficeServiceV3.scheduleMeeting.mock.calls[0][0].summary).toBe(
+        'Meeting 1'
+      );
+      expect(mockOfficeServiceV3.scheduleMeeting.mock.calls[1][0].summary).toBe(
+        'Meeting 2'
+      );
+    });
+
+    it('skips prioritization for single meeting', async () => {
+      // given
+      const userEmail = faker.internet.email({ provider: 'codestrap.me' });
+      const meetingId = faker.string.uuid();
+      const mockMeetings = [
+        {
+          id: meetingId,
+          email: userEmail,
+          subject: 'Solo Meeting',
+          description: 'Single meeting',
+          start: '2025-04-11T09:00:00-07:00',
+          end: '2025-04-11T09:30:00-07:00',
+          durationMinutes: 30,
+          participants: [userEmail],
+          resolutionBlocks: [
+            {
+              start: '2025-04-11T11:00:00-07:00',
+              end: '2025-04-11T11:30:00-07:00',
+              score: 90,
+            },
+          ],
+        },
+      ];
+
+      mockOfficeServiceV3.proposeMeetingConflictResolutions.mockResolvedValue(
+        mockMeetings
+      );
+
+      // when
+      await resolveMeetingConflicts([userEmail]);
+
+      // then
+      // Gemini should not be called for single meeting
+      expect(mockGeminiService).not.toHaveBeenCalled();
+      expect(mockOfficeServiceV3.scheduleMeeting).toHaveBeenCalledTimes(1);
+    });
+
+    it('skips prioritization for empty meetings array', async () => {
+      // given
+      const userEmail = faker.internet.email({ provider: 'codestrap.me' });
+      mockOfficeServiceV3.proposeMeetingConflictResolutions.mockResolvedValue(
+        []
+      );
+
+      // when
+      await resolveMeetingConflicts([userEmail]);
+
+      // then
+      // Gemini should not be called for empty array
+      expect(mockGeminiService).not.toHaveBeenCalled();
+      expect(mockOfficeServiceV3.scheduleMeeting).not.toHaveBeenCalled();
+    });
+
+    it('handles invalid JSON response from Gemini gracefully', async () => {
+      // given
+      const userEmail = faker.internet.email({ provider: 'codestrap.me' });
+      const meeting1Id = faker.string.uuid();
+      const meeting2Id = faker.string.uuid();
+      const mockMeetings = [
+        {
+          id: meeting1Id,
+          email: userEmail,
+          subject: 'Meeting 1',
+          description: 'First meeting',
+          start: '2025-04-11T09:00:00-07:00',
+          end: '2025-04-11T09:30:00-07:00',
+          durationMinutes: 30,
+          participants: [userEmail],
+          resolutionBlocks: [
+            {
+              start: '2025-04-11T11:00:00-07:00',
+              end: '2025-04-11T11:30:00-07:00',
+              score: 90,
+            },
+          ],
+        },
+        {
+          id: meeting2Id,
+          email: userEmail,
+          subject: 'Meeting 2',
+          description: 'Second meeting',
+          start: '2025-04-11T09:00:00-07:00',
+          end: '2025-04-11T10:00:00-07:00',
+          durationMinutes: 60,
+          participants: [userEmail],
+          resolutionBlocks: [
+            {
+              start: '2025-04-11T11:30:00-07:00',
+              end: '2025-04-11T12:30:00-07:00',
+              score: 90,
+            },
+          ],
+        },
+      ];
+
+      mockOfficeServiceV3.proposeMeetingConflictResolutions.mockResolvedValue(
+        mockMeetings
+      );
+
+      // Mock Gemini to return invalid JSON
+      mockGeminiService.mockResolvedValueOnce('Invalid JSON response');
+
+      // when
+      await resolveMeetingConflicts([userEmail]);
+
+      // then
+      expect(mockConsoleError).toHaveBeenCalledWith(
+        expect.stringContaining('Error prioritizing meetings with Gemini'),
+        expect.anything()
+      );
+      // Should still schedule meetings in original order
+      expect(mockOfficeServiceV3.scheduleMeeting).toHaveBeenCalledTimes(2);
     });
   });
 });

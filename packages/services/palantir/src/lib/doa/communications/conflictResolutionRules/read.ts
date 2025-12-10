@@ -6,17 +6,16 @@ export async function readConflictResolutionRules(
   token: string,
   url: string
 ): Promise<string[]> {
+  // Those are the rules for LLM to prioritize meetings
+  // Rules should be as if LLM had only meeting info in context, no other information
   const commonRules = [
     'Prioritize external meetings over internal meetings',
     'Prioritize meetings with participants over personal meetings (personal meetings usually have 1 participant)',
     'Prefer meetings within working hours (e.g., 9am–5pm local time)',
-    'Minimize meetings late on Fridays or before holidays',
     'Prioritize meetings with higher-level stakeholders',
-    'Respect time zones of all participants',
-    'Allow adequate breaks between meetings if possible (e.g., 5-15 minutes between meetings)',
-    'Limit back-to-back meetings to two in a row if possible',
     'Prefer meetings involving fewer conflicts among invitees',
-    'Prefer not to schedule on national or religious holidays',
+    'Prioritize meetings with mandatory attendees over optional ones',
+    'Prioritize meetings with more participants over less participants',
   ];
   return commonRules;
 
