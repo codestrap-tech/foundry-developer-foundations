@@ -54,12 +54,20 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                     const result = await confirmUserIntent(context, event, task);
                     const payload = getPayload(context, result);
                     console.log(`confirmUserIntent returned: ${JSON.stringify(result)}`);
-                    console.log('dispatching pause from confirmUserIntent');
 
-                    await possiblePromise(dispatch({
-                        type: 'CONTINUE',
-                        payload,
-                    }));
+                    if (result.reviewRequired) {
+                        console.log('dispatching pause from confirmUserIntent');
+
+                        await possiblePromise(dispatch({
+                            type: 'pause',
+                            payload,
+                        }));
+                    } else {
+                        await possiblePromise(dispatch({
+                            type: 'CONTINUE',
+                            payload,
+                        }));
+                    }
                 },
             },
         ],
@@ -67,8 +75,9 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
             "specReview",
             {
                 description:
-                    "Use this tool to confirm with the user their intentions and requests for code changes including new code to be generated",
+                    "Use this tool to review the design specification with the user",
                 implementation: async (context: Context, event?: MachineEvent, task?: string) => {
+                    console.log('specReview implementation in function catalog called');
                     const result = await specReview(context, event, task);
                     const payload = getPayload(context, result);
                     console.log(`specReview returned: ${JSON.stringify(result)}`);
@@ -87,13 +96,12 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                             payload,
                         }));
                     } else {
-                        // the user has provided feedback we need to capture and rerun the confirm user intent state
-                        // target the most recent confirmUserIntentId passing the latest feedback from the end user
-                        const confirmUserIntentId =
+                        // the user has provided feedback on the spec, rerun specReview to regenerate it
+                        const specReviewId =
                             context.stack
                                 ?.slice()
                                 .reverse()
-                                .find((item) => item.includes('confirmUserIntent')) || '';
+                                .find((item) => item.includes('specReview')) || '';
 
                         // extract the user response if any. It will be the last message where user is defined
                         const lastMessage =
@@ -103,19 +111,19 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void | Prom
                                 .find((item) => item.user !== undefined);
 
                         const payload = {
-                            confirmUserIntentId,
-                            [confirmUserIntentId]: {
+                            specReviewId,
+                            [specReviewId]: {
                                 // we destructure to preserve other keys like result which holds values from user interaction
-                                ...context[confirmUserIntentId],
+                                ...context[specReviewId],
                                 userResponse: lastMessage?.user,
                                 file: result.file,
                             }
                         };
 
-                        console.log(`dispatching ${confirmUserIntentId} from specReview`);
+                        console.log(`dispatching ${specReviewId} from specReview (self-loop)`);
 
                         await possiblePromise(dispatch({
-                            type: confirmUserIntentId,
+                            type: specReviewId,
                             payload,
                         }));
                     }

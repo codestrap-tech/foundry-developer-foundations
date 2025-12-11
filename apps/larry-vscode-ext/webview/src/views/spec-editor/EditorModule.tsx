@@ -12,7 +12,7 @@ import {
   codeMirrorPlugin
 } from '@mdxeditor/editor';
 import { postMessage, onMessage } from '../../lib/vscode';
-import { BookText, MessageSquareCode } from 'lucide-preact';
+import { BookText, MessageSquareCode, FileQuestionMark } from 'lucide-preact';
 import { hydrateQueryCache } from '../../store/query-sync';
 import type { LarryState } from '../../store/larry-state';
 import type { MachineResponse } from '../../lib/backend-types';
@@ -233,6 +233,7 @@ export function EditorModule() {
   // Determine review type
   const isSpecReview = machineData?.currentState?.includes('specReview');
   const isArchitectureReview = machineData?.currentState?.includes('architectureReview');
+  const isConfirmUserIntent = machineData?.currentState?.includes('confirmUserIntent');
 
   // Unlock footer when machine status returns to awaiting human
   useEffect(() => {
@@ -244,7 +245,7 @@ export function EditorModule() {
   // Only show footer when awaiting human review and not locked
   const showFooter = machineStatus === 'awaiting_human' && !footerLocked;
 
-  const isProceedDisabled = !editorState.larryState?.currentThreadId || !editorState.larryState?.apiUrl || !fullStateKey;
+  const isProceedDisabled = (!editorState.larryState?.currentThreadId || !editorState.larryState?.apiUrl || !fullStateKey) || (isConfirmUserIntent && !isDirty);
 
   return (
     <div className="editor-module">
@@ -254,6 +255,8 @@ export function EditorModule() {
             <span><BookText className="editor-title--icon" /> Specification Review</span>
           ) : isArchitectureReview ? (
             <span><MessageSquareCode className="editor-title--icon" /> Architecture Review</span>
+          ) : isConfirmUserIntent ? (
+            <span><FileQuestionMark className="editor-title--icon" /> Confirm User Intent</span>
           ) : (
             <span>Larry AI Editor</span>
           )}

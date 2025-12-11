@@ -208,13 +208,16 @@ export type ToolCallingTask = {
 };
 
 export type UserIntent = {
+    userAnswered?: boolean;
+    reviewRequired?: boolean;
+    messages: Record<string, any>;
     confirmationPrompt: string;
     userResponse?: string;
     file?: string;
 }
 
 export type Completion = {
-    tokenomics: Tokenomics;
+    tokenomics: Tokenomics | undefined;
 } & UserIntent;
 
 /** Keep this union small, explicit, and auditable for v0 */

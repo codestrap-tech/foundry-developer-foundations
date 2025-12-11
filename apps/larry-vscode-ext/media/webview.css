@@ -2219,7 +2219,7 @@
   }
   
   ._listItemUnchecked_1tncs_74:before {
-    border: 1px solid var(--baseBorder);
+    border: 1px solid var(--vscode-commandCenter-activeBorder);
     border-radius: var(--radius-small);
   }
   
