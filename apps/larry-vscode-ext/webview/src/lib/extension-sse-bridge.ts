@@ -1,4 +1,6 @@
 import { queryClient } from './query';
+import { postMessage } from './vscode';
+import { dehydrateQueryCache } from '../store/query-sync';
 import type {
   MachineUpdatedEvent,
   ThreadCreatedEvent,
@@ -59,6 +61,13 @@ export function handleForwardedSSE(
         }
       );
 
+      // Sync cache to editor after threads update
+      const queryCache = dehydrateQueryCache();
+      postMessage({
+        type: 'query_cache_sync',
+        queryCache,
+      });
+
       // If this event belongs to our submission, adopt the new machine/thread id
       if (
         evt.clientRequestId &&
@@ -79,6 +88,14 @@ export function handleForwardedSSE(
       console.log('🤖 Processing machine.updated:', m);
       queryClient.setQueryData(['machine', { baseUrl, machineId: m.id }], m);
       console.log('📝 Updated machine cache for:', m.id);
+
+      // Sync cache to editor after machine update
+      const queryCache = dehydrateQueryCache();
+      postMessage({
+        type: 'query_cache_sync',
+        queryCache,
+      });
+      
       return;
     }
   } catch (error) {

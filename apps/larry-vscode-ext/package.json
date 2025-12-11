@@ -2,7 +2,7 @@
   "name": "larry-vscode-ext",
   "displayName": "Larry Coding Assistant",
   "description": "Chat with Larry inside VS Code",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "Codestrap",
   "private": true,
   "engines": {
@@ -18,7 +18,8 @@
   ],
   "activationEvents": [
     "onView:larryHome",
-    "onStartupFinished"
+    "onStartupFinished",
+    "onCustomEditor:larry.artifactEditor"
   ],
   "contributes": {
     "configuration": {
@@ -49,7 +50,19 @@
           "name": "Larry AI Coding Assistant"
         }
       ]
-    }
+    },
+    "customEditors": [
+      {
+        "viewType": "larry.artifactEditor",
+        "displayName": "Larry Artifact Editor",
+        "selector": [
+          {
+            "filenamePattern": "**/.larry/artifacts/**/*.md"
+          }
+        ],
+        "priority": "default"
+      }
+    ]
   },
   "scripts": {
     "build": "tsc -p ./ && node scripts/bundle-webview.mjs",
@@ -65,6 +78,8 @@
     "vsce": "^2.15.0"
   },
   "dependencies": {
+    "@mdxeditor/editor": "3.49.0",
+    "cm6-theme-basic-dark": "0.2.0",
     "@vscode/webview-ui-toolkit": "^1.4.0",
     "dompurify": "^3.2.7",
     "highlight.js": "^11.11.1",

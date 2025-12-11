@@ -10,18 +10,21 @@ import { IdempotencyStore } from '../../services/idempotency.store';
 import { SSEService } from '../../services/sse.service';
 import {
   Context,
+  LarryStream,
   MachineDao,
   TYPES,
   ThreadsDao,
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 import { googleCodingAgent } from '../../../../googleCodingAgentStandalone';
+import { pauseFor } from '../../utils';
 
 export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
   const r = Router();
 
   const threadsDao = container.get<ThreadsDao>(TYPES.ThreadsDao);
   const machineDao = container.get<MachineDao>(TYPES.MachineDao);
+  const larryStream = container.get<LarryStream>(TYPES.LarryStream);
 
   // GET /threads?cursor=&limit=
   r.get('/threads', async (req: Request, res: Response, next: NextFunction) => {
@@ -40,6 +43,17 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
 
       const body: ThreadsListResponse = { items, nextCursor, requestId };
       res.json(body);
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // GET /threads/:threadId
+  r.get('/threads/:threadId', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { threadId } = req.params;
+      const thread = await threadsDao.read(threadId);
+      res.json(thread);
     } catch (err) {
       next(err);
     }
@@ -91,6 +105,8 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
               userTask
             );
 
+            await pauseFor(2000); // pause for 2s to avoid issues with eventual consistency
+
             const threadId = executionId;
             const machineId = executionId;
 
@@ -98,11 +114,14 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
 
             const context = JSON.parse(machine.state!).context;
             const currentStateContext = context[context.stateId];
-            const humanReview = !!currentStateContext?.confirmationPrompt;
+            const humanReview = currentStateContext?.reviewRequired;
 
+            const running = !humanReview && !currentStateContext?.approved;
             const status: MachineStatus = humanReview
               ? 'awaiting_human'
-              : 'running';
+              : running
+              ? 'running'
+              : 'pending';
             const machineUpdateEvt: MachineUpdatedEvent = {
               type: 'machine.updated',
               machine: {
@@ -125,7 +144,17 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
             };
             sse.broadcastThreadCreated(evt);
           } catch (asyncErr) {
-            // Log the error but don't try to send response since it's already sent
+            larryStream.publish({
+              id: 'new-thread-creation',
+              payload: {
+                type: 'error',
+                message: 'Failed to create thread, try again',
+                metadata: {
+                  error: asyncErr,
+                },
+              },
+            });
+
             console.error(
               '[threads.routes] Async thread creation failed:',
               asyncErr
@@ -140,3 +169,5 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
 
   return r;
 }
+
+

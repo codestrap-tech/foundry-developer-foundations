@@ -100,7 +100,12 @@ export function Trace(opts: TraceOptions) {
           const telemtryPayload = JSON.stringify(payload);
           // fire and forget, we do not want to hold up execution for this!
           // One day we should support background processing and batching
-          collectTelemetryFetchWrapper(telemtryPayload);
+          collectTelemetryFetchWrapper(telemtryPayload).catch((e) => {
+            // Silently fail to prevent unhandled rejections
+            // Added this catch as because of the fire and forget we had 
+            // side effect of server crashes when we had unhandled rejections
+            console.error('Failed to collect telemetry:', e);
+          });
         } catch (e) {
           console.log(e);
         }

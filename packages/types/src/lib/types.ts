@@ -6,37 +6,38 @@ import { calendar_v3, gmail_v1, drive_v3 } from "googleapis";
 import { User as FoundryUser } from "@osdk/foundry.admin";
 
 export const TYPES = {
-  FoundryClient: Symbol.for("FoundryClient"),
-  RangrClient: Symbol.for("RangrClient"),
-  WeatherService: Symbol.for("WeatherService"),
-  EnergyService: Symbol.for("EnergyService"),
-  WorldDao: Symbol.for("WorldDao"),
-  UserDao: Symbol.for("UserDao"),
-  MachineDao: Symbol.for("MachineDao"),
-  TicketDao: Symbol.for("TicketDao"),
-  CommsDao: Symbol.for("CommsDao"),
-  TelemetryDao: Symbol.for("TelemetryDao"),
-  ThreadsDao: Symbol.for("ThreadsDao"),
-  SQLLiteThreadsDao: Symbol.for("SQLLiteThreadsDao"),
-  ConflictResolutionRulesDao: Symbol.for("ConflictResolutionRulesDao"),
-  RfpRequestsDao: Symbol.for("RfpRequestsDao"),
-  RangrRfpRequestsDao: Symbol.for("RangrRfpRequestsDao"),
-  ResearchAssistant: Symbol.for("ResearchAssistant"),
-  CodingResearchAssistant: Symbol.for("CodingResearchAssistant"),
-  CodingArchitect: Symbol.for("CodingArchitect"),
-  MemoryRecallDao: Symbol.for("MemoryRecallDao"),
-  ContactsDao: Symbol.for("ContactsDao"),
-  GeminiService: Symbol.for("GeminiService"),
-  Gpt4oService: Symbol.for("Gpt4oService"),
-  GeminiSearchStockMarket: Symbol.for("GeminiSearchStockMarket"),
-  OfficeService: Symbol.for("OfficeService"),
-  OfficeServiceV3: Symbol.for("OfficeServiceV3"),
-  VersionControlService: Symbol.for("VersionControlService"),
-  MessageService: Symbol.for("MessageService"),
-  EmbeddingsService: Symbol.for("EmbeddingsService"),
-  TrainingDataDao: Symbol.for("TrainingDataDao"),
-  LoggingService: Symbol.for("LoggingService"),
-  LarryCodingAgentFactory: Symbol.for("LarryCodingAgentFactory"),
+  FoundryClient: Symbol.for('FoundryClient'),
+  RangrClient: Symbol.for('RangrClient'),
+  WeatherService: Symbol.for('WeatherService'),
+  EnergyService: Symbol.for('EnergyService'),
+  WorldDao: Symbol.for('WorldDao'),
+  UserDao: Symbol.for('UserDao'),
+  MachineDao: Symbol.for('MachineDao'),
+  TicketDao: Symbol.for('TicketDao'),
+  CommsDao: Symbol.for('CommsDao'),
+  TelemetryDao: Symbol.for('TelemetryDao'),
+  ThreadsDao: Symbol.for('ThreadsDao'),
+  SQLLiteThreadsDao: Symbol.for('SQLLiteThreadsDao'),
+  ConflictResolutionRulesDao: Symbol.for('ConflictResolutionRulesDao'),
+  RfpRequestsDao: Symbol.for('RfpRequestsDao'),
+  RangrRfpRequestsDao: Symbol.for('RangrRfpRequestsDao'),
+  ResearchAssistant: Symbol.for('ResearchAssistant'),
+  CodingResearchAssistant: Symbol.for('CodingResearchAssistant'),
+  CodingArchitect: Symbol.for('CodingArchitect'),
+  MemoryRecallDao: Symbol.for('MemoryRecallDao'),
+  ContactsDao: Symbol.for('ContactsDao'),
+  GeminiService: Symbol.for('GeminiService'),
+  Gpt4oService: Symbol.for('Gpt4oService'),
+  GeminiSearchStockMarket: Symbol.for('GeminiSearchStockMarket'),
+  OfficeService: Symbol.for('OfficeService'),
+  OfficeServiceV3: Symbol.for('OfficeServiceV3'),
+  VersionControlService: Symbol.for('VersionControlService'),
+  MessageService: Symbol.for('MessageService'),
+  EmbeddingsService: Symbol.for('EmbeddingsService'),
+  TrainingDataDao: Symbol.for('TrainingDataDao'),
+  LoggingService: Symbol.for('LoggingService'),
+  LarryCodingAgentFactory: Symbol.for('LarryCodingAgentFactory'),
+  LarryStream: Symbol.for('LarryStream'),
 };
 
 export type ResearchAssistant = (
@@ -1235,3 +1236,26 @@ export type ProposeMeetingConflictResolutionsOutput = Array<
     resolutionBlocks: { start: string; end: string; score?: number }[];
   }
 >;
+
+export type StreamCallback<T = unknown> = (data: T) => void;
+
+export type LarryNotification = {
+  type: 'info' | 'error';
+  message: string;
+  metadata: Record<string, any>;
+}
+
+export interface StreamEntry {
+  value: unknown;
+  subscribers: Set<StreamCallback<unknown>>;
+}
+
+export interface Subscription<T = unknown> {
+  unsubscribe: () => void;
+  getValue: () => T | null;
+}
+
+export interface LarryStream {
+  subscribe: (id: string, callback: StreamCallback<LarryNotification>) => Subscription<LarryNotification>;
+  publish: (opts: { id: string; payload: LarryNotification }) => void;
+}

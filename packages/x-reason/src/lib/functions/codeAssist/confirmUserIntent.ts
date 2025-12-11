@@ -19,7 +19,6 @@ export async function confirmUserIntent(
   task?: string
 ): Promise<Completion> {
   let messages;
-
   const threadsDao = container.get<ThreadsDao>(TYPES.ThreadsDao);
 
   // we use the thread because it should not aonly contain the design specification but user comments as well
@@ -120,7 +119,6 @@ or they don't have the required permissions.
   Or
   Files added/modified
     - Required: packages/services/palantir/src/lib/doa/communications/communications/upsert.ts
-    - Required: packages/services/palantir/src/lib/doa/communications/communications/upsert.test.ts
     - Added: packages/services/palantir/src/lib/doa/communications/communications/upsert.v2.ts
     - Added: packages/services/palantir/src/lib/doa/communications/communications/upsert.v2.test.ts
     - Modified: packages/types/src/lib/types.ts (Machine)

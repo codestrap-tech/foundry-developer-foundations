@@ -1,5 +1,15 @@
 import { makeStore } from './makeStore';
+import type { LarryState } from './larry-state';
+import type { MachineResponse } from '../lib/backend-types';
 
+/**
+ * ExtensionState - Full sidebar store state
+ * 
+ * Contains LarryState fields (shared with artifact editor)
+ * plus sidebar-specific UI state.
+ * 
+ * See docs.md for architecture details.
+ */
 export interface ExtensionState {
   // Thread/Worktree state
   currentThreadState:
@@ -30,6 +40,12 @@ export interface ExtensionState {
   isLoadingWorktreeInfo: boolean;
   isLoadingApp: boolean;
 
+  worktreePort: number;
+  mainPort: number;
+
+  // Global working state (set by artifact editor when proceed is clicked)
+  isLarryWorking: boolean;
+
   // Client request ID for tracking requests
   clientRequestId: string;
 }
@@ -42,6 +58,8 @@ export type ExtensionAction =
         isInWorktree: boolean;
         currentThreadId?: string;
         worktreeName?: string;
+        worktreePort?: number;
+        mainPort?: number;
       };
     }
   | {
@@ -63,9 +81,12 @@ export type ExtensionAction =
         agents: Record<string, string>;
         workspaceSetupCommand: string[];
         larryEnvPath: string;
+        worktreePort?: number;
+        mainPort?: number;
       };
     }
   | { type: 'SET_SELECTED_AGENT'; payload: string }
+  | { type: 'SET_LARRY_WORKING'; payload: boolean }
   | { type: 'RESET_STATE' };
 
 // Initial state
@@ -79,9 +100,12 @@ const initialState: ExtensionState = {
   selectedAgent: '', // Will be set when config is loaded
   workspaceSetupCommand: [],
   larryEnvPath: '',
+  worktreePort: 4220,
+  mainPort: 4210,
   currentThreadArtifacts: {},
   isLoadingWorktreeInfo: true,
   isLoadingApp: true,
+  isLarryWorking: false,
   clientRequestId:
     typeof crypto !== 'undefined' && 'randomUUID' in crypto
       ? crypto.randomUUID()
@@ -101,9 +125,11 @@ function extensionReducer(
         isInWorktree: action.payload.isInWorktree,
         currentThreadId: action.payload.currentThreadId,
         currentWorktreeName: action.payload.worktreeName,
+        worktreePort: action.payload.worktreePort || state.worktreePort,
+        mainPort: action.payload.mainPort || state.mainPort,
         apiUrl: action.payload.isInWorktree
-          ? `http://localhost:4220${selectedAgentRoute}`
-          : `http://localhost:4210${selectedAgentRoute}`,
+          ? `http://localhost:${action.payload.worktreePort}${selectedAgentRoute}`
+          : `http://localhost:${action.payload.mainPort}${selectedAgentRoute}`,
         isLoadingWorktreeInfo: false,
         isLoadingApp: false, // App is ready when worktree detection is complete
       };
@@ -167,8 +193,8 @@ function extensionReducer(
         workspaceSetupCommand: action.payload.workspaceSetupCommand,
         larryEnvPath: action.payload.larryEnvPath,
         apiUrl: state.isInWorktree
-          ? `http://localhost:4220${firstAgentRoute}`
-          : `http://localhost:4210${firstAgentRoute}`,
+          ? `http://localhost:${action.payload.worktreePort}${firstAgentRoute}`
+          : `http://localhost:${action.payload.mainPort}${firstAgentRoute}`,
       };
 
     case 'SET_SELECTED_AGENT':
@@ -181,8 +207,14 @@ function extensionReducer(
         ...state,
         selectedAgent: action.payload,
         apiUrl: state.isInWorktree
-          ? `http://localhost:4220${agentRoute}`
-          : `http://localhost:4210${agentRoute}`,
+          ? `http://localhost:${state.worktreePort}${agentRoute}`
+          : `http://localhost:${state.mainPort}${agentRoute}`,
+      };
+
+    case 'SET_LARRY_WORKING':
+      return {
+        ...state,
+        isLarryWorking: action.payload,
       };
 
     case 'RESET_STATE':
@@ -204,3 +236,26 @@ const [ExtensionStoreProvider, useExtensionDispatch, useExtensionStore] =
   makeStore(initialState, extensionReducer);
 
 export { ExtensionStoreProvider, useExtensionDispatch, useExtensionStore };
+
+/**
+ * Extract LarryState from the full ExtensionState
+ * Used by LarryStateSync to sync shared state to extension
+ */
+export function extractLarryStateFromStore(
+  state: ExtensionState,
+  machineData?: MachineResponse
+): LarryState {
+  return {
+    currentThreadId: state.currentThreadId,
+    apiUrl: state.apiUrl,
+    machineData,
+    isInWorktree: state.isInWorktree,
+    worktreePort: state.worktreePort,
+    mainPort: state.mainPort,
+    agents: state.agents,
+    selectedAgent: state.selectedAgent,
+  };
+}
+
+// Re-export LarryState type for convenience
+export type { LarryState } from './larry-state';
