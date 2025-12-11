@@ -3,6 +3,8 @@ import {
   TYPES,
   GeminiService,
   MeetingConflictResolutionProposals,
+  OfficeService,
+  ResolvedMeeting,
 } from '@codestrap/developer-foundations-types';
 import {
   uuidv4,
@@ -17,6 +19,23 @@ export interface VickieResponse {
   executionId: string;
   taskList?: string;
   error?: string;
+}
+
+function buildUnresolvedMeetingEmailBody(
+  meetings: Array<ResolvedMeeting & { reason: string }>
+): string {
+  const meetingList = meetings
+    .map(
+      (m) =>
+        `- "${m.subject}" (${m.start} - ${m.end}) — ${m.reason}${
+          m.rescheduledTo
+            ? ` (proposed: ${m.rescheduledTo.start} - ${m.rescheduledTo.end})`
+            : ''
+        }`
+    )
+    .join('\n');
+
+  return `The following meetings could not be rescheduled:\n\n${meetingList}\n\nPlease review and reschedule manually.`;
 }
 
 export interface ParsedConflictRequest {
@@ -243,23 +262,58 @@ export async function resolveMeetingConflicts(
     const resolvedMeetings = rescheduleConflictingMeetings(prioritizedMeetings);
 
     // 3. Apply the rescheduling to the calendar
+    const failedMeetings: Array<ResolvedMeeting & { reason: string }> = [];
+
     for (const meeting of resolvedMeetings) {
       if (meeting.status === 'SCHEDULED' && meeting.rescheduledTo) {
-        await officeServiceV3.scheduleMeeting({
-          summary: meeting.subject,
-          description: meeting.description,
-          start: meeting.rescheduledTo.start,
-          end: meeting.rescheduledTo.end,
-          attendees: meeting.participants,
+        try {
+          await officeServiceV3.scheduleMeeting({
+            summary: meeting.subject,
+            description: meeting.description,
+            start: meeting.rescheduledTo.start,
+            end: meeting.rescheduledTo.end,
+            attendees: meeting.participants,
+          });
+          console.log(
+            `Rescheduled meeting: ${meeting.subject} to ${meeting.rescheduledTo.start} - ${meeting.rescheduledTo.end}`
+          );
+        } catch (error) {
+          failedMeetings.push({
+            ...meeting,
+            reason: `Failed to schedule: ${(error as Error).message}`,
+          });
+          console.error(
+            `Failed to schedule meeting ${meeting.subject}:`,
+            (error as Error).message
+          );
+        }
+      } else {
+        failedMeetings.push({
+          ...meeting,
+          reason: 'No available time slot found',
         });
-        console.log(
-          `Rescheduled meeting: ${meeting.subject} to ${meeting.rescheduledTo.start} - ${meeting.rescheduledTo.end}`
-        );
       }
     }
 
-    // 4. Send emails
-    // TODO: @kopach - send emails to the participants with the new meeting times
+    // 4. Send emails to meeting owner for unresolved/failed meetings
+    if (failedMeetings.length > 0) {
+      const officeService = await container.getAsync<OfficeService>(
+        TYPES.OfficeService
+      );
+
+      const ownerEmail = failedMeetings[0].email;
+
+      await officeService.sendEmail({
+        from: process.env.OFFICE_SERVICE_ACCOUNT,
+        recipients: [ownerEmail],
+        subject: 'Meeting Conflict Resolution - Action Required',
+        message: buildUnresolvedMeetingEmailBody(failedMeetings),
+      });
+
+      console.log(
+        `Sent unresolved meetings email to ${ownerEmail} for ${failedMeetings.length} meetings`
+      );
+    }
 
     return {
       status: 200,
