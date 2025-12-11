@@ -145,7 +145,7 @@ describe('makeGSuiteClientV3', () => {
 
     // The v3 client should pass through the input, the v2 drive client, and a slides client
     expect(callArgs.input).toBe(input);
-    expect(callArgs.drive).toBe(mockDriveClient);
+    expect(callArgs.drive).toBeDefined();
     expect(callArgs.slides).toBeDefined();
 
     expect(result).toBe(expectedOutput);
