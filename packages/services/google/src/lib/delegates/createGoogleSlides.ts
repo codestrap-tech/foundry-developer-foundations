@@ -167,6 +167,18 @@ export async function createGoogleSlidesDelegate(
       const presentationId = file.id!;
       const slidesClient = slides;
 
+      // 🔽 NEW: ensure org-wide access on the copy
+      await drive.permissions.create({
+        fileId: presentationId,
+        requestBody: {
+          type: 'domain',
+          role: 'writer',              // or 'reader' if you prefer
+          domain: 'codestrap.me',      // or pull from env if you want
+          allowFileDiscovery: false,   // “with the link” semantics
+        },
+        supportsAllDrives: true,
+      });
+
       // If name omitted, fetch original template name to generate default
       if (!targetName) {
         const templateMeta = await drive.files.get({

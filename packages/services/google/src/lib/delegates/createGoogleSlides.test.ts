@@ -15,6 +15,9 @@ const mockDriveClient = {
     get: jest.fn(),
     update: jest.fn(),
   },
+  permissions: {
+    create: jest.fn(),
+  }
 } as unknown as drive_v3.Drive;
 
 const mockSlidesClient = {
@@ -57,6 +60,16 @@ describe('createGoogleSlidesDelegate', () => {
             'https://docs.google.com/presentation/d/newPresId/edit',
           webContentLink:
             'https://docs.google.com/presentation/d/newPresId/export/pptx',
+        },
+      });
+
+      // 🔹 NEW: drive.permissions.create for org-wide sharing
+      (mockDriveClient.permissions.create as jest.Mock).mockResolvedValue({
+        data: {
+          id: 'permId',
+          role: 'writer',
+          type: 'domain',
+          domain: 'codestrap.me',
         },
       });
 

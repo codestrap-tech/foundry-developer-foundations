@@ -12,4 +12,5 @@ export * from './ResearchReport';
 export * from './ReadEmails';
 export * from './ReadWebPage';
 export * from './SummerizeCalendars';
+export * from './GenerateSlides';
 

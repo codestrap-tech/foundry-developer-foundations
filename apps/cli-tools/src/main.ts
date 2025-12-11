@@ -22,6 +22,7 @@ import { uuidv4 } from '@codestrap/developer-foundations-utils';
 import { makeGSuiteClientV3 } from '@codestrap/developer-foundations-services-google';
 
 import { applyEdits } from './assets/applyEdits';
+import { generateSlides } from '@codestrap/developer-foundations-x-reason';
 
 export async function googleCodingAgent(
   executionId?: string,
@@ -120,16 +121,10 @@ export async function googleCodingAgent(
   }
 }
 
-async function runCreateGoogleSlides(email: string) {
-  const user = process.env.FOUNDRY_TEST_USER;
-  if (!user) {
-    throw new Error('FOUNDRY_TEST_USER env var is required to use makeGSuiteClientV3');
-  }
-
-  const office = await makeGSuiteClientV3(email);
+async function runCreateGoogleSlides() {
 
   const filePath = await input({
-    message: 'Enter the full file path to your CreateGoogleSlidesInput JSON:',
+    message: 'Enter the full file path to your conversation file',
   });
 
   if (!fs.existsSync(filePath)) {
@@ -138,16 +133,8 @@ async function runCreateGoogleSlides(email: string) {
 
   const raw = await fs.promises.readFile(filePath, 'utf8');
 
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw);
-  } catch (err) {
-    throw new Error(`Failed to parse JSON: ${(err as Error).message}`);
-  }
 
-  const inputJson = parsed as CreateGoogleSlidesInput;
-
-  const result = await office.createGoogleSlides(inputJson);
+  const result = await generateSlides({requestId: 'cli-context', status:0}, undefined, raw);
 
   console.log('\n=== Google Slides Creation Result ===\n');
   console.log('Successes:\n', JSON.stringify(result.successes, null, 2));
@@ -196,10 +183,7 @@ async function main() {
   }
 
   if (whichAgent === 'createGoogleSlides') {
-    const email = await input({
-      message: 'which email address to use for Google Slides creation?',
-    });
-    await runCreateGoogleSlides(email);
+    await runCreateGoogleSlides();
   }
 }
 
