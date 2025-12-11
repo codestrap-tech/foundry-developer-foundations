@@ -207,10 +207,15 @@ export type ToolCallingTask = {
     notes?: string;
 };
 
+export type MessagesArray = Array<{
+    user?: string;
+    system?: string;
+}>;
+
 export type UserIntent = {
     userAnswered?: boolean;
     reviewRequired?: boolean;
-    messages: Record<string, any>;
+    messages: MessagesArray;
     confirmationPrompt: string;
     userResponse?: string;
     file?: string;
