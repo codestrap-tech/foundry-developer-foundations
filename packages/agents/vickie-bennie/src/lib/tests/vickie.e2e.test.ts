@@ -111,5 +111,77 @@ Finally,send an email to me with the subject test and for the message tell me a 
       expect(result.message).toBeDefined();
       expect(result.status).toBe(200);
     }, 90000);
+
+    describe.only('meeting rescheduling', () => {
+      const userEmail = process.env.TEST_USER_EMAIL;
+      if (!userEmail) {
+        throw new Error('TEST_USER_EMAIL is not set');
+      }
+
+      it.only(`resolves conflicts for ${userEmail} user with default window`, async () => {
+        const vickie = new Vickie();
+
+        const result = await vickie.resolveMeetingConflicts([userEmail]);
+
+        expect(result).toEqual(
+          expect.objectContaining({
+            status: 200,
+            executionId: expect.any(String),
+            message: 'Meeting conflicts resolved',
+            taskList: 'SUCCESS',
+          })
+        );
+      }, 60000);
+
+      it(`resolves conflicts for ${userEmail} user with next 7 days window`, async () => {
+        const vickie = new Vickie();
+        const timeFrameFrom = new Date().toISOString();
+        const timeFrameTo = new Date(
+          Date.now() + 7 * 24 * 60 * 60 * 1000
+        ).toISOString();
+
+        const result = await vickie.resolveMeetingConflicts(
+          [userEmail],
+          timeFrameFrom,
+          timeFrameTo
+        );
+
+        expect(result).toEqual(
+          expect.objectContaining({
+            status: 200,
+            executionId: expect.any(String),
+            message: 'Meeting conflicts resolved',
+            taskList: 'SUCCESS',
+          })
+        );
+      }, 60000);
+
+      it(`resolves conflicts for ${userEmail} user using a custom timezone`, async () => {
+        const vickie = new Vickie();
+        const timeFrameFrom = new Date().toISOString();
+        const timeFrameTo = new Date(
+          Date.now() + 48 * 60 * 60 * 1000
+        ).toISOString();
+        const timezone = 'America/New_York';
+
+        const result = await vickie.resolveMeetingConflicts(
+          [userEmail],
+          timeFrameFrom,
+          timeFrameTo,
+          timezone
+        );
+
+        expect(result).toEqual(
+          expect.objectContaining({
+            status: 200,
+            executionId: expect.any(String),
+            message: 'Meeting conflicts resolved',
+            taskList: 'SUCCESS',
+          })
+        );
+      }, 60000);
+
+      it.todo('resolves conflicts for multiple CodeStrap users');
+    });
   });
 }

@@ -32,6 +32,7 @@ import {
 } from '@codestrap/developer-foundations-services-palantir';
 import {
   makeGSuiteClientV2,
+  makeGSuiteClientV3,
   researchAssistant,
 } from '@codestrap/developer-foundations-services-google';
 import {
@@ -119,9 +120,11 @@ container
   .bind(TYPES.OfficeService)
   .toConstantValue(makeGSuiteClientV2(process.env.OFFICE_SERVICE_ACCOUNT));
 
-  container
-  .bind(TYPES.VersionControlService)
-  .toConstantValue(makeGithubClient());
+container
+  .bind(TYPES.OfficeServiceV3)
+  .toConstantValue(makeGSuiteClientV3(process.env.OFFICE_SERVICE_ACCOUNT));
+
+container.bind(TYPES.VersionControlService).toConstantValue(makeGithubClient());
 
 container
   .bind(TYPES.MessageService)
@@ -129,6 +132,8 @@ container
     makeSlackClient(process.env.SLACK_BASE_URL, process.env.SLACK_BOT_TOKEN)
   );
 
-container.bind(TYPES.LarryCodingAgentFactory).toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
+container
+  .bind(TYPES.LarryCodingAgentFactory)
+  .toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
 
 export { container };
