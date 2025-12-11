@@ -12,6 +12,15 @@ jest.mock('googleapis', () => ({
   ...jest.requireActual('googleapis'), // Keep other actual exports
 
   google: {
+    // mock slides
+    slides: jest.fn((version: string, auth: any) => {
+      return {
+        presentations: {
+          get: jest.fn(),
+          batchUpdate: jest.fn(),
+        },
+      };
+    }),
     // mock drive
     drive: jest.fn((version: string, auth: any) => {
       return {
