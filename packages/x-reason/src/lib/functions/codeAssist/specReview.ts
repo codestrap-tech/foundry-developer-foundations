@@ -182,8 +182,8 @@ async function generateFiles(designSpec: string): Promise<FileOp[]> {
     const { file, generator, samplePrompts, projectJson, promptGuide } =
       r.value;
 
-    // eslint-disable-next-line no-async-promise-executor
     const promise = new Promise<{ file: FileOp; fileContents: string }>(
+      // eslint-disable-next-line no-async-promise-executor
       async (resolve, reject) => {
         try {
           const projectConfigFile = await projectJson();

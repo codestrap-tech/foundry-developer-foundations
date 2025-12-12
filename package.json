@@ -21,10 +21,10 @@
     "format:write": "nx run-many --target=format:write",
     "lint": "nx run-many --target=lint",
     "nx": "nx",
+    "prepare": "husky",
     "remove-worktree": "node scripts/remove-worktree.js",
     "remove-worktree-all": "node scripts/remove-worktree.js -- --all",
-    "test": "nx run-many --target=test",
-    "prepare": "husky"
+    "test": "nx run-many --target=test"
   },
   "workspaces": {
     "packages": [
@@ -179,13 +179,13 @@
   "engines": {
     "node": ">=22.13.0"
   },
-  "nx": {
-    "includedScripts": []
-  },
-  "packageManager": "npm@10.9.0",
   "lint-staged": {
     "**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
       "prettier --write"
     ]
-  }
+  },
+  "nx": {
+    "includedScripts": []
+  },
+  "packageManager": "npm@10.9.0"
 }
