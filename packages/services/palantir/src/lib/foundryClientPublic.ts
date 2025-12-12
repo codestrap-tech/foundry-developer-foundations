@@ -56,13 +56,16 @@ function createFoundryClient(): FoundryClient {
     getUser: () => 'undefined',
     getToken: () => 'undefined',
   };
-  // @ts-expect-error we return a mock client since the actual auth is managed client side
   return {
+    // @ts-expect-error we return a mock client since the actual auth is managed client side
     auth,
     ontologyRid: process.env['NEXT_PUBLIC_ONTOLOGY_RID'],
     url: process.env['NEXT_PUBLIC_FOUNDRY_STACK_URL'],
+    // @ts-expect-error we return a mock client since the actual auth is managed client side
     client,
+    // @ts-expect-error we return a mock client since the actual auth is managed client side
     getUser,
+    // @ts-expect-error we return a mock client since the actual auth is managed client side
     getToken,
   };
 }
