@@ -32,7 +32,6 @@
   },
   "vulnerabilityAlerts": {
     "labels": ["security"],
-    "prPriority": 1000,
     "dependencyDashboardApproval": false,
     "automerge": false,
     "schedule": [],
