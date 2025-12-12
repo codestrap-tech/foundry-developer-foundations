@@ -20,8 +20,8 @@ export function parseCodeEdits(input: string): CodeEdits[] {
     fileRegex.lastIndex = nextMatch ? nextMatch.index : input.length;
     const blockContent = input.slice(startIdx, endIdx).trim();
     //Regex101: https://regex101.com/r/IofxyI/1
-    // eslint-disable-next-line regexp/no-unused-capturing-group
     const codeBlockMatch = blockContent.match(
+      // eslint-disable-next-line regexp/no-unused-capturing-group
       /```([a-zA-Z]+)(?:\r?\n|\\n)([\s\S]*?)(?:\r?\n|\\n)```/,
     );
     const proposedChange = codeBlockMatch ? codeBlockMatch[2] : '';
