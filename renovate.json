@@ -4,8 +4,6 @@
     "config:best-practices",
     "workarounds:all",
     "npm:unpublishSafe",
-    "github-actions:pinDigests",
-    "docker:pinDigests",
     ":pinAllExceptPeerDependencies"
   ],
   "enabledManagers": ["npm", "github-actions", "dockerfile", "regex"],
@@ -32,8 +30,6 @@
     "enabled": true,
     "schedule": ["every weekend"]
   },
-
-  // Security-vuln behavior is configured here instead of via matchManagers
   "vulnerabilityAlerts": {
     "labels": ["security"],
     "prPriority": 1000,
@@ -42,7 +38,6 @@
     "schedule": [],
     "prCreation": "immediate"
   },
-
   "packageRules": [
     {
       "description": "Automerge minor/patch across ecosystems after required checks",
@@ -168,7 +163,6 @@
       "automerge": false
     }
   ],
-
   "regexManagers": [
     {
       "description": "Track Node version in CI workflows (dashboard-only rule above controls PR creation)",
