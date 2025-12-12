@@ -44,6 +44,7 @@ function createFoundryClient(): FoundryClient {
     'api:use-mediasets-write'
   ];
   //                                   client_id, url,redirectUrl, useHistory, loginPage, postLoginPage, scopes
+  // TODO: @kopach - this is OAuth client, don't see how to get Google access token here
   const auth = createPublicOauthClient(clientId, url, redirectUrl, true, redirectUrl, redirectUrl, scopes);
   const client = createClient(url, ontologyRid, auth);
 

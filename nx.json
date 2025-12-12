@@ -1,5 +1,7 @@
 {
-  "exclude": ["hello-world"],
+  "exclude": [
+    "hello-world"
+  ],
   "installation": {
     "version": "21.3.10",
     "plugins": {
@@ -12,13 +14,23 @@
   "targetDefaults": {
     "@nx/js:tsc": {
       "cache": true,
-      "dependsOn": ["^build"],
-      "inputs": ["default", "^default"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "default",
+        "^default"
+      ]
     },
     "@nx/esbuild:esbuild": {
       "cache": true,
-      "dependsOn": ["^build"],
-      "inputs": ["default", "^default"]
+      "dependsOn": [
+        "^build"
+      ],
+      "inputs": [
+        "default",
+        "^default"
+      ]
     },
     "lint": {
       "cache": true
@@ -31,7 +43,9 @@
     }
   },
   "release": {
-    "projects": ["packages/**/*"],
+    "projects": [
+      "packages/**/*"
+    ],
     "version": {
       "preVersionCommand": "npx nx run-many -t build --parallel=3 --skip-nx-cache=false"
     }
