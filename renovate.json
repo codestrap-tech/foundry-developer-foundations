@@ -32,9 +32,17 @@
     "enabled": true,
     "schedule": ["every weekend"]
   },
+
+  // Security-vuln behavior is configured here instead of via matchManagers
   "vulnerabilityAlerts": {
-    "enabled": true
+    "labels": ["security"],
+    "prPriority": 1000,
+    "dependencyDashboardApproval": false,
+    "automerge": false,
+    "schedule": [],
+    "prCreation": "immediate"
   },
+
   "packageRules": [
     {
       "description": "Automerge minor/patch across ecosystems after required checks",
@@ -152,15 +160,6 @@
       "automerge": false
     },
     {
-      "description": "Security alerts: open PRs immediately, outside schedule, high priority",
-      "matchManagers": ["vulnerabilityAlerts"],
-      "labels": ["security"],
-      "schedule": ["at any time"],
-      "prPriority": 1000,
-      "dependencyDashboardApproval": false,
-      "automerge": false
-    },
-    {
       "description": "Node version in workflows: dashboard-only until approved",
       "matchManagers": ["regex"],
       "matchDepNames": ["node"],
@@ -169,6 +168,7 @@
       "automerge": false
     }
   ],
+
   "regexManagers": [
     {
       "description": "Track Node version in CI workflows (dashboard-only rule above controls PR creation)",
