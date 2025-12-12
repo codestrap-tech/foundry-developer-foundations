@@ -726,6 +726,7 @@ export type ListCalendarArgs = {
 
 export type EventSummary = {
   id: string;
+  organizer?: string;
   subject: string;
   description?: string;
   start: string; // local ISO with offset, e.g. 2025-07-22T10:30:00-07:00

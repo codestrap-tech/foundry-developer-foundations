@@ -55,8 +55,9 @@ async function fetchCalendar(
 
       events.push({
         id: evt.id!,
+        ...(evt.organizer ? { organizer: evt.organizer.email } : {}),
         subject: evt.summary ?? '',
-        description: evt.description ?? undefined,
+        ...(evt.description ? { description: evt.description } : {}),
         start: toZonedISOString(startUTC, tz),
         end: toZonedISOString(endUTC, tz),
         durationMinutes: Math.round(dur),

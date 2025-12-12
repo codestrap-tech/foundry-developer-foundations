@@ -267,12 +267,17 @@ export async function resolveMeetingConflicts(
     for (const meeting of resolvedMeetings) {
       if (meeting.status === 'SCHEDULED' && meeting.rescheduledTo) {
         try {
+          const attendees = new Set(meeting.participants);
+          if (meeting.organizer) {
+            attendees.add(meeting.organizer);
+          }
+          const attendeesArray = Array.from(attendees);
           await officeServiceV3.scheduleMeeting({
             summary: meeting.subject,
             description: meeting.description,
             start: meeting.rescheduledTo.start,
             end: meeting.rescheduledTo.end,
-            attendees: meeting.participants,
+            attendees: attendeesArray,
           });
           console.log(
             `Rescheduled meeting: ${meeting.subject} to ${meeting.rescheduledTo.start} - ${meeting.rescheduledTo.end}`

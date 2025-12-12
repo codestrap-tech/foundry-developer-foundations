@@ -43,6 +43,7 @@ if (!process.env.E2E) {
           timeFrameTo,
           timezone,
         });
+        console.log('🚀 ~ result:', JSON.stringify(result, null, 2))
 
         expect(result).toEqual(
           expect.arrayContaining([

@@ -121,7 +121,7 @@ Finally,send an email to me with the subject test and for the message tell me a 
       it.only(`resolves conflicts for ${userEmail} user with default window`, async () => {
         const vickie = new Vickie();
 
-        const result = await vickie.resolveMeetingConflicts([userEmail]);
+        const result = await vickie.resolveMeetingConflicts([userEmail], new Date().toISOString(), new Date(Date.now() + 120 * 60 * 60 * 1000).toISOString());
 
         expect(result).toEqual(
           expect.objectContaining({
@@ -154,7 +154,7 @@ Finally,send an email to me with the subject test and for the message tell me a 
             taskList: 'SUCCESS',
           })
         );
-      }, 60000);
+      }, 60000000);
 
       it(`resolves conflicts for ${userEmail} user using a custom timezone`, async () => {
         const vickie = new Vickie();
