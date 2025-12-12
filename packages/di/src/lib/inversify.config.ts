@@ -32,6 +32,7 @@ import {
 } from '@codestrap/developer-foundations-services-palantir';
 import {
   makeGSuiteClientV2,
+  makeGSuiteClientV3,
   researchAssistant,
 } from '@codestrap/developer-foundations-services-google';
 import {
@@ -117,7 +118,7 @@ container.bind(TYPES.ResearchAssistant).toConstantValue(researchAssistant);
 // IMPORTANT use container.getAsync when retrieving!
 container
   .bind(TYPES.OfficeService)
-  .toConstantValue(makeGSuiteClientV2(process.env.OFFICE_SERVICE_ACCOUNT));
+  .toConstantValue(makeGSuiteClientV3(process.env.OFFICE_SERVICE_ACCOUNT));
 
   container
   .bind(TYPES.VersionControlService)
