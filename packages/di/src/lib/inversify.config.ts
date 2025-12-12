@@ -120,6 +120,10 @@ container
   .bind(TYPES.OfficeService)
   .toConstantValue(makeGSuiteClientV3(process.env.OFFICE_SERVICE_ACCOUNT));
 
+container
+  .bind(TYPES.OfficeServiceV3)
+  .toConstantValue(makeGSuiteClientV3(process.env.OFFICE_SERVICE_ACCOUNT));
+
   container
   .bind(TYPES.VersionControlService)
   .toConstantValue(makeGithubClient)

@@ -9,6 +9,7 @@ import {
     writeEmail,
     researchReport,
     resolveUnavailableAttendees,
+    resolveMeetingConflicts,
     createTask,
     getAvailableMeetingTimes,
     getProjectFiles,
@@ -219,6 +220,22 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
                     // this will pause the state machine execution
                     dispatch({
                         type: 'pause',
+                        payload,
+                    });
+                },
+            },
+        ],
+        [
+            "resolveMeetingConflicts",
+            {
+                // TODO: @kopach - all examples of communication
+                description: `Use this tool to identify meeting conflicts for specified users and resolve them.`,
+                implementation: async (context: Context, event?: MachineEvent, task?: string) => {
+                    const result = await resolveMeetingConflicts(context, event, task);
+                    const payload = getPayload(context, result);
+
+                    dispatch({
+                        type: 'CONTINUE',
                         payload,
                     });
                 },
