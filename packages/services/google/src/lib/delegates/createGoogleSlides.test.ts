@@ -1,7 +1,7 @@
 // createGoogleSlides.test.ts
 
-import { drive_v3, slides_v1 } from 'googleapis';
-import {
+import type { drive_v3, slides_v1 } from 'googleapis';
+import type {
   CreateGoogleSlidesInput,
 } from '@codestrap/developer-foundations-types';
 import { createGoogleSlidesDelegate } from './createGoogleSlides';

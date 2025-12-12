@@ -22,7 +22,8 @@ import {
   googleServicesEvaluate,
   googleServicesFunctionCatalog,
 } from '../reasoning';
-import { ActionType, Task, SupportedEngines } from '@codestrap/developer-foundations-types';
+import type { ActionType, Task} from '@codestrap/developer-foundations-types';
+import { SupportedEngines } from '@codestrap/developer-foundations-types';
 
 // Define the shape of the clients map
 export type XReasonEngine = (config: Record<string, any>) => {

@@ -1,8 +1,9 @@
 export const runtime = 'nodejs';
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { Vickie } from '@codestrap/developer-foundations-agents-vickie-bennie';
-import { User } from '@osdk/foundry.admin';
+import type { User } from '@osdk/foundry.admin';
 import { uuidv4 } from '@codestrap/developer-foundations-utils';
 import { withRequestContext } from '@codestrap/developer-foundations-utils/src/lib/asyncLocalStorage';
 

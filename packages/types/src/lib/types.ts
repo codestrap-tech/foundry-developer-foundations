@@ -1,9 +1,10 @@
-import { ComputeModule } from "@palantir/compute-module";
+import type { ComputeModule } from "@palantir/compute-module";
 import type { Client } from "@osdk/client";
-import { Type, Static } from "@sinclair/typebox";
-import { StateValue } from "xstate";
-import { calendar_v3, gmail_v1, drive_v3 } from "googleapis";
-import { User as FoundryUser } from "@osdk/foundry.admin";
+import type { Static } from "@sinclair/typebox";
+import { Type } from "@sinclair/typebox";
+import type { StateValue } from "xstate";
+import type { calendar_v3, gmail_v1, drive_v3 } from "googleapis";
+import type { User as FoundryUser } from "@osdk/foundry.admin";
 
 export const TYPES = {
   FoundryClient: Symbol.for('FoundryClient'),

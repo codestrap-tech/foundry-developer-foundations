@@ -1,4 +1,4 @@
-import { SupportedFoundryClients } from "@codestrap/developer-foundations-types";
+import type { SupportedFoundryClients } from "@codestrap/developer-foundations-types";
 
 // process-env.d.ts
 declare global {

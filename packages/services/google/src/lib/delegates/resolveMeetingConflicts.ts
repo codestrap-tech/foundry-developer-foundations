@@ -1,10 +1,10 @@
-import {
+import type {
   CalendarSummary,
   EventSummary,
   ProposeMeetingConflictResolutionsInput,
   ProposeMeetingConflictResolutionsOutput,
 } from '@codestrap/developer-foundations-types';
-import { calendar_v3 } from 'googleapis';
+import type { calendar_v3 } from 'googleapis';
 import { findOptimalMeetingTimeV2 } from './findOptimalMeetingTime.v2';
 import { workingHoursUTCForDate } from '@codestrap/developer-foundations-utils';
 

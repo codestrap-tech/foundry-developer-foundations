@@ -1,7 +1,9 @@
 export const runtime = 'nodejs';
 
-import { NextRequest, NextResponse } from 'next/server';
-import { EnergyService, TYPES } from '@codestrap/developer-foundations-types';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+import type { EnergyService} from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 
 export async function OPTIONS() {

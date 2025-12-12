@@ -1,4 +1,4 @@
-import {
+import type {
   Context,
   MachineEvent,
   RfpResponsesResult,

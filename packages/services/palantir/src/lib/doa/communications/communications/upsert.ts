@@ -1,5 +1,6 @@
+import type {
+  Communications} from '@codestrap/developer-foundations-types';
 import {
-  Communications,
   FoundryClient,
 } from '@codestrap/developer-foundations-types';
 import { uuidv4 } from '@codestrap/developer-foundations-utils';

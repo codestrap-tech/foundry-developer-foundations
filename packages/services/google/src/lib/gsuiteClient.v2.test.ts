@@ -1,7 +1,8 @@
 import { makeGSuiteClientV2 } from './gsuiteClient.v2';
 import { makeGSuiteClient } from './gsuiteClient';
 import { searchDriveFiles } from './delegates/searchDriveFiles';
-import { DriveSearchParams, DriveDateField } from '@codestrap/developer-foundations-types';
+import type { DriveSearchParams} from '@codestrap/developer-foundations-types';
+import { DriveDateField } from '@codestrap/developer-foundations-types';
 
 // Mock the v1 client
 jest.mock('./gsuiteClient');

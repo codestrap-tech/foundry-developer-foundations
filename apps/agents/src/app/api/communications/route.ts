@@ -1,7 +1,9 @@
 export const runtime = 'nodejs';
 
-import { NextRequest, NextResponse } from 'next/server';
-import { TYPES, CommsDao } from '@codestrap/developer-foundations-types';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
+import type { CommsDao } from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 import { uuidv4 } from '@codestrap/developer-foundations-utils';
 import { withRequestContext } from '@codestrap/developer-foundations-utils/src/lib/asyncLocalStorage';

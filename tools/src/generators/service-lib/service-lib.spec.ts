@@ -1,8 +1,9 @@
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
-import { Tree, readProjectConfiguration } from '@nx/devkit';
+import type { Tree} from '@nx/devkit';
+import { readProjectConfiguration } from '@nx/devkit';
 
 import { serviceLibGenerator } from './service-lib';
-import { ServiceLibGeneratorSchema } from './schema';
+import type { ServiceLibGeneratorSchema } from './schema';
 
 describe('service-lib generator', () => {
   let tree: Tree;

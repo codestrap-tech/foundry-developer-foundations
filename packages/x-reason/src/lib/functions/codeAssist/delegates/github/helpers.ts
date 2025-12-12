@@ -2,7 +2,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { container } from "@codestrap/developer-foundations-di";
-import { TYPES, VersionControlService } from "@codestrap/developer-foundations-types";
+import type { VersionControlService } from "@codestrap/developer-foundations-types";
+import { TYPES } from "@codestrap/developer-foundations-types";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 

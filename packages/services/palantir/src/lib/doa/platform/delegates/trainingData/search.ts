@@ -1,6 +1,7 @@
+import type {
+  TrainingData} from '@codestrap/developer-foundations-types';
 import {
-  FoundryClient,
-  TrainingData,
+  FoundryClient
 } from '@codestrap/developer-foundations-types';
 
 export async function searchTrainingData(

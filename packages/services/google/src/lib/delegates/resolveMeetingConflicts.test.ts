@@ -1,8 +1,9 @@
 import { proposeMeetingConflictResolutionsDelegate } from './resolveMeetingConflicts';
-import { EventSummary } from '@codestrap/developer-foundations-types';
+import type { EventSummary } from '@codestrap/developer-foundations-types';
 import { faker } from '@faker-js/faker';
-import { calendar_v3 } from 'googleapis';
-import { findOptimalMeetingTimeV2, Slot } from './findOptimalMeetingTime.v2';
+import type { calendar_v3 } from 'googleapis';
+import type { Slot } from './findOptimalMeetingTime.v2';
+import { findOptimalMeetingTimeV2 } from './findOptimalMeetingTime.v2';
 
 jest.mock('./findOptimalMeetingTime.v2');
 const mockFindOptimalMeetingTimeV2 =

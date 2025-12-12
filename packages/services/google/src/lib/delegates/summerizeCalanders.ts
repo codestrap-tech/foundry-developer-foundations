@@ -1,10 +1,10 @@
 // types/summarizeCalendars.ts
-import { calendar_v3 } from 'googleapis';
+import type { calendar_v3 } from 'googleapis';
 import {
   toZonedISOString,
   toUTCFromWallClockLocal,
 } from '@codestrap/developer-foundations-utils';
-import {
+import type {
   CalendarSummary,
   EventSummary,
   ListCalendarArgs,

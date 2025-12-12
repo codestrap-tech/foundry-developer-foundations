@@ -1,5 +1,6 @@
 // userResource.ts
-import { User, Users } from "@osdk/foundry.admin";
+import type { User} from "@osdk/foundry.admin";
+import { Users } from "@osdk/foundry.admin";
 import { Client } from "@osdk/client";
 
 /** Minimal resource wrapper for Suspense */

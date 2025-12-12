@@ -1,8 +1,9 @@
-import { Context, MachineEvent } from '@codestrap/developer-foundations-types';
-import {
+import type { Context, MachineEvent } from '@codestrap/developer-foundations-types';
+import type {
   Message,
   MessageResponse,
-  MessageService,
+  MessageService} from '@codestrap/developer-foundations-types';
+import {
   TYPES,
 } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';

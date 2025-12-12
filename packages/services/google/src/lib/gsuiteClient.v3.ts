@@ -3,7 +3,7 @@ import { google } from 'googleapis';
 
 import { makeGSuiteClientV2 } from './gsuiteClient.v2';
 import { proposeMeetingConflictResolutionsDelegate } from './delegates/resolveMeetingConflicts';
-import {
+import type {
   OfficeServiceV3,
   ProposeMeetingConflictResolutionsInput,
   ProposeMeetingConflictResolutionsOutput,

@@ -1,6 +1,6 @@
 /* JSX */
 /* @jsxImportSource preact */
-import { StateComponentProps } from "../../../lib/backend-types";
+import type { StateComponentProps } from "../../../lib/backend-types";
 import { GeneralMessageBubble } from "../GeneralMessageBubble";
 
 type ConfirmUserIntentData = {

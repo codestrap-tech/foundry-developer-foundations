@@ -1,7 +1,7 @@
 /* JSX */
 /* @jsxImportSource preact */
 import { useEffect } from "preact/hooks";
-import { StateComponentProps } from "../../../../lib/backend-types";
+import type { StateComponentProps } from "../../../../lib/backend-types";
 import { FileSymlink, Sparkles } from "lucide-preact";
 import { GeneralMessageBubble } from "../../GeneralMessageBubble.tsx";
 import { postMessage } from "../../../../lib/vscode";

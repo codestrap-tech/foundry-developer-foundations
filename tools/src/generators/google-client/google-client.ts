@@ -1,5 +1,6 @@
+import type {
+  Tree} from '@nx/devkit';
 import {
-  Tree,
   formatFiles,
   joinPathFragments,
   readProjectConfiguration,
@@ -7,7 +8,7 @@ import {
 } from '@nx/devkit';
 import * as fs from 'fs';
 import * as path from 'path';
-import { GoogleClientGeneratorSchema } from './schema';
+import type { GoogleClientGeneratorSchema } from './schema';
 import { GoogleGenAI } from '@google/genai';
 import * as dotenv from 'dotenv';
 dotenv.config({

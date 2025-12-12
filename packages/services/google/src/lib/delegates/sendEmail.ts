@@ -1,5 +1,5 @@
-import { gmail_v1 } from 'googleapis';
-import {
+import type { gmail_v1 } from 'googleapis';
+import type {
   EmailContext,
   SendEmailOutput,
 } from '@codestrap/developer-foundations-types';

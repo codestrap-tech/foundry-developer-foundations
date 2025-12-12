@@ -1,5 +1,5 @@
 // scheduler.ts
-import { calendar_v3 } from 'googleapis';
+import type { calendar_v3 } from 'googleapis';
 import { partsInTZ, wallClockToUTC } from '@codestrap/developer-foundations-utils';
 
 type Busy = { start: string; end: string };

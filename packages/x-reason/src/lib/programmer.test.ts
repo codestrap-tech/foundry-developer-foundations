@@ -1,5 +1,5 @@
 import { interpret } from 'xstate';
-import {
+import type {
   Context,
   MachineEvent,
   Task,
