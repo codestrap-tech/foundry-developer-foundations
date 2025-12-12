@@ -5,6 +5,10 @@ import { readProjectConfiguration } from '@nx/devkit';
 import { serviceLibGenerator } from './service-lib';
 import type { ServiceLibGeneratorSchema } from './schema';
 
+jest.mock('prettier', () => ({
+  format: jest.fn((text: string) => Promise.resolve(text)),
+}));
+
 describe('service-lib generator', () => {
   let tree: Tree;
   const name = 'testName';

@@ -18,6 +18,10 @@ import {
   salesSolver,
 } from '../reasoning';
 
+jest.mock('prettier', () => ({
+  format: jest.fn((text: string) => Promise.resolve(text)),
+}));
+
 describe('Factory Function Tests', () => {
   it("should return the correct engine implementation for 'coms'", () => {
     const engine = factory(SupportedEngines.COMS)({});

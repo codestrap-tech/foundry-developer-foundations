@@ -1,5 +1,9 @@
 import { Vickie } from '../Vickie';
 
+jest.mock('prettier', () => ({
+  format: jest.fn((text: string) => Promise.resolve(text)),
+}));
+
 if (!process.env.E2E) {
   test.skip('e2e test skipped in default run', () => {
     // won't run

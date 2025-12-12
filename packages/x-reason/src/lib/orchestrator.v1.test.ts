@@ -132,6 +132,10 @@ global.fetch = jest.fn().mockImplementation(() =>
   }),
 ) as jest.Mock;
 
+jest.mock('prettier', () => ({
+  format: jest.fn((text: string) => Promise.resolve(text)),
+}));
+
 describe('testing orchestrator', () => {
   afterAll(() => {
     jest.clearAllMocks();

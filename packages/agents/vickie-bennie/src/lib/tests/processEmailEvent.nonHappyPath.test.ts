@@ -15,6 +15,10 @@ import { Vickie } from '../Vickie';
 
 let counter = 0;
 
+jest.mock('prettier', () => ({
+  format: jest.fn((text: string) => Promise.resolve(text)),
+}));
+
 jest.mock('@codestrap/github', () => ({
   // override makeGithubClient with a Jest mock
   makeGithubClient: jest.fn(async () => {

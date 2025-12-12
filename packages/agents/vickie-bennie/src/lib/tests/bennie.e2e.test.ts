@@ -11,6 +11,10 @@ import type {
 import { TYPES } from '@codestrap/developer-foundations-types';
 import type { State } from 'xstate';
 
+jest.mock('prettier', () => ({
+  format: jest.fn((text: string) => Promise.resolve(text)),
+}));
+
 if (!process.env.E2E) {
   test.skip('e2e test skipped in default run', () => {
     // won't run

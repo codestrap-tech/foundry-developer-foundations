@@ -17,6 +17,10 @@ jest.mock('ts-morph', () => {
   return { ...real, Project: MockProject };
 });
 
+jest.mock('prettier', () => ({
+  format: jest.fn((text: string) => Promise.resolve(text)),
+}));
+
 import { Project } from 'ts-morph';
 // Adjust this to your actual path:
 import { executeEditMachine } from './executeEditMachine';
@@ -118,9 +122,7 @@ describe('executeEditMachine (mocked FS, in-memory ts-morph) — full v1 coverag
       });
 
     // Prettier: return identity; assert filepath is our virtual file.
-    prettierSpy = jest
-      .spyOn(prettier, 'format')
-      .mockImplementation((text: string) => text);
+    prettierSpy = jest.mocked(prettier).format;
 
     // Filter only TS2307 for 'zod' and 'x' so diagnosticsText can be null.
     const origGetDiags = Project.prototype.getPreEmitDiagnostics;
