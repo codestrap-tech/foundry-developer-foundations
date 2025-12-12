@@ -4,8 +4,6 @@
     "config:best-practices",
     "workarounds:all",
     "npm:unpublishSafe",
-    "github-actions:pinDigests",
-    "docker:pinDigests",
     ":pinAllExceptPeerDependencies"
   ],
   "enabledManagers": ["npm", "github-actions", "dockerfile", "regex"],
@@ -33,7 +31,12 @@
     "schedule": ["every weekend"]
   },
   "vulnerabilityAlerts": {
-    "enabled": true
+    "labels": ["security"],
+    "prPriority": 1000,
+    "dependencyDashboardApproval": false,
+    "automerge": false,
+    "schedule": [],
+    "prCreation": "immediate"
   },
   "packageRules": [
     {
@@ -149,15 +152,6 @@
       "matchManagers": ["dockerfile"],
       "matchUpdateTypes": ["minor", "patch"],
       "groupName": "docker-images",
-      "automerge": false
-    },
-    {
-      "description": "Security alerts: open PRs immediately, outside schedule, high priority",
-      "matchManagers": ["vulnerabilityAlerts"],
-      "labels": ["security"],
-      "schedule": ["at any time"],
-      "prPriority": 1000,
-      "dependencyDashboardApproval": false,
       "automerge": false
     },
     {
