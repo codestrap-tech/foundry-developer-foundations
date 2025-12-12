@@ -170,6 +170,7 @@ export type Messages = {
 export type AbstractReviewState = {
   approved: boolean;
   reviewRequired?: boolean;
+  userResponse?: string;
   messages?: Messages[];
   file?: string;
 };

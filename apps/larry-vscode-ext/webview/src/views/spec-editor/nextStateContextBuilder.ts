@@ -4,14 +4,15 @@ export interface StateMessage {
 }
 
 export interface ContextUpdateResult {
-  approved: boolean;
+  approved?: boolean;
+  userAnswered?: boolean;
   messages: StateMessage[];
 }
 
 /**
  * Builds the context update for proceeding to next state
  * 
- * Handles two review types with different messaging:
+ * Handles three state types with different messaging and response formats:
  * 
  * **specReview** (specification review):
  * - If dirty: approved=false, message="I have reviewed and modified the specification. Please proceed."
@@ -21,10 +22,14 @@ export interface ContextUpdateResult {
  * - If dirty: approved=false, message="I have reviewed and modified the proposed code changes, please apply my comments."
  * - If clean: approved=true, message="Looks good, approved."
  * 
+ * **confirmUserIntent** (user confirmation):
+ * - If dirty: userAnswered=true, message="Answered, continue."
+ * - If clean: no userAnswered property, message="Looks good, approved."
+ * 
  * @param isDirty - Whether the content has been modified since initialization
- * @param fullStateKey - Current state key (e.g., "specReview|123" or "architectureReview|456")
+ * @param fullStateKey - Current state key (e.g., "specReview|123", "architectureReview|456", or "confirmUserIntent|789")
  * @param stateData - Current state data from machine context
- * @returns Context update with approved status and updated messages array
+ * @returns Context update with approved/userAnswered status and updated messages array
  * 
  * @example
  * ```typescript
@@ -36,13 +41,13 @@ export interface ContextUpdateResult {
  * );
  * // => { approved: false, messages: [{ system: 'Review required', user: 'I have reviewed and modified the specification. Please proceed.' }] }
  * 
- * // architectureReview with modifications
+ * // confirmUserIntent with modifications
  * const result = buildContextUpdate(
  *   true,  // content was modified
- *   'architectureReview|456',
+ *   'confirmUserIntent|789',
  *   { messages: [{ system: 'Review required' }] }
  * );
- * // => { approved: false, messages: [{ system: 'Review required', user: 'I have reviewed and modified the proposed code changes, please apply my comments.' }] }
+ * // => { userAnswered: true, messages: [{ system: 'Review required', user: 'Answered, continue.' }] }
  * ```
  */
 export function buildContextUpdate(
@@ -52,15 +57,17 @@ export function buildContextUpdate(
 ): ContextUpdateResult {
   // Determine user message based on state type and dirty status
   let userMessage = '';
+  const isSpecReview = fullStateKey?.includes('specReview');
+  const isArchitectureReview = fullStateKey?.includes('architectureReview');
+  const isConfirmUserIntent = fullStateKey?.includes('confirmUserIntent');
   
   if (isDirty) {
-    const isSpecReview = fullStateKey?.includes('specReview');
-    const isArchitectureReview = fullStateKey?.includes('architectureReview');
-    
     if (isArchitectureReview) {
       userMessage = 'I have reviewed and modified the proposed code changes, please apply my comments.';
     } else if (isSpecReview) {
       userMessage = 'I have reviewed and modified the specification. Please proceed.';
+    } else if (isConfirmUserIntent) {
+      userMessage = 'Answered, continue.';
     }
   } else {
     userMessage = 'Looks good, approved.';
@@ -78,10 +85,17 @@ export function buildContextUpdate(
     lastMessage.user = userMessage;
   }
 
-  const isApproved = isDirty ? false : true;
-
-  return {
-    approved: isApproved,
+  const result: ContextUpdateResult = {
     messages
   };
+
+  if (isConfirmUserIntent) {
+    if (isDirty) {
+      result.userAnswered = true;
+    }
+  } else {
+    result.approved = isDirty ? false : true;
+  }
+
+  return result;
 }

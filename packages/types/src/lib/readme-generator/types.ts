@@ -207,14 +207,22 @@ export type ToolCallingTask = {
     notes?: string;
 };
 
+export type MessagesArray = Array<{
+    user?: string;
+    system?: string;
+}>;
+
 export type UserIntent = {
+    userAnswered?: boolean;
+    reviewRequired?: boolean;
+    messages: MessagesArray;
     confirmationPrompt: string;
     userResponse?: string;
     file?: string;
 }
 
 export type Completion = {
-    tokenomics: Tokenomics;
+    tokenomics: Tokenomics | undefined;
 } & UserIntent;
 
 /** Keep this union small, explicit, and auditable for v0 */

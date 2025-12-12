@@ -364,6 +364,7 @@ ${fileBlocks}
   return {
     confirmationPrompt: msg,
     file: abs,
+    messages: parsedMessages,
     tokenomics,
   };
 }

@@ -122,4 +122,31 @@ describe('buildContextUpdate - Proceed payload scenarios', () => {
       ],
     });
   });
+
+  /**
+   * Scenario 5: confirmUserIntent with modifications (isDirty=true)
+   * Expected: approve undefined, userAnswered: true
+   * Expected message: "Answered, continue."
+   */
+  it('should build correct payload for confirmUserIntent + dirty', () => {
+    const stateData = {
+      messages: [{ system: 'Review required' }],
+    };
+
+    const result: ContextUpdateResult = buildContextUpdate(
+      true,  // isDirty
+      'confirmUserIntent|123',
+      stateData
+    );
+
+    expect(result).toEqual({
+      userAnswered: true,
+      messages: [
+        {
+          system: 'Review required',
+          user: 'Answered, continue.',
+        },
+      ],
+    });
+  });
 });
