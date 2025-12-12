@@ -272,13 +272,13 @@ export async function resolveMeetingConflicts(
             attendees.add(meeting.organizer);
           }
           const attendeesArray = Array.from(attendees);
-          await officeServiceV3.scheduleMeeting({
-            summary: meeting.subject,
-            description: meeting.description,
-            start: meeting.rescheduledTo.start,
-            end: meeting.rescheduledTo.end,
-            attendees: attendeesArray,
-          });
+          // await officeServiceV3.scheduleMeeting({
+          //   summary: meeting.subject,
+          //   description: meeting.description,
+          //   start: meeting.rescheduledTo.start,
+          //   end: meeting.rescheduledTo.end,
+          //   attendees: attendeesArray,
+          // });
           console.log(
             `Rescheduled meeting: ${meeting.subject} to ${meeting.rescheduledTo.start} - ${meeting.rescheduledTo.end}`
           );
