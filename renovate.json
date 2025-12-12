@@ -3,12 +3,10 @@
   "extends": [
     "config:best-practices",
     "workarounds:all",
-    "npm:unpublishSafe",
-    "github-actions:pinDigests",
-    "docker:pinDigests",
+    "security:minimumReleaseAgeNpm",
     ":pinAllExceptPeerDependencies"
   ],
-  "enabledManagers": ["npm", "github-actions", "dockerfile", "regex"],
+  "enabledManagers": ["npm", "github-actions", "dockerfile", "custom.regex"],
   "timezone": "Europe/Warsaw",
   "schedule": ["every weekend"],
   "dependencyDashboard": true,
@@ -16,7 +14,7 @@
   "prHourlyLimit": 2,
   "rebaseWhen": "behind-base-branch",
   "rangeStrategy": "pin",
-  "stabilityDays": 3,
+  "minimumReleaseAge": "3 days",
   "constraints": {
     "node": "22.13.0",
     "npm": "10.9.0"
@@ -33,7 +31,11 @@
     "schedule": ["every weekend"]
   },
   "vulnerabilityAlerts": {
-    "enabled": true
+    "labels": ["security"],
+    "dependencyDashboardApproval": false,
+    "automerge": false,
+    "schedule": [],
+    "prCreation": "immediate"
   },
   "packageRules": [
     {
@@ -42,7 +44,6 @@
       "automerge": true,
       "automergeType": "pr",
       "platformAutomerge": true,
-      "requiredStatusChecks": ["checks"],
       "minimumReleaseAge": "3 days"
     },
     {
@@ -55,84 +56,84 @@
     {
       "description": "Group: Tooling (ESLint/TS/Jest/Nx/SWC/Prettier)",
       "matchManagers": ["npm"],
-      "matchPackagePatterns": [
-        "^eslint",
-        "^@typescript-eslint/",
-        "^typescript$",
-        "^ts-node$",
-        "^ts-jest$",
-        "^tsup$",
-        "^swc",
-        "^@swc",
-        "^jest",
-        "^@jest",
-        "^@testing-library/",
-        "^prettier$",
-        "^nx$",
-        "^@nx/"
-      ],
-      "groupName": "tooling"
+      "groupName": "tooling",
+      "matchPackageNames": [
+        "/^eslint/",
+        "/^@typescript-eslint//",
+        "/^typescript$/",
+        "/^ts-node$/",
+        "/^ts-jest$/",
+        "/^tsup$/",
+        "/^swc/",
+        "/^@swc/",
+        "/^jest/",
+        "/^@jest/",
+        "/^@testing-library//",
+        "/^prettier$/",
+        "/^nx$/",
+        "/^@nx//"
+      ]
     },
     {
       "description": "Group: UI stack (React/Next/Tailwind/Radix/etc.)",
       "matchManagers": ["npm"],
-      "matchPackagePatterns": [
-        "^react($|-)",
-        "^react-dom$",
-        "^next$",
-        "^preact$",
-        "^@radix-ui/",
-        "^lucide-",
-        "^class-variance-authority$",
-        "^clsx$",
-        "^@tanstack/react-query$",
-        "^tailwind",
-        "^vega-embed$",
-        "^highlight\\.js$",
-        "^marked($|-)",
-        "^marked-highlight$",
-        "^marked-terminal$",
-        "^react-textarea-autosize$"
-      ],
-      "groupName": "ui-stack"
+      "groupName": "ui-stack",
+      "matchPackageNames": [
+        "/^react($|-)/",
+        "/^react-dom$/",
+        "/^next$/",
+        "/^preact$/",
+        "/^@radix-ui//",
+        "/^lucide-/",
+        "/^class-variance-authority$/",
+        "/^clsx$/",
+        "/^@tanstack/react-query$/",
+        "/^tailwind/",
+        "/^vega-embed$/",
+        "/^highlight\\.js$/",
+        "/^marked($|-)/",
+        "/^marked-highlight$/",
+        "/^marked-terminal$/",
+        "/^react-textarea-autosize$/"
+      ]
     },
     {
       "description": "Group: SDKs and APIs (OSDK/Palantir/Google/OpenAI/etc.)",
       "matchManagers": ["npm"],
-      "matchPackagePatterns": [
-        "^@osdk/",
-        "^@palantir/",
-        "^googleapis$",
-        "^@google/",
-        "^openai$",
-        "^@slack/"
-      ],
-      "groupName": "sdks-and-apis"
+      "groupName": "sdks-and-apis",
+      "matchPackageNames": [
+        "/^@osdk//",
+        "/^@palantir//",
+        "/^googleapis$/",
+        "/^@google//",
+        "/^openai$/",
+        "/^@slack//"
+      ]
     },
     {
       "description": "Group: Runtime utilities (server/libs)",
       "matchManagers": ["npm"],
-      "matchPackagePatterns": [
-        "^express$",
-        "^cors$",
-        "^helmet$",
-        "^node-fetch$",
-        "^ramda$",
-        "^sql\\.js$",
-        "^inversify$",
-        "^inquirer$",
-        "^fast-glob$",
-        "^ts-morph$",
-        "^dompurify$",
-        "^xstate$"
-      ],
-      "groupName": "runtime-utils"
+      "groupName": "runtime-utils",
+      "matchPackageNames": [
+        "/^express$/",
+        "/^cors$/",
+        "/^helmet$/",
+        "/^node-fetch$/",
+        "/^ramda$/",
+        "/^sql\\.js$/",
+        "/^inversify$/",
+        "/^inquirer$/",
+        "/^fast-glob$/",
+        "/^ts-morph$/",
+        "/^dompurify$/",
+        "/^xstate$/"
+      ]
     },
     {
       "description": "Group: Types packages",
       "matchManagers": ["npm"],
-      "matchPackagePatterns": ["^@types/"],
-      "groupName": "types"
+      "groupName": "types",
+      "matchPackageNames": ["/^@types//"]
     },
     {
       "description": "Group: GitHub Actions (minor/patch)",
@@ -141,8 +142,7 @@
       "groupName": "github-actions",
       "automerge": true,
       "automergeType": "pr",
-      "platformAutomerge": true,
-      "requiredStatusChecks": ["checks"]
+      "platformAutomerge": true
     },
     {
       "description": "Group: Docker base images (no automerge)",
@@ -152,27 +152,19 @@
       "automerge": false
     },
     {
-      "description": "Security alerts: open PRs immediately, outside schedule, high priority",
-      "matchManagers": ["vulnerabilityAlerts"],
-      "labels": ["security"],
-      "schedule": ["at any time"],
-      "prPriority": 1000,
-      "dependencyDashboardApproval": false,
-      "automerge": false
-    },
-    {
       "description": "Node version in workflows: dashboard-only until approved",
-      "matchManagers": ["regex"],
+      "matchManagers": ["custom.regex"],
       "matchDepNames": ["node"],
       "dependencyDashboardApproval": true,
       "prCreation": "approval",
       "automerge": false
     }
   ],
-  "regexManagers": [
+  "customManagers": [
     {
+      "customType": "regex",
       "description": "Track Node version in CI workflows (dashboard-only rule above controls PR creation)",
-      "fileMatch": ["^\\.github/workflows/[^/]+\\.ya?ml$"],
+      "managerFilePatterns": ["/^\\.github/workflows/[^/]+\\.ya?ml$/"],
       "matchStrings": [
         "node-version:\\s*'?(?<currentValue>\\d+\\.\\d+\\.\\d+)'?"
       ],
