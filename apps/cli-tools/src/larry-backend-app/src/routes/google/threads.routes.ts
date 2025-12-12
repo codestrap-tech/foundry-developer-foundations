@@ -49,15 +49,18 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
   });
 
   // GET /threads/:threadId
-  r.get('/threads/:threadId', async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { threadId } = req.params;
-      const thread = await threadsDao.read(threadId);
-      res.json(thread);
-    } catch (err) {
-      next(err);
-    }
-  });
+  r.get(
+    '/threads/:threadId',
+    async (req: Request, res: Response, next: NextFunction) => {
+      try {
+        const { threadId } = req.params;
+        const thread = await threadsDao.read(threadId);
+        res.json(thread);
+      } catch (err) {
+        next(err);
+      }
+    },
+  );
 
   // POST /threads/new
   r.post(
@@ -102,7 +105,7 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
             const { executionId } = await googleCodingAgent(
               undefined,
               undefined,
-              userTask
+              userTask,
             );
 
             await pauseFor(2000); // pause for 2s to avoid issues with eventual consistency
@@ -120,8 +123,8 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
             const status: MachineStatus = humanReview
               ? 'awaiting_human'
               : running
-              ? 'running'
-              : 'pending';
+                ? 'running'
+                : 'pending';
             const machineUpdateEvt: MachineUpdatedEvent = {
               type: 'machine.updated',
               machine: {
@@ -157,17 +160,15 @@ export function threadsRoutes(idem: IdempotencyStore, sse: SSEService) {
 
             console.error(
               '[threads.routes] Async thread creation failed:',
-              asyncErr
+              asyncErr,
             );
           }
         });
       } catch (err) {
         next(err);
       }
-    }
+    },
   );
 
   return r;
 }
-
-

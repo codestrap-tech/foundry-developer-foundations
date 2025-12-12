@@ -15,7 +15,7 @@ export async function getGithubAuth() {
     // Decode the base64 key once at startup
     const privateKey = Buffer.from(
       process.env.GITHUB_PRIVATE_KEY!,
-      'base64'
+      'base64',
     ).toString('utf8');
 
     const auth = createAppAuth({
@@ -32,7 +32,7 @@ export async function getGithubAuth() {
 
 function needsRefresh(
   expiresAtISO: string | undefined,
-  skewSeconds: number
+  skewSeconds: number,
 ): boolean {
   if (!expiresAtISO) return true;
   const now = Date.now();
@@ -130,7 +130,7 @@ export async function getFile(params: {
   }
 
   throw new Error(
-    `Path ${path} not found in repo ${owner}/${repo} or is not a file.`
+    `Path ${path} not found in repo ${owner}/${repo} or is not a file.`,
   );
 }
 

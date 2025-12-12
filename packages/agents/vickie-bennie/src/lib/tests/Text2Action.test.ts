@@ -4,9 +4,16 @@ import {
 } from '../__fixtures__/MachineExecutions';
 import { Text2Action } from '../Text2Action';
 import { mockEmailResponse } from '../__fixtures__/Email';
-import { mockGithubGetFileResult, mockGithubCheckinFileResult } from '../__fixtures__/Github';
+import {
+  mockGithubGetFileResult,
+  mockGithubCheckinFileResult,
+} from '../__fixtures__/Github';
 
 let counter = 0;
+
+jest.mock('prettier', () => ({
+  format: jest.fn((text: string) => Promise.resolve(text)),
+}));
 
 jest.mock('@codestrap/github', () => ({
   // override makeGithubClient with a Jest mock
@@ -15,7 +22,7 @@ jest.mock('@codestrap/github', () => ({
     // { getFile, checkinFile }
     return {
       getFile: jest.fn(async () => mockGithubGetFileResult),
-      checkinFile: jest.fn( async () => mockGithubCheckinFileResult),
+      checkinFile: jest.fn(async () => mockGithubCheckinFileResult),
     };
   }),
 }));
@@ -43,10 +50,10 @@ jest.mock('@codestrap/developer-foundations-services-palantir', () => ({
         state: string,
         logs: string,
         lockOwner?: string,
-        lockUntil?: number
+        lockUntil?: number,
       ) => {
         return text2ActionTestMachineExecution;
-      }
+      },
     ),
     delete: jest.fn(),
     read: jest.fn((machineExecutionId: string) => {

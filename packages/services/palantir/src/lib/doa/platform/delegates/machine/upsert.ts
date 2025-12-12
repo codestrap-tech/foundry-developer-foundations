@@ -1,8 +1,5 @@
-import type {
-  MachineExecutions} from '@codestrap/developer-foundations-types';
-import {
-  FoundryClient
-} from '@codestrap/developer-foundations-types';
+import type { MachineExecutions } from '@codestrap/developer-foundations-types';
+import { FoundryClient } from '@codestrap/developer-foundations-types';
 
 // Per-id queue state
 type UpsertArgs = {
@@ -59,7 +56,9 @@ async function doNetworkUpsert(args: UpsertArgs): Promise<MachineExecutions> {
   const apiResult = await fetch(fullUrl, { method: 'POST', headers, body });
 
   if (!apiResult.ok) {
-    throw new Error(`Upsert failed: ${apiResult.status} ${apiResult.statusText}`);
+    throw new Error(
+      `Upsert failed: ${apiResult.status} ${apiResult.statusText}`,
+    );
   }
 
   // (Optional) Backoff on 409/423 if the store signals "busy/locked".
@@ -69,7 +68,7 @@ async function doNetworkUpsert(args: UpsertArgs): Promise<MachineExecutions> {
 
   if (!result.edits || result.edits.edits.length === 0) {
     throw new Error(
-      `Failed to upsert machine message to the ontology with: ${JSON.stringify(result)}`
+      `Failed to upsert machine message to the ontology with: ${JSON.stringify(result)}`,
     );
   }
 
@@ -85,7 +84,9 @@ async function doNetworkUpsert(args: UpsertArgs): Promise<MachineExecutions> {
   const machineFetchResults = await fetch(getUrl, { method: 'GET', headers });
 
   if (!machineFetchResults.ok) {
-    throw new Error(`Fetch machine failed: ${machineFetchResults.status} ${machineFetchResults.statusText}`);
+    throw new Error(
+      `Fetch machine failed: ${machineFetchResults.status} ${machineFetchResults.statusText}`,
+    );
   }
 
   const machine = (await machineFetchResults.json()) as MachineExecutions;
@@ -149,7 +150,11 @@ async function drainQueueForId(id: string): Promise<MachineExecutions> {
     q.waiters.length = 0;
     // use a for loop with try catch in case the reject handler throws
     for (const reject of errs) {
-      try { reject(err); } catch { /* swallow */ }
+      try {
+        reject(err);
+      } catch {
+        /* swallow */
+      }
     }
     throw err;
   } finally {
@@ -157,7 +162,6 @@ async function drainQueueForId(id: string): Promise<MachineExecutions> {
     tryDeleteQueue(id);
   }
 }
-
 
 /**
  * Public API (signature unchanged).
@@ -172,7 +176,7 @@ export function upsertMachineExecution(
   ontologyRid: string,
   url: string,
   lockOwner?: string,
-  lockUntil?: number
+  lockUntil?: number,
 ): Promise<MachineExecutions> {
   const args: UpsertArgs = {
     id,

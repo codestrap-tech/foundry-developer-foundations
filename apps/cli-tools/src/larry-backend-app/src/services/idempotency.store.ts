@@ -24,7 +24,7 @@ export class IdempotencyStore {
     key: string,
     status: number,
     body: any,
-    headers?: Record<string, string>
+    headers?: Record<string, string>,
   ) {
     this.map.set(key, {
       status,

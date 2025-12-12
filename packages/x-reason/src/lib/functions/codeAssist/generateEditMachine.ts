@@ -7,19 +7,23 @@ import type {
   Context,
   MachineEvent,
   ThreadsDao,
-  UserIntent} from '@codestrap/developer-foundations-types';
+  UserIntent,
+} from '@codestrap/developer-foundations-types';
 import {
   TYPES,
   VersionControlService,
 } from '@codestrap/developer-foundations-types';
 import { openAiEditOpsGenerator } from './delegates';
 import { parseCodeEdits } from '@codestrap/developer-foundations-utils';
-import { saveFileToGithub, writeFileIfNotFoundLocally } from './delegates/github';
+import {
+  saveFileToGithub,
+  writeFileIfNotFoundLocally,
+} from './delegates/github';
 
 export async function generateEditMachine(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ) {
   const threadsDao = container.get<ThreadsDao>(TYPES.ThreadsDao);
 
@@ -36,18 +40,19 @@ export async function generateEditMachine(
       .reverse()
       .find((item) => item.includes('architectImplementation')) || '';
 
-  const { file } = (context[architectImplementationId] as UserIntent);
+  const { file } = context[architectImplementationId] as UserIntent;
 
   await writeFileIfNotFoundLocally(file);
 
   // there must be a spec file generated in the previous architectureReview state
-  if (!file || !fs.existsSync(file)) throw new Error(`File does not exist: ${file}`);
+  if (!file || !fs.existsSync(file))
+    throw new Error(`File does not exist: ${file}`);
 
   // reload the file to get the latest contents so we can capture user edits
   const plan = await fs.promises.readFile(file, 'utf8');
 
-  const editsBlocks = parseCodeEdits(plan)
-    .reduce((acc, cur) => {
+  const editsBlocks = parseCodeEdits(plan).reduce(
+    (acc, cur) => {
       switch (cur.type) {
         case 'MODIFY':
           acc.modified.push(cur);
@@ -57,9 +62,16 @@ export async function generateEditMachine(
           break;
       }
       return acc;
-    }, { modified: [], added: [] } as { modified: CodeEdits[], added: CodeEdits[] });
+    },
+    { modified: [], added: [] } as {
+      modified: CodeEdits[];
+      added: CodeEdits[];
+    },
+  );
 
-  const planParts = plan.split('# The complete current contents of all files being modified without any changes applied')
+  const planParts = plan.split(
+    '# The complete current contents of all files being modified without any changes applied',
+  );
   const requiredFiles = planParts[1];
   // assemble the edit blocks for files being edited only.
   const modifiedFiles = editsBlocks.modified.map((item) => {
@@ -68,20 +80,20 @@ File: ${item.filePath} (MODIFIED)
 \`\`\`diff
 ${item.proposedChange}
 \`\`\`
-`
+`;
   });
-  // now manually assemble the added blocks since they don't need precise edits. 
+  // now manually assemble the added blocks since they don't need precise edits.
   // All the code is already contained in the blocks and not extra operations are needed
   // if for some reason the model failed to export a function etc just fix it manually
-  const createOrReplaceEdits = editsBlocks.added.map(item => {
-    const overwrite = fs.existsSync(item.filePath)
+  const createOrReplaceEdits = editsBlocks.added.map((item) => {
+    const overwrite = fs.existsSync(item.filePath);
     return {
       kind: 'createOrReplaceFile',
       file: item.filePath,
       text: item.proposedChange,
       overwrite,
     };
-  })
+  });
 
   const generateEditMachineId =
     context.stack
@@ -89,7 +101,8 @@ ${item.proposedChange}
       .reverse()
       .find((item) => item.includes('generateEditMachine')) || '';
 
-  const { userResponse, file: editsFile } = (context[generateEditMachineId] as UserIntent) || {};
+  const { userResponse, file: editsFile } =
+    (context[generateEditMachineId] as UserIntent) || {};
 
   let updatedContents;
   if (editsFile) {
@@ -473,8 +486,8 @@ Resulting in the following edits json
 
   // only have the model figure out modifications since create or replace files already have code generated where as diffs need precise edits
   // if there is a spec on file be sure to use that instead of the plan as it can be edited by the user
-  const user = userResponse ?
-    `
+  const user = userResponse
+    ? `
 # Feedback from the user
 ${userResponse}
 
@@ -493,8 +506,7 @@ ${requiredFiles}
 Produce the v1 edit plan to implement THE DESIGN SPEC taking into account the user feedback and your previous response.
 Correct any errors the user has asked for. Return ONLY valid JSON.
 `
-    :
-    `
+    : `
 # THE DESIGN SPEC
 ${modifiedFiles}
 
@@ -507,19 +519,20 @@ Produce the v1 edit plan to implement the spec in this repo.
 Return ONLY JSON.
 `;
 
-  const { ops, tokenomics, non_applicable, version } = await openAiEditOpsGenerator(user, system);
+  const { ops, tokenomics, non_applicable, version } =
+    await openAiEditOpsGenerator(user, system);
 
   const completeOps = {
     version,
-    ops: [
-      ...ops,
-      ...createOrReplaceEdits,
-    ],
+    ops: [...ops, ...createOrReplaceEdits],
     non_applicable,
-  }
+  };
 
   const fileName = `codeEdits-${context.machineExecutionId}.json`;
-  const abs = path.resolve(process.env.BASE_FILE_STORAGE || process.cwd(), fileName);
+  const abs = path.resolve(
+    process.env.BASE_FILE_STORAGE || process.cwd(),
+    fileName,
+  );
   const content = JSON.stringify(completeOps, null, 2);
 
   await fs.promises.writeFile(abs, content, 'utf8');
@@ -533,7 +546,7 @@ Return ONLY JSON.
   await threadsDao.upsert(
     JSON.stringify(parsedMessages),
     'cli-tool',
-    context.machineExecutionId!
+    context.machineExecutionId!,
   );
 
   return {

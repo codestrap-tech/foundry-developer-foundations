@@ -1,5 +1,4 @@
-import type {
-  Tree} from '@nx/devkit';
+import type { Tree } from '@nx/devkit';
 import {
   updateJson,
   formatFiles,
@@ -14,7 +13,7 @@ import type { ServiceLibGeneratorSchema } from './schema';
 
 export async function serviceLibGenerator(
   tree: Tree,
-  options: ServiceLibGeneratorSchema
+  options: ServiceLibGeneratorSchema,
 ) {
   // mormalizes names like myName to my-name
   const libNames = names(options.name);
@@ -34,7 +33,7 @@ export async function serviceLibGenerator(
     testEnvironment: 'node',
     // keep tags for conventions
     tags: 'type:service',
-    compiler: 'tsc'
+    compiler: 'tsc',
   });
 
   // 2) read the actual project config Nx created and use its root everywhere
@@ -87,7 +86,7 @@ export async function serviceLibGenerator(
   const jestPath = joinPathFragments(projectRoot, 'jest.config.ts');
   if (tree.exists(jestPath)) {
     const content = tree.read(jestPath, 'utf-8')!;
-    if (!content.includes("dotenv.config();")) {
+    if (!content.includes('dotenv.config();')) {
       const patched = [
         `import * as dotenv from 'dotenv';`,
         `dotenv.config();`,
@@ -99,13 +98,10 @@ export async function serviceLibGenerator(
   }
 
   // 4) (Optional) Add/override any extra files via templates
-  generateFiles(
-    tree, 
-    filesPath, 
-    projectRoot, {
+  generateFiles(tree, filesPath, projectRoot, {
     ...options,
-    ...libNames,     // Pass the normalized library names.
-    tmpl: '',        // A common convention to remove the '__tmpl__' suffix from filenames.
+    ...libNames, // Pass the normalized library names.
+    tmpl: '', // A common convention to remove the '__tmpl__' suffix from filenames.
   });
 
   await formatFiles(tree);

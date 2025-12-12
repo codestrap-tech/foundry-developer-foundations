@@ -2,9 +2,12 @@ import { useRef, useEffect } from 'preact/hooks';
 import { onMessage, postMessage } from '../lib/vscode';
 
 export function useReadFile() {
-  const pendingResolvers = useRef<Map<string, (content: string) => void>>(new Map());
-  const pendingRejectors = useRef<Map<string, (error: Error) => void>>(new Map());
-
+  const pendingResolvers = useRef<Map<string, (content: string) => void>>(
+    new Map(),
+  );
+  const pendingRejectors = useRef<Map<string, (error: Error) => void>>(
+    new Map(),
+  );
 
   useEffect(() => {
     const cleanup = onMessage((msg: any) => {
@@ -29,7 +32,6 @@ export function useReadFile() {
     return cleanup;
   }, []);
 
-
   const fetch = (filePath: string): Promise<string> => {
     return new Promise((resolve, reject) => {
       pendingResolvers.current.set('file', resolve);
@@ -43,4 +45,3 @@ export function useReadFile() {
 
   return { fetch };
 }
-

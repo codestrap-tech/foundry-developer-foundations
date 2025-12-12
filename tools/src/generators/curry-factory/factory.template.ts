@@ -43,7 +43,10 @@ export type ModuleFactory<T> = (config: Record<string, unknown>) => T;
  * A map from supported module identifiers to their builders.
  * Extend this record as new modules are added.
  */
-export const moduleRegistry: Record<SupportedModules, ModuleFactory<ModuleInterface>> = {
+export const moduleRegistry: Record<
+  SupportedModules,
+  ModuleFactory<ModuleInterface>
+> = {
   [SupportedModules.MODULE_ALPHA]: (config) => ({
     initialize: () => console.log('Initializing Alpha with', config),
     execute: () => 'Alpha executed',
@@ -74,7 +77,7 @@ export const factory = curry(
   <T>(
     map: Record<string, (config: Record<string, unknown>) => unknown>,
     key: string,
-    config: Record<string, unknown>
+    config: Record<string, unknown>,
   ): T => {
     const supported = Object.values(SupportedModules);
     if (!supported.includes(key as SupportedModules)) {
@@ -82,7 +85,7 @@ export const factory = curry(
     }
 
     return map[key](config) as T;
-  }
+  },
 );
 
 /**
@@ -93,4 +96,6 @@ export const factory = curry(
  *   const alpha = createModule(SupportedModules.MODULE_ALPHA)({ some: 'config' });
  */
 export const buildModuleFactory = () =>
-  factory(moduleRegistry) as (key: SupportedModules) => ModuleFactory<ModuleInterface>;
+  factory(moduleRegistry) as (
+    key: SupportedModules,
+  ) => ModuleFactory<ModuleInterface>;

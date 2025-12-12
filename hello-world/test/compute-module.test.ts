@@ -14,10 +14,7 @@ const testModule = computeModule as TestModule;
 const realFetch = global.fetch;
 
 // 2. Override it with a logger wrapper
-global.fetch = (async (
-  input: any,
-  init?: any
-): Promise<Response> => {
+global.fetch = (async (input: any, init?: any): Promise<Response> => {
   // log the request
   console.log('➡️ fetch:', input, init);
 
@@ -37,14 +34,12 @@ global.fetch = (async (
 }) as typeof fetch;
 
 describe('Compute Module Registration', () => {
-
   beforeEach(() => {
-
     // Register operations with actual handlers
-    testModule.register("WriteGreeting", writeGreeting);
+    testModule.register('WriteGreeting', writeGreeting);
 
     // Register responsive handler
-    testModule.on("responsive", () => {
+    testModule.on('responsive', () => {
       console.log(`${process.env.LOG_PREFIX} Module is now responsive`);
     });
   });
@@ -53,7 +48,7 @@ describe('Compute Module Registration', () => {
     const operations = ['WriteGreeting'];
 
     // Initial check
-    operations.forEach(op => {
+    operations.forEach((op) => {
       expect(testModule.listeners[op]).toBeDefined();
       expect(testModule.listeners[op].type).toBe('response');
     });
@@ -66,16 +61,16 @@ describe('Compute Module Registration', () => {
       }
 
       // Verify after each event
-      operations.forEach(op => {
+      operations.forEach((op) => {
         expect(testModule.listeners[op]).toBeDefined();
         expect(testModule.listeners[op].type).toBe('response');
       });
     }
 
     // Execute calendar operations
-    const result = await testModule.listeners['WriteGreeting'].listener('Los Angeles');
+    const result =
+      await testModule.listeners['WriteGreeting'].listener('Los Angeles');
 
     expect(result).toBeDefined();
   }, 30000);
-
-}); 
+});

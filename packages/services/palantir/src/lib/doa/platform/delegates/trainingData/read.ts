@@ -1,8 +1,5 @@
-import type {
-  TrainingData} from '@codestrap/developer-foundations-types';
-import {
-  FoundryClient
-} from '@codestrap/developer-foundations-types';
+import type { TrainingData } from '@codestrap/developer-foundations-types';
+import { FoundryClient } from '@codestrap/developer-foundations-types';
 
 export async function readTrainingData(
   id: string,
@@ -29,10 +26,10 @@ export async function readTrainingData(
 
   if (apiResponse.errorCode) {
     console.log(
-      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`
+      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`,
     );
     throw new Error(
-      `An error occurred while calling read Training Data errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`
+      `An error occurred while calling read Training Data errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`,
     );
   }
 

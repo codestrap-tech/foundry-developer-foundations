@@ -26,12 +26,12 @@ function validateScheduleMeetingInput(context: CalendarContext): void {
 
 export async function scheduleMeeting(
   calendar: calendar_v3.Calendar,
-  context: CalendarContext
+  context: CalendarContext,
 ): Promise<ScheduleMeetingOutput> {
   console.log(
     `${LOG_PREFIX} Processing meeting request:\n  summary: ${
       context.summary
-    }\n  attendees: ${JSON.stringify(context.attendees, null, 2)}`
+    }\n  attendees: ${JSON.stringify(context.attendees, null, 2)}`,
   );
 
   validateScheduleMeetingInput(context);
@@ -75,8 +75,8 @@ export async function scheduleMeeting(
         status: data.status,
       },
       null,
-      2
-    )}`
+      2,
+    )}`,
   );
 
   return {

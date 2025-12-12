@@ -1,9 +1,13 @@
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
-import type { Tree} from '@nx/devkit';
+import type { Tree } from '@nx/devkit';
 import { readProjectConfiguration } from '@nx/devkit';
 
 import { serviceLibGenerator } from './service-lib';
 import type { ServiceLibGeneratorSchema } from './schema';
+
+jest.mock('prettier', () => ({
+  format: jest.fn((text: string) => Promise.resolve(text)),
+}));
 
 describe('service-lib generator', () => {
   let tree: Tree;
@@ -42,22 +46,22 @@ describe('service-lib generator', () => {
     expect(config.targets?.build?.options?.outputPath).toBe(`dist/${root}`);
     expect(config.targets?.build?.options?.main).toBe(`${root}/src/index.ts`);
     expect(config.targets?.build?.options?.tsConfig).toBe(
-      `${root}/tsconfig.lib.json`
+      `${root}/tsconfig.lib.json`,
     );
     expect(config.targets?.build?.options?.assets).toEqual([`${root}/*.md`]);
     expect(config.targets?.build?.options?.packageJson).toBe(
-      `${root}/package.json`
+      `${root}/package.json`,
     );
 
     // nx-release-publish
     expect(config.targets?.['nx-release-publish']?.options?.packageRoot).toBe(
-      'dist/{projectRoot}'
+      'dist/{projectRoot}',
     );
 
     // test target
     expect(config.targets?.test?.executor).toBe('@nx/jest:jest');
     expect(config.targets?.test?.options?.jestConfig).toBe(
-      `${root}/jest.config.ts`
+      `${root}/jest.config.ts`,
     );
     expect(config.targets?.test?.outputs).toEqual([
       '{workspaceRoot}/coverage/{projectRoot}',

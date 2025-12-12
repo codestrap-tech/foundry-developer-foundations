@@ -1,6 +1,6 @@
 /**
  * Tests for nextStateContextBuilder.ts
- * 
+ *
  * Tests the 4 core scenarios for building context updates when clicking Proceed:
  * 1. specReview + dirty (modified content)
  * 2. specReview + clean (no modifications)
@@ -25,9 +25,9 @@ describe('buildContextUpdate - Proceed payload scenarios', () => {
     };
 
     const result: ContextUpdateResult = buildContextUpdate(
-      true,  // isDirty
+      true, // isDirty
       'specReview|123',
-      stateData
+      stateData,
     );
 
     expect(result).toEqual({
@@ -52,9 +52,9 @@ describe('buildContextUpdate - Proceed payload scenarios', () => {
     };
 
     const result: ContextUpdateResult = buildContextUpdate(
-      false,  // isDirty
+      false, // isDirty
       'specReview|123',
-      stateData
+      stateData,
     );
 
     expect(result).toEqual({
@@ -79,21 +79,20 @@ describe('buildContextUpdate - Proceed payload scenarios', () => {
     };
 
     const result: ContextUpdateResult = buildContextUpdate(
-      true,  // isDirty
+      true, // isDirty
       'architectureReview|123',
-      stateData
+      stateData,
     );
 
-
     expect(result).toEqual({
-        approved: false,
-        messages: [
-          {
-            system: 'Review required',
-            user: 'I have reviewed and modified the proposed code changes, please apply my comments.',
-          },
-        ],
-      });
+      approved: false,
+      messages: [
+        {
+          system: 'Review required',
+          user: 'I have reviewed and modified the proposed code changes, please apply my comments.',
+        },
+      ],
+    });
   });
 
   /**
@@ -107,9 +106,9 @@ describe('buildContextUpdate - Proceed payload scenarios', () => {
     };
 
     const result: ContextUpdateResult = buildContextUpdate(
-      false,  // isDirty
+      false, // isDirty
       'architectureReview|123',
-      stateData
+      stateData,
     );
 
     expect(result).toEqual({

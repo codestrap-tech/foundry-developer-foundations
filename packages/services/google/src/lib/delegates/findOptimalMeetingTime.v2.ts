@@ -1,6 +1,9 @@
 // scheduler.ts
 import type { calendar_v3 } from 'googleapis';
-import { partsInTZ, wallClockToUTC } from '@codestrap/developer-foundations-utils';
+import {
+  partsInTZ,
+  wallClockToUTC,
+} from '@codestrap/developer-foundations-utils';
 
 type Busy = { start: string; end: string };
 export type Slot = { start: string; end: string; score?: number };
@@ -9,13 +12,13 @@ type WorkingHoursUTC = { start_hour: number; end_hour: number };
 export type FindArgs = {
   calendar: calendar_v3.Calendar;
   attendees: string[];
-  timezone: string;                 // IANA, e.g. "America/Los_Angeles"
-  windowStartUTC: Date;             // UTC instant
-  windowEndUTC: Date;               // UTC instant
+  timezone: string; // IANA, e.g. "America/Los_Angeles"
+  windowStartUTC: Date; // UTC instant
+  windowEndUTC: Date; // UTC instant
   durationMinutes: number;
-  workingHours: WorkingHoursUTC;    // PRECOMPUTED UTC hours for that day (from workingHoursUTCForDate)
-  slotStepMinutes?: number;         // default 30
-  skipFriday?: boolean;             // default false
+  workingHours: WorkingHoursUTC; // PRECOMPUTED UTC hours for that day (from workingHoursUTCForDate)
+  slotStepMinutes?: number; // default 30
+  skipFriday?: boolean; // default false
 };
 
 export async function findOptimalMeetingTimeV2({
@@ -25,7 +28,7 @@ export async function findOptimalMeetingTimeV2({
   windowStartUTC,
   windowEndUTC,
   durationMinutes,
-  workingHours,          // UTC hours (already localized for that date)
+  workingHours, // UTC hours (already localized for that date)
   slotStepMinutes = 30,
   skipFriday = false,
 }: FindArgs): Promise<Slot[]> {
@@ -44,7 +47,12 @@ export async function findOptimalMeetingTimeV2({
   for (const calId in calendars) {
     const periods = calendars[calId]?.busy ?? [];
     for (const p of periods) {
-      if (p.start && p.end && !isNaN(Date.parse(p.start)) && !isNaN(Date.parse(p.end))) {
+      if (
+        p.start &&
+        p.end &&
+        !isNaN(Date.parse(p.start)) &&
+        !isNaN(Date.parse(p.end))
+      ) {
         allBusy.push({ start: p.start, end: p.end });
       }
     }
@@ -57,11 +65,14 @@ export async function findOptimalMeetingTimeV2({
     windowEndUTC,
     timezone,
     workingHours,
-    skipFriday
+    skipFriday,
   );
 
   // 3) Subtract busy from those windows (still UTC)
-  const freeIntervals = subtractBusyFromWindows(dailyWorkWindowsUTC, mergedBusy);
+  const freeIntervals = subtractBusyFromWindows(
+    dailyWorkWindowsUTC,
+    mergedBusy,
+  );
 
   // 4) Slice into candidate slots, score, and format as zoned ISO with ±HH:MM
   const slots = sliceIntoSlots(freeIntervals, durationMinutes, slotStepMinutes)
@@ -89,7 +100,7 @@ function buildWorkingWindowsUTCFromUTCBounds(
   windowEndUTC: Date,
   tz: string,
   hoursUTC: WorkingHoursUTC,
-  skipFriday: boolean
+  skipFriday: boolean,
 ): Interval[] {
   const result: Interval[] = [];
 
@@ -98,15 +109,24 @@ function buildWorkingWindowsUTCFromUTCBounds(
   // tz-midnight for start and end (as UTC instants)
   const sp = partsInTZ(windowStartUTC, tz);
   const ep = partsInTZ(windowEndUTC, tz);
-  let dayUTC = wallClockToUTC(`${sp.year}-${pad(sp.month)}-${pad(sp.day)}T00:00:00`, tz);
-  const lastDayUTC = wallClockToUTC(`${ep.year}-${pad(ep.month)}-${pad(ep.day)}T00:00:00`, tz);
+  let dayUTC = wallClockToUTC(
+    `${sp.year}-${pad(sp.month)}-${pad(sp.day)}T00:00:00`,
+    tz,
+  );
+  const lastDayUTC = wallClockToUTC(
+    `${ep.year}-${pad(ep.month)}-${pad(ep.day)}T00:00:00`,
+    tz,
+  );
 
   const clipStart = new Date(windowStartUTC);
   const clipEnd = new Date(windowEndUTC);
 
   while (dayUTC.getTime() <= lastDayUTC.getTime()) {
     // weekday in target tz
-    const w = new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short' }).format(dayUTC);
+    const w = new Intl.DateTimeFormat('en-US', {
+      timeZone: tz,
+      weekday: 'short',
+    }).format(dayUTC);
     const isWeekend = w === 'Sat' || w === 'Sun';
     const isFriday = w === 'Fri';
 
@@ -132,7 +152,7 @@ function buildWorkingWindowsUTCFromUTCBounds(
     const cur = partsInTZ(dayUTC, tz);
     dayUTC = wallClockToUTC(
       `${cur.year}-${pad(cur.month)}-${pad(cur.day + 1)}T00:00:00`,
-      tz
+      tz,
     );
   }
 
@@ -166,8 +186,13 @@ function mergeBusyIntervals(busy: Busy[]): Busy[] {
   }));
 }
 
-function subtractBusyFromWindows(windows: Interval[], busy: Busy[]): Interval[] {
-  const sortedWindows = windows.slice().sort((a, b) => a.start.getTime() - b.start.getTime());
+function subtractBusyFromWindows(
+  windows: Interval[],
+  busy: Busy[],
+): Interval[] {
+  const sortedWindows = windows
+    .slice()
+    .sort((a, b) => a.start.getTime() - b.start.getTime());
   const busyUTC = busy
     .map((b) => ({ start: new Date(b.start), end: new Date(b.end) }))
     .filter((b) => !isNaN(b.start.getTime()) && !isNaN(b.end.getTime()))
@@ -184,11 +209,13 @@ function subtractBusyFromWindows(windows: Interval[], busy: Busy[]): Interval[] 
       const b = busyUTC[j];
       if (b.start >= win.end) break;
       if (b.end <= cursor) continue;
-      if (b.start > cursor) result.push({ start: cursor, end: new Date(b.start) });
+      if (b.start > cursor)
+        result.push({ start: cursor, end: new Date(b.start) });
       cursor = new Date(Math.max(cursor.getTime(), b.end.getTime()));
     }
 
-    if (cursor < win.end) result.push({ start: cursor, end: new Date(win.end) });
+    if (cursor < win.end)
+      result.push({ start: cursor, end: new Date(win.end) });
   }
 
   return mergeAdjacent(result);
@@ -196,7 +223,9 @@ function subtractBusyFromWindows(windows: Interval[], busy: Busy[]): Interval[] 
 
 function mergeAdjacent(intervals: Interval[]): Interval[] {
   if (!intervals.length) return [];
-  const sorted = intervals.slice().sort((a, b) => a.start.getTime() - b.start.getTime());
+  const sorted = intervals
+    .slice()
+    .sort((a, b) => a.start.getTime() - b.start.getTime());
   const merged: Interval[] = [];
   let cur = sorted[0];
   for (let i = 1; i < sorted.length; i++) {
@@ -212,7 +241,11 @@ function mergeAdjacent(intervals: Interval[]): Interval[] {
   return merged;
 }
 
-function sliceIntoSlots(free: Interval[], durationMinutes: number, stepMinutes: number): Interval[] {
+function sliceIntoSlots(
+  free: Interval[],
+  durationMinutes: number,
+  stepMinutes: number,
+): Interval[] {
   const slots: Interval[] = [];
   const durMs = durationMinutes * 60_000;
   const stepMs = stepMinutes * 60_000;
@@ -259,6 +292,13 @@ function toZonedISOString(utc: Date, tz: string): string {
 
 function offsetMinutesForInstantInTZ(utc: Date, tz: string): number {
   const p = partsInTZ(utc, tz);
-  const asIfUTC = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second);
+  const asIfUTC = Date.UTC(
+    p.year,
+    p.month - 1,
+    p.day,
+    p.hour,
+    p.minute,
+    p.second,
+  );
   return Math.round((asIfUTC - utc.getTime()) / 60000);
 }

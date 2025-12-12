@@ -1,6 +1,6 @@
 export const runtime = 'nodejs';
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import type { CommsDao } from '@codestrap/developer-foundations-types';
 import { TYPES } from '@codestrap/developer-foundations-types';
@@ -14,7 +14,8 @@ export async function OPTIONS() {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-foundry-access-token',
+      'Access-Control-Allow-Headers':
+        'Content-Type, Authorization, x-foundry-access-token',
     },
   });
 }

@@ -18,13 +18,21 @@ export function WorktreeScreen() {
   const [firstMessage, setFirstMessage] = useState('');
   const [provisioning, setProvisioning] = useState(false);
   const [workingStatus, setWorkingStatus] = useState<string>('Working on it');
-  const [workingError, setWorkingError] = useState<string | undefined>(undefined);
+  const [workingError, setWorkingError] = useState<string | undefined>(
+    undefined,
+  );
   const [isWorking, setIsWorking] = useState(false);
-  const [previousThreadId, setPreviousThreadId] = useState<string | undefined>(undefined);
+  const [previousThreadId, setPreviousThreadId] = useState<string | undefined>(
+    undefined,
+  );
   const dispatch = useExtensionDispatch();
-  const { apiUrl, clientRequestId, currentThreadId, currentWorktreeName } = useExtensionStore();
+  const { apiUrl, clientRequestId, currentThreadId, currentWorktreeName } =
+    useExtensionStore();
 
-  const { data: machineData, isLoading } = useMachineQuery(apiUrl, currentThreadId);
+  const { data: machineData, isLoading } = useMachineQuery(
+    apiUrl,
+    currentThreadId,
+  );
 
   console.log('machineData', machineData);
 
@@ -46,9 +54,13 @@ export function WorktreeScreen() {
       setWorkingError(notification.payload.metadata.error);
       setProvisioning(false);
     }
-  }
-  const { start: startLarryStream, stop: stopLarryStream } = useLarryStream(apiUrl, 'new-thread-creation', { onUpdate: onLarryUpdate });
-  
+  };
+  const { start: startLarryStream, stop: stopLarryStream } = useLarryStream(
+    apiUrl,
+    'new-thread-creation',
+    { onUpdate: onLarryUpdate },
+  );
+
   useEffect(() => {
     startLarryStream();
     return () => {
@@ -66,18 +78,22 @@ export function WorktreeScreen() {
       clearTimeout(timeout);
     }
   }, [currentThreadId]);
-  
 
   // Read threads data to get the session label
   const { data: threadsData } = useThreadsQuery(apiUrl);
   const { data: threadData } = useThread(apiUrl, currentThreadId);
 
-  const userQuestion = useMemo(() => getUserQuestion(threadData?.messages || []), [threadData]);
+  const userQuestion = useMemo(
+    () => getUserQuestion(threadData?.messages || []),
+    [threadData],
+  );
 
   const { threads: localThreads } = useWorktreeThreads(currentWorktreeName);
-  
+
   // Find current thread label from threads list
-  const currentThread = threadsData?.items?.find(t => t.id === currentThreadId);
+  const currentThread = threadsData?.items?.find(
+    (t) => t.id === currentThreadId,
+  );
   const sessionLabel = currentThread?.label || currentWorktreeName;
 
   async function startNewThread() {
@@ -86,7 +102,9 @@ export function WorktreeScreen() {
     if (!currentWorktreeName) {
       // NOTE: Ideally extension should pass worktreeName in worktree_detection; otherwise we can prompt the user
       // For now we block and ask the user to reopen via main screen if undefined
-      console.error('Worktree name is unknown. Please open from main screen or update the extension to pass worktreeName.');
+      console.error(
+        'Worktree name is unknown. Please open from main screen or update the extension to pass worktreeName.',
+      );
       return;
     }
     setProvisioning(true);
@@ -106,7 +124,7 @@ export function WorktreeScreen() {
       type: 'SET_CURRENT_THREAD_ID',
       payload: undefined,
     });
-  }
+  };
 
   const handleBackToPreviousThread = () => {
     dispatch({
@@ -114,17 +132,17 @@ export function WorktreeScreen() {
       payload: previousThreadId,
     });
     setPreviousThreadId(undefined);
-  }
+  };
 
   const handleThreadClick = (threadId: string) => {
     dispatch({
       type: 'SET_CURRENT_THREAD_ID',
       payload: threadId,
     });
-  }
+  };
 
   if (currentThreadId && !machineData) {
-    return <WorkingIndicator status="Loading thread..." isWorking />
+    return <WorkingIndicator status="Loading thread..." isWorking />;
   }
 
   if (currentThreadId && machineData) {
@@ -137,7 +155,12 @@ export function WorktreeScreen() {
         <div className="threadsTabsList">
           <div className="threadsTabsList__items">
             {localThreads?.map((threadId, index) => (
-              <div className={`threadsTabsList__item ${threadId === currentThreadId ? 'active' : ''}`} onClick={() => handleThreadClick(threadId)}>Thread {index + 1}</div>
+              <div
+                className={`threadsTabsList__item ${threadId === currentThreadId ? 'active' : ''}`}
+                onClick={() => handleThreadClick(threadId)}
+              >
+                Thread {index + 1}
+              </div>
             ))}
           </div>
           <div className="threadsTabsList__add" onClick={handleAddThread}>
@@ -157,13 +180,15 @@ export function WorktreeScreen() {
     );
   }
 
-
   return (
     <div className="Box p-3 d-flex flex-column gap-2">
       <div className="d-flex flex-justify-between flex-items-center">
         <h2 className="h4 m-0">New thread</h2>
         {!provisioning && previousThreadId && (
-          <button className="btn btn-primary" onClick={handleBackToPreviousThread}>
+          <button
+            className="btn btn-primary"
+            onClick={handleBackToPreviousThread}
+          >
             Back
           </button>
         )}
@@ -174,16 +199,26 @@ export function WorktreeScreen() {
         placeholder="Hello, how can I help you today?"
         value={firstMessage}
         readOnly={provisioning}
-        onInput={(e) => setFirstMessage((e.currentTarget as HTMLTextAreaElement).value)}
+        onInput={(e) =>
+          setFirstMessage((e.currentTarget as HTMLTextAreaElement).value)
+        }
       />
       <div>
         {provisioning && (
           <div className="mt-1">
-            <WorkingIndicator status={workingStatus} isWorking={isWorking} error={workingError} />
+            <WorkingIndicator
+              status={workingStatus}
+              isWorking={isWorking}
+              error={workingError}
+            />
           </div>
         )}
         {!provisioning && (
-          <button className="btn btn-primary" disabled={!firstMessage.trim()} onClick={startNewThread}>
+          <button
+            className="btn btn-primary"
+            disabled={!firstMessage.trim()}
+            onClick={startNewThread}
+          >
             {workingError ? 'Try again' : 'Send'}
           </button>
         )}

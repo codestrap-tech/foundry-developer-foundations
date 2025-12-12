@@ -58,8 +58,8 @@ container
   .toConstantValue(
     foundryClientFactory(
       process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
-      undefined
-    )
+      undefined,
+    ),
   );
 
 container
@@ -120,17 +120,17 @@ container
   .bind(TYPES.OfficeService)
   .toConstantValue(makeGSuiteClientV3(process.env.OFFICE_SERVICE_ACCOUNT));
 
-  container
-  .bind(TYPES.VersionControlService)
-  .toConstantValue(makeGithubClient)
+container.bind(TYPES.VersionControlService).toConstantValue(makeGithubClient);
 
 container
   .bind(TYPES.MessageService)
   .toConstantValue(
-    makeSlackClient(process.env.SLACK_BASE_URL, process.env.SLACK_BOT_TOKEN)
+    makeSlackClient(process.env.SLACK_BASE_URL, process.env.SLACK_BOT_TOKEN),
   );
 
-container.bind(TYPES.LarryCodingAgentFactory).toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
+container
+  .bind(TYPES.LarryCodingAgentFactory)
+  .toConstantValue(LarryAgentFactory(SupportedCodingAgents.GOOGLE));
 
 container.bind(TYPES.LarryStream).toConstantValue(makeLarryStream());
 

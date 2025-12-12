@@ -15,7 +15,7 @@ export function AppRoot() {
     setIsReloading(true);
     postMessage({ type: 'reload_extension' });
   };
-  
+
   if (isLoadingApp) {
     return (
       <div className="p-3">
@@ -27,7 +27,12 @@ export function AppRoot() {
   return (
     <div className="p-3">
       <div className="mb-2 d-flex flex-justify-end">
-        {!isReloading && <RefreshCcwIcon className="refresh-extension" onClick={handleReloadExtension} />}
+        {!isReloading && (
+          <RefreshCcwIcon
+            className="refresh-extension"
+            onClick={handleReloadExtension}
+          />
+        )}
         {isReloading && <RefreshCwIcon className="refresh-extension" />}
       </div>
       {isInWorktree ? <WorktreeScreen /> : <MainRepoScreen />}

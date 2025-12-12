@@ -1,10 +1,10 @@
-import type { ComputeModule } from "@palantir/compute-module";
-import type { Client } from "@osdk/client";
-import type { Static } from "@sinclair/typebox";
-import { Type } from "@sinclair/typebox";
-import type { StateValue } from "xstate";
-import type { calendar_v3, gmail_v1, drive_v3 } from "googleapis";
-import type { User as FoundryUser } from "@osdk/foundry.admin";
+import type { ComputeModule } from '@palantir/compute-module';
+import type { Client } from '@osdk/client';
+import type { Static } from '@sinclair/typebox';
+import { Type } from '@sinclair/typebox';
+import type { StateValue } from 'xstate';
+import type { calendar_v3, gmail_v1, drive_v3 } from 'googleapis';
+import type { User as FoundryUser } from '@osdk/foundry.admin';
 
 export const TYPES = {
   FoundryClient: Symbol.for('FoundryClient'),
@@ -47,7 +47,7 @@ export type ResearchAssistant = (
   dateRestrict?: string,
   siteSearch?: string,
   siteSearchFilter?: string,
-  searchEngineId?: string
+  searchEngineId?: string,
 ) => Promise<string>;
 
 export type CodingResearchAssistant = (
@@ -56,7 +56,7 @@ export type CodingResearchAssistant = (
   dateRestrict?: string,
   siteSearch?: string,
   siteSearchFilter?: string,
-  searchEngineId?: string
+  searchEngineId?: string,
 ) => Promise<string>;
 
 export type CodingArchitect = (
@@ -65,7 +65,7 @@ export type CodingArchitect = (
   dateRestrict?: string,
   siteSearch?: string,
   siteSearchFilter?: string,
-  searchEngineId?: string
+  searchEngineId?: string,
 ) => Promise<string>;
 
 // Schema Definitions for compute module
@@ -94,7 +94,7 @@ export const Schemas = {
           body: Type.Optional(Type.String()),
           id: Type.Optional(Type.String()),
           threadId: Type.Optional(Type.String()),
-        })
+        }),
       ),
     }),
   },
@@ -106,7 +106,7 @@ export const Schemas = {
           users: Type.Array(Type.String()),
           labelIds: Type.Array(Type.String()),
           labelFilterBehavior: Type.String(),
-        })
+        }),
       ),
     }),
     output: Type.Object({
@@ -138,7 +138,7 @@ export const Schemas = {
         Type.Object({
           start_hour: Type.Number({ default: 9 }),
           end_hour: Type.Number({ default: 17 }),
-        })
+        }),
       ),
       timezone: Type.String(),
     }),
@@ -148,7 +148,7 @@ export const Schemas = {
           start: Type.String(),
           end: Type.String(),
           score: Type.Number(),
-        })
+        }),
       ),
       message: Type.String(),
     }),
@@ -294,10 +294,10 @@ export type MeetingRequest = {
   participants: Array<string>;
   subject: string;
   timeframe_context:
-  | "user defined exact date/time"
-  | "as soon as possible"
-  | "this week"
-  | "next week";
+    | 'user defined exact date/time'
+    | 'as soon as possible'
+    | 'this week'
+    | 'next week';
   localDateString?: string;
   duration_minutes: number;
   working_hours: {
@@ -336,13 +336,13 @@ type GptSpecificToolChoice = {
 
 type GptTool = {
   function?:
-  | {
-    name: string;
-    description?: string | undefined;
-    strict?: boolean | undefined;
-    parameters: Map<string, string>;
-  }
-  | undefined;
+    | {
+        name: string;
+        description?: string | undefined;
+        strict?: boolean | undefined;
+        parameters: Map<string, string>;
+      }
+    | undefined;
 };
 
 type GptToolChoice = {
@@ -471,7 +471,7 @@ export type EnergyService = {
     scenarioPrices?: number[],
     caGallonsYearn?: number,
     caGdp?: number,
-    caShareUsGdp?: number
+    caShareUsGdp?: number,
   ) => Promise<GasScenarioResult[]>;
   getVegaChartData: (results: GasScenarioResult[]) => VegaGasTrackerData;
 };
@@ -789,12 +789,12 @@ export type VersionControlService = {
 
 export type OfficeService = {
   getAvailableMeetingTimes: (
-    meetingRequest: MeetingRequest
+    meetingRequest: MeetingRequest,
   ) => Promise<FindOptimalMeetingTimeOutput>;
   scheduleMeeting: (meeting: CalendarContext) => Promise<ScheduleMeetingOutput>;
   sendEmail: (email: EmailContext) => Promise<SendEmailOutput>;
   readEmailHistory: (
-    context: ReadEmailHistoryContext
+    context: ReadEmailHistoryContext,
   ) => Promise<ReadEmailOutput>;
   watchEmails: (context: WatchEmailsInput) => Promise<WatchEmailsOutput>;
 };
@@ -812,10 +812,10 @@ export type OfficeServiceV2 = {
 
 export type OfficeServiceV3 = {
   proposeMeetingConflictResolutions: (
-    input: ProposeMeetingConflictResolutionsInput
+    input: ProposeMeetingConflictResolutionsInput,
   ) => Promise<ProposeMeetingConflictResolutionsOutput>;
   createGoogleSlides: (
-    input: CreateGoogleSlidesInput
+    input: CreateGoogleSlidesInput,
   ) => Promise<CreateGoogleSlidesOutput>;
 } & OfficeServiceV2;
 
@@ -855,61 +855,61 @@ export type ServiceAccountCredentials = {
  */
 export const DRIVE_MIME_TYPES = {
   // Documents
-  PDF: "application/pdf",
-  DOCX: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  DOC: "application/msword",
-  TXT: "text/plain",
+  PDF: 'application/pdf',
+  DOCX: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  DOC: 'application/msword',
+  TXT: 'text/plain',
 
   // Spreadsheets
-  XLSX: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  XLS: "application/vnd.ms-excel",
-  CSV: "text/csv",
+  XLSX: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  XLS: 'application/vnd.ms-excel',
+  CSV: 'text/csv',
 
   // Presentations
-  PPTX: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  PPT: "application/vnd.ms-powerpoint",
+  PPTX: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  PPT: 'application/vnd.ms-powerpoint',
 
   // Images
-  JPG: "image/jpeg",
-  JPEG: "image/jpeg",
-  PNG: "image/png",
-  GIF: "image/gif",
-  SVG: "image/svg+xml",
+  JPG: 'image/jpeg',
+  JPEG: 'image/jpeg',
+  PNG: 'image/png',
+  GIF: 'image/gif',
+  SVG: 'image/svg+xml',
 
   // Google Workspace Files
-  GOOGLE_DOC: "application/vnd.google-apps.document",
-  GOOGLE_SHEET: "application/vnd.google-apps.spreadsheet",
-  GOOGLE_SLIDE: "application/vnd.google-apps.presentation",
-  GOOGLE_FORM: "application/vnd.google-apps.form",
-  GOOGLE_DRAWING: "application/vnd.google-apps.drawing",
+  GOOGLE_DOC: 'application/vnd.google-apps.document',
+  GOOGLE_SHEET: 'application/vnd.google-apps.spreadsheet',
+  GOOGLE_SLIDE: 'application/vnd.google-apps.presentation',
+  GOOGLE_FORM: 'application/vnd.google-apps.form',
+  GOOGLE_DRAWING: 'application/vnd.google-apps.drawing',
 
   // Archives
-  ZIP: "application/zip",
-  RAR: "application/x-rar-compressed",
+  ZIP: 'application/zip',
+  RAR: 'application/x-rar-compressed',
 
   // Audio/Video
-  MP4: "video/mp4",
-  MP3: "audio/mpeg",
-  WAV: "audio/wav",
+  MP4: 'video/mp4',
+  MP3: 'audio/mpeg',
+  WAV: 'audio/wav',
 } as const;
 
 /**
  * Date field types for Google Drive search
  */
 export enum DriveDateField {
-  CREATED_TIME = "createdTime",
-  MODIFIED_TIME = "modifiedTime",
+  CREATED_TIME = 'createdTime',
+  MODIFIED_TIME = 'modifiedTime',
 }
 
 /**
  * Safe ordering fields and formats for Drive file queries.
  */
 export type DriveOrderField =
-  | "modifiedTime"
-  | "createdTime"
-  | "viewedByMeTime"
-  | "name";
-export type SortDir = "asc" | "desc";
+  | 'modifiedTime'
+  | 'createdTime'
+  | 'viewedByMeTime'
+  | 'name';
+export type SortDir = 'asc' | 'desc';
 export type DriveOrderBy = DriveOrderField | `${DriveOrderField} ${SortDir}`;
 
 // DriveFile interface
@@ -1016,7 +1016,7 @@ export type TicketsDao = {
     severity: string,
     status: string,
     points?: number,
-    assignees?: string
+    assignees?: string,
   ) => Promise<Tickets>;
   delete: (id: string) => Promise<void>;
   read: (id: string) => Promise<Tickets>;
@@ -1033,7 +1033,7 @@ export type MachineDao = {
     state: string,
     logs: string,
     lockOwner?: string,
-    lockUntil?: number
+    lockUntil?: number,
   ) => Promise<MachineExecutions>;
   delete: (machineExecutionId: string) => Promise<void>;
   read: (machineExecutionId: string) => Promise<MachineExecutions>;
@@ -1051,7 +1051,7 @@ export type CommsDao = {
     owner: string,
     questionPrompt?: string,
     tokens?: number,
-    id?: string
+    id?: string,
   ) => Promise<Communications>;
   delete: (id: string) => Promise<void>;
   read: (id: string) => Promise<Communications>;
@@ -1077,20 +1077,20 @@ export type RfpRequestsDao = {
     vendorId: string,
     machineExecutionId: string,
     id?: string,
-    rfpResponseStatus?: number
+    rfpResponseStatus?: number,
   ) => Promise<RfpRequests>;
   delete: (id: string) => Promise<void>;
   read: (id: string) => Promise<RfpRequests>;
   search: (
     machineExecutionId: string,
-    vendorId: string
+    vendorId: string,
   ) => Promise<RfpRequests>;
 };
 
 export type RangrRequestsDao = {
   submit: (
     rfp: string,
-    machineExecutionId: string
+    machineExecutionId: string,
   ) => Promise<RfpRequestResponse>;
 };
 
@@ -1099,7 +1099,7 @@ export type MemoryRecallDao = {
     id: string,
     originalText: string,
     source: string,
-    userId?: string
+    userId?: string,
   ) => Promise<MemoryRecall>;
   delete: (id: string) => Promise<void>;
   read: (id: string) => Promise<MemoryRecall>;
@@ -1114,7 +1114,7 @@ export type TrainingDataDao = {
     xReason: string,
     machine?: string,
     solution?: string,
-    humanReview?: string
+    humanReview?: string,
   ) => Promise<TrainingData>;
   delete: (id: string) => Promise<void>;
   read: (id: string) => Promise<TrainingData>;
@@ -1140,14 +1140,14 @@ export type ContactsDao = {
     phoneNumberSecondary?: string,
     relationshipStatus?: string[],
     role?: string,
-    talksTo?: string
+    talksTo?: string,
   ) => Promise<Contacts>;
   delete: (id: string) => Promise<void>;
   read: (id: string) => Promise<Contacts>;
   search: (
     fullName: string,
     company: string,
-    pageSize?: number
+    pageSize?: number,
   ) => Promise<Contacts[]>;
 };
 
@@ -1161,8 +1161,8 @@ export type GetNextStateResult = {
 };
 
 export enum SupportedFoundryClients {
-  PUBLIC = "public",
-  PRIVATE = "private",
+  PUBLIC = 'public',
+  PRIVATE = 'private',
 }
 
 export type RequestContext = {
@@ -1178,12 +1178,12 @@ export interface ProposeMeetingConflictResolutionsInput {
   timezone: string;
 }
 
-export type GoogleSlideContentTargetType = "OBJECT_ID" | "PLACEHOLDER";
+export type GoogleSlideContentTargetType = 'OBJECT_ID' | 'PLACEHOLDER';
 export interface GoogleSlideContentItem {
   targetType: GoogleSlideContentTargetType; // Required
-  objectId?: string;                        // (Currently unsupported for duplication mode)
-  placeholder?: string;                     // Required if targetType is "PLACEHOLDER"
-  text: string;                             // Required
+  objectId?: string; // (Currently unsupported for duplication mode)
+  placeholder?: string; // Required if targetType is "PLACEHOLDER"
+  text: string; // Required
 }
 
 /**
@@ -1203,9 +1203,9 @@ export interface GoogleSlide {
  * One output presentation to create from a template.
  */
 export interface GoogleSlideCreationInput {
-  templateId: string;      // URL or fileId of the Google Slide deck
-  name?: string;           // Optional custom name for the new slide deck
-  content: GoogleSlide[];  // Logical slides, each mapped to one duplicated page
+  templateId: string; // URL or fileId of the Google Slide deck
+  name?: string; // Optional custom name for the new slide deck
+  content: GoogleSlide[]; // Logical slides, each mapped to one duplicated page
 }
 
 export type CreateGoogleSlidesInput = GoogleSlideCreationInput[];
@@ -1246,7 +1246,7 @@ export type LarryNotification = {
   type: 'info' | 'error';
   message: string;
   metadata: Record<string, any>;
-}
+};
 
 export interface StreamEntry {
   value: unknown;
@@ -1259,6 +1259,9 @@ export interface Subscription<T = unknown> {
 }
 
 export interface LarryStream {
-  subscribe: (id: string, callback: StreamCallback<LarryNotification>) => Subscription<LarryNotification>;
+  subscribe: (
+    id: string,
+    callback: StreamCallback<LarryNotification>,
+  ) => Subscription<LarryNotification>;
   publish: (opts: { id: string; payload: LarryNotification }) => void;
 }

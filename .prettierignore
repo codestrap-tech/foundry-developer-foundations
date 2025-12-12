@@ -1,5 +1,7 @@
 # Add files here to ignore them from prettier formatting
-/dist
+package.json
+**/package.json
+package-lock.json
+dist
 /coverage
-/.nx/cache
-/.nx/workspace-data
+.nx

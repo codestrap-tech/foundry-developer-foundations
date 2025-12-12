@@ -15,10 +15,9 @@ import type {
   LoggingService,
   MachineDao,
   MachineExecutions,
-  StateConfig} from '@codestrap/developer-foundations-types';
-import {
-  TYPES
+  StateConfig,
 } from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 
 export async function getState(
@@ -26,7 +25,7 @@ export async function getState(
   forward = true,
   workflow?: Record<string, any>,
   xreason: SupportedEngines = SupportedEngines.COMS,
-  persistMachineOnTransition = false
+  persistMachineOnTransition = false,
 ) {
   const { programmer, aiTransition, evaluate, functionCatalog } =
     xReasonFactory(xreason)({});
@@ -66,7 +65,7 @@ export async function getState(
           jsonState,
           getLog(solution.id) ?? '',
           '', // we have to send default values for lockOwner and lockUntil or the OSDK will shit a brick. It still can't handle optional params
-          1
+          1,
         );
       } catch (e) {
         console.log(e);
@@ -95,7 +94,7 @@ export async function getState(
 
     log(
       solution.id,
-      `machineDao.read returned the following error:\n${error.message}\n${error.stack}`
+      `machineDao.read returned the following error:\n${error.message}\n${error.stack}`,
     );
     console.log(e);
   }
@@ -151,10 +150,10 @@ export async function getState(
   ) {
     log(
       solution.id,
-      `resetting stateDefinition.value from ${stateDefinition.value} to ${savePoint}`
+      `resetting stateDefinition.value from ${stateDefinition.value} to ${savePoint}`,
     );
     console.log(
-      `resetting stateDefinition.value from ${stateDefinition.value} to ${savePoint}`
+      `resetting stateDefinition.value from ${stateDefinition.value} to ${savePoint}`,
     );
 
     stateDefinition.value = savePoint;
@@ -165,11 +164,11 @@ export async function getState(
     previousState !== stateDefinition.value
   ) {
     console.log(
-      `resetting stateDefinition.value from ${stateDefinition.value} to ${previousState}`
+      `resetting stateDefinition.value from ${stateDefinition.value} to ${previousState}`,
     );
     log(
       solution.id,
-      `resetting stateDefinition.value from ${stateDefinition.value} to ${previousState}`
+      `resetting stateDefinition.value from ${stateDefinition.value} to ${previousState}`,
     );
 
     stateDefinition.value = previousState;
@@ -191,10 +190,10 @@ export async function getState(
 
     log(
       solution.id,
-      `moving backward, returning previous state of ${targetState.value}`
+      `moving backward, returning previous state of ${targetState.value}`,
     );
     console.log(
-      `moving backward, returning previous state of ${targetState.value}`
+      `moving backward, returning previous state of ${targetState.value}`,
     );
 
     return {
@@ -211,7 +210,7 @@ export async function getState(
     : undefined;
 
   const programmedState = machine?.find(
-    (value) => value.id === startingState?.value
+    (value) => value.id === startingState?.value,
   );
 
   if (stateDefinition && startingState) {
@@ -226,12 +225,12 @@ export async function getState(
         JSON.stringify(programmedState),
         JSON.stringify(stateDefinition.context),
         aiTransition,
-        solution.id
+        solution.id,
       );
 
       log(
         solution.id,
-        `The AI transition returned the target state of: ${nextState}`
+        `The AI transition returned the target state of: ${nextState}`,
       );
       console.log(`resetting the starting state to: ${nextState}`);
       // Create a new State object with the updated value
@@ -261,7 +260,7 @@ export async function getState(
     : await engine.programmer.program(
         solution.plan,
         JSON.stringify(Array.from(toolsCatalog.entries())),
-        programmer
+        programmer,
       );
   // evaluate the generated program. Currently, this just checks if the machine compiles
   // in the future we will use specially trained evaluation models
@@ -271,7 +270,7 @@ export async function getState(
       states: result,
       tools: functions,
     },
-    evaluate
+    evaluate,
   );
   if (!evaluationResult.correct) {
     throw (
@@ -287,15 +286,15 @@ export async function getState(
     inputContext,
     startingState,
     // if the programmed state includes logic we need to manually trigger state execution
-    programmedState?.includesLogic ?? false
+    programmedState?.includesLogic ?? false,
   );
 
   log(
     solution.id,
-    `calling start on the machine with starting state of: ${startingState?.value}`
+    `calling start on the machine with starting state of: ${startingState?.value}`,
   );
   console.log(
-    `calling start on the machine with starting state of: ${startingState?.value}`
+    `calling start on the machine with starting state of: ${startingState?.value}`,
   );
 
   start();

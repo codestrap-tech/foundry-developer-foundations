@@ -30,4 +30,3 @@ export {
   handleOpenWorktree,
   notifyWorktreeChange,
 } from './worktree';
-

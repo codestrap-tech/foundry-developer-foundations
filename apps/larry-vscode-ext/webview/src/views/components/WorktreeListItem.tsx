@@ -28,17 +28,20 @@ export function WorktreeListItem({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const deletePopoverRef = useRef<HTMLDivElement>(null);
 
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (deletePopoverRef.current && !deletePopoverRef.current.contains(event.target as Node)) {
+      if (
+        deletePopoverRef.current &&
+        !deletePopoverRef.current.contains(event.target as Node)
+      ) {
         setShowDeleteConfirm(false);
       }
     };
 
     if (showDeleteConfirm) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      return () =>
+        document.removeEventListener('mousedown', handleClickOutside);
     }
   }, [showDeleteConfirm]);
 
@@ -71,14 +74,19 @@ export function WorktreeListItem({
             disabled={isProcessing}
             title={isProcessing ? 'Deleting...' : 'Delete worktree'}
           >
-            {isProcessing ? <Loader2 className="animate-spin" size={16} /> : <Trash2 size={16} />}
+            {isProcessing ? (
+              <Loader2 className="animate-spin" size={16} />
+            ) : (
+              <Trash2 size={16} />
+            )}
           </button>
           {showDeleteConfirm && (
-            <div className={`docker-status-popover delete-confirm-popover ${isLastItem ? 'popover-position-top' : ''}`} onClick={stopPropagation}>
+            <div
+              className={`docker-status-popover delete-confirm-popover ${isLastItem ? 'popover-position-top' : ''}`}
+              onClick={stopPropagation}
+            >
               <div className="popover-content">
-                <div className="popover-status">
-                  Delete "{worktreeName}"?
-                </div>
+                <div className="popover-status">Delete "{worktreeName}"?</div>
                 <div className="popover-delete-message">
                   This will remove the git worktree and docker container.
                 </div>
@@ -111,7 +119,7 @@ export function WorktreeListItem({
       </div>
       <div className="worktree-item-row-2">
         <span className="branch-info">
-        <GitBranch className="branch-icon" size={16} /> {branch}
+          <GitBranch className="branch-icon" size={16} /> {branch}
         </span>
         <DockerStatusBadge
           worktreeName={worktreeName}
@@ -124,4 +132,3 @@ export function WorktreeListItem({
     </div>
   );
 }
-

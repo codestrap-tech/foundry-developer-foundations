@@ -15,23 +15,21 @@ export function getFoundryClient(): FoundryClient {
 }
 
 function createFoundryClient(): FoundryClient {
-
-  if (!process.env['NEXT_PUBLIC_OSDK_CLIENT_ID']
-    || !process.env['NEXT_PUBLIC_REDIRECT_URL']
-    || !process.env['NEXT_PUBLIC_FOUNDRY_STACK_URL']
-    || !process.env['NEXT_PUBLIC_ONTOLOGY_RID']
+  if (
+    !process.env['NEXT_PUBLIC_OSDK_CLIENT_ID'] ||
+    !process.env['NEXT_PUBLIC_REDIRECT_URL'] ||
+    !process.env['NEXT_PUBLIC_FOUNDRY_STACK_URL'] ||
+    !process.env['NEXT_PUBLIC_ONTOLOGY_RID']
   ) {
     throw new Error(
-      'missing required env vars: NEXT_PUBLIC_OSDK_CLIENT_ID, NEXT_PUBLIC_REDIRECT_URL, NEXT_PUBLIC_FOUNDRY_STACK_URL, NEXT_PUBLIC_ONTOLOGY_RID'
+      'missing required env vars: NEXT_PUBLIC_OSDK_CLIENT_ID, NEXT_PUBLIC_REDIRECT_URL, NEXT_PUBLIC_FOUNDRY_STACK_URL, NEXT_PUBLIC_ONTOLOGY_RID',
     );
   }
-
 
   const getUser = async () => {
     const context = getRequestContext();
 
     console.log(`public getUser called, returning: ${context?.user?.username}`);
-
 
     return context?.user;
   };
@@ -43,11 +41,12 @@ function createFoundryClient(): FoundryClient {
   const getToken = async function () {
     const context = getRequestContext();
 
-    console.log(`public getToken called, returning length: ${context?.token?.length}`);
+    console.log(
+      `public getToken called, returning length: ${context?.token?.length}`,
+    );
 
     return context?.token;
-
-  }
+  };
 
   const auth = {
     client: {},
@@ -56,7 +55,17 @@ function createFoundryClient(): FoundryClient {
     url: process.env['NEXT_PUBLIC_FOUNDRY_STACK_URL'],
     getUser: () => 'undefined',
     getToken: () => 'undefined',
-  }
-  // @ts-expect-error we return a mock client since the actual auth is managed client side
-  return { auth, ontologyRid: process.env['NEXT_PUBLIC_ONTOLOGY_RID'], url: process.env['NEXT_PUBLIC_FOUNDRY_STACK_URL'], client, getUser, getToken };
+  };
+  return {
+    // @ts-expect-error we return a mock client since the actual auth is managed client side
+    auth,
+    ontologyRid: process.env['NEXT_PUBLIC_ONTOLOGY_RID'],
+    url: process.env['NEXT_PUBLIC_FOUNDRY_STACK_URL'],
+    // @ts-expect-error we return a mock client since the actual auth is managed client side
+    client,
+    // @ts-expect-error we return a mock client since the actual auth is managed client side
+    getUser,
+    // @ts-expect-error we return a mock client since the actual auth is managed client side
+    getToken,
+  };
 }

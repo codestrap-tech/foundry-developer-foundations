@@ -21,7 +21,7 @@ export default function headlessInterpreter(
 ) {
   const result: StateMachine<Context, any, MachineEvent> = programV1(
     states,
-    functions
+    functions,
   );
   const returnedContext = result.context;
 
@@ -36,7 +36,7 @@ export default function headlessInterpreter(
 
   const instance = interpret(machine).onTransition((state) => {
     console.log(
-      `onTransition called: machine: ${machine.id} state: ${state.value}`
+      `onTransition called: machine: ${machine.id} state: ${state.value}`,
     );
     dispatch({
       type: 'SET_STATE',
@@ -81,7 +81,7 @@ export default function headlessInterpreter(
         (
           startingStateConfig.entry as (
             context: Context,
-            event: MachineEvent
+            event: MachineEvent,
           ) => void
         )(state.context!, { type: 'xstate.init' });
       }

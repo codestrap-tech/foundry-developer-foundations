@@ -1,10 +1,10 @@
 /* JSX */
 /* @jsxImportSource preact */
-import { useEffect } from "preact/hooks";
-import type { StateComponentProps } from "../../../../lib/backend-types";
-import { FileSymlink, Sparkles } from "lucide-preact";
-import { GeneralMessageBubble } from "../../GeneralMessageBubble.tsx";
-import { postMessage } from "../../../../lib/vscode";
+import { useEffect } from 'preact/hooks';
+import type { StateComponentProps } from '../../../../lib/backend-types';
+import { FileSymlink, Sparkles } from 'lucide-preact';
+import { GeneralMessageBubble } from '../../GeneralMessageBubble.tsx';
+import { postMessage } from '../../../../lib/vscode';
 
 type ArchitectureReviewData = {
   approved: boolean;
@@ -25,7 +25,6 @@ export function ArchitectureReview({
       file,
     });
   };
-
 
   useEffect(() => {
     setTimeout(() => {
@@ -49,8 +48,6 @@ export function ArchitectureReview({
         }
         content={`Please **review the changes** file by file, modify, write comments, etc. Then click **Proceed** to continue.`}
       />
-
     </div>
   );
 }
-

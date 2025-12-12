@@ -8,13 +8,13 @@ import type {
 
 export async function fetchJSON<T>(
   url: string,
-  init?: RequestInit
+  init?: RequestInit,
 ): Promise<T> {
   const res = await fetch(url, init);
   if (!res.ok) {
     const text = await res.text();
     throw new Error(
-      `${res.status} ${res.statusText}: ${text || 'request failed'}`
+      `${res.status} ${res.statusText}: ${text || 'request failed'}`,
     );
   }
   return res.json() as Promise<T>;
@@ -22,7 +22,7 @@ export async function fetchJSON<T>(
 
 export function withHeaders(
   base: RequestInit = {},
-  extra: Record<string, string> = {}
+  extra: Record<string, string> = {},
 ): RequestInit {
   const headers = new Headers(base.headers || {});
   Object.entries(extra).forEach(([k, v]) => headers.set(k, v));
@@ -37,17 +37,17 @@ export function uuid(): string {
 }
 
 export async function fetchThreads(
-  baseUrl: string
+  baseUrl: string,
 ): Promise<ThreadsListResponse> {
   return fetchJSON<ThreadsListResponse>(`${baseUrl}/threads`);
 }
 
 export async function fetchThread(
   baseUrl: string,
-  threadId: string
+  threadId: string,
 ): Promise<ThreadResponse> {
   const thread = await fetchJSON<ThreadRawResponse>(
-    `${baseUrl}/threads/${threadId}`
+    `${baseUrl}/threads/${threadId}`,
   );
 
   if (thread.messages) {
@@ -65,10 +65,10 @@ export async function fetchThread(
 
 export async function fetchMachine(
   baseUrl: string,
-  machineId: string
+  machineId: string,
 ): Promise<MachineResponse> {
   return fetchJSON<MachineResponse>(
-    `${baseUrl}/machines/${encodeURIComponent(machineId)}`
+    `${baseUrl}/machines/${encodeURIComponent(machineId)}`,
   );
 }
 
@@ -92,7 +92,7 @@ export async function createThread(params: {
         'Content-Type': 'application/json',
         'Idempotency-Key': idem,
         'Client-Request-Id': clientRequestId,
-      }
+      },
     );
     // We don't need the 202 body now - SSE will inform us
     await fetchJSON(`${baseUrl}/threads/new`, init);

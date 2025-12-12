@@ -40,10 +40,10 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log(
-            'incompleteQuestion function catalog implementation called'
+            'incompleteQuestion function catalog implementation called',
           );
           const result = await incompleteQuestion(context, event, task);
           const payload = getPayload(context, result);
@@ -62,13 +62,13 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('requestRfp function catalog implementation called');
           const result = await requestRfp(context, event, task);
           const payload = getPayload(context, result);
           console.log(
-            'requestRfp function response received, calling dispatch'
+            'requestRfp function response received, calling dispatch',
           );
           const parentId = context.childToParentStateMap[payload.stateId];
 
@@ -97,10 +97,10 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log(
-            'awaitRfpResponses function catalog implementation called'
+            'awaitRfpResponses function catalog implementation called',
           );
           const result = await awaitRfpResponses(context, event, task);
           const payload = getPayload(context, result);
@@ -125,7 +125,7 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('sendEmail function catalog implementation called');
           const result = await sendEmail(context, event, task);
@@ -145,7 +145,7 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('writeEmail function catalog implementation called');
           const result = await writeEmail(context, event, task);
@@ -165,10 +165,10 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log(
-            'writeSlackMessage function catalog implementation called'
+            'writeSlackMessage function catalog implementation called',
           );
           const result = await writeSlackMessage(context, event, task);
           const payload = getPayload(context, result);
@@ -187,10 +187,10 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
         implementation: async (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log(
-            'sendSlackMessage function catalog implementation called'
+            'sendSlackMessage function catalog implementation called',
           );
           const result = await sendSlackMessage(context, event, task);
           const payload = getPayload(context, result);
@@ -208,7 +208,7 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
         implementation: (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('UnsafeQuestion implementation called');
           dispatch({ type: 'success' });
@@ -222,7 +222,7 @@ export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
         implementation: (
           context: Context,
           event?: MachineEvent,
-          task?: string
+          task?: string,
         ) => {
           console.log('UnsupportedQuestion implementation called');
           dispatch({ type: 'success' });

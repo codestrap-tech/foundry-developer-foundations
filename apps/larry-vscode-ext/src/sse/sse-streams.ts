@@ -18,7 +18,7 @@ export function startMainSSE(state: ExtensionState): void {
 /**
  * Starts the worktree SSE connection
  * Listens for thread.created and machine.updated events
- * 
+ *
  * @param state - Extension state
  * @param config - Larry configuration
  * @param agentKey - Optional agent key (defaults to first agent)
@@ -26,18 +26,18 @@ export function startMainSSE(state: ExtensionState): void {
 export function startWorktreeSSE(
   state: ExtensionState,
   config: LarryConfig,
-  agentKey?: string
+  agentKey?: string,
 ): void {
   const agent = agentKey || Object.keys(config.agents)[0];
   const agentRoute = config.agents[agent];
-  
+
   const url = `http://localhost:${state.worktreePort}${agentRoute}/events?topics=thread.created,machine.updated`;
   console.log('🚀 Starting worktree SSE connection to:', url);
-  
+
   // Stop existing connection
   state.sseWorktree?.stop();
   state.sseWorktree = new SSEProxy();
-  
+
   state.sseWorktree.start(
     url,
     (ev) => {
@@ -57,7 +57,7 @@ export function startWorktreeSSE(
         message: `Connection failed after 3 retries: ${String(err?.message || err)}`,
         retryable: true,
       });
-    }
+    },
   );
 }
 
@@ -71,7 +71,7 @@ export function stopWorktreeSSE(state: ExtensionState): void {
 
 /**
  * Starts a Larry stream SSE connection for a specific stream ID
- * 
+ *
  * @param state - Extension state
  * @param streamId - The stream ID to connect to
  * @param baseUrl - The base URL for the Larry server
@@ -79,7 +79,7 @@ export function stopWorktreeSSE(state: ExtensionState): void {
 export function startLarryStream(
   state: ExtensionState,
   streamId: string,
-  baseUrl: string
+  baseUrl: string,
 ): void {
   // Stop existing stream if any
   stopLarryStream(state, streamId);
@@ -106,7 +106,7 @@ export function startLarryStream(
         streamId,
         message: `Connection failed: ${String(err?.message || err)}`,
       });
-    }
+    },
   );
 }
 
@@ -127,7 +127,7 @@ export function stopLarryStream(state: ExtensionState, streamId: string): void {
 export function stopAllSSEConnections(state: ExtensionState): void {
   // Stop worktree SSE
   stopWorktreeSSE(state);
-  
+
   // Stop all Larry streams
   for (const [streamId, proxy] of state.sseLarryStreams) {
     proxy.stop();
@@ -142,7 +142,9 @@ export function stopAllSSEConnections(state: ExtensionState): void {
 /**
  * Posts a message to the webview if it exists
  */
-function postMessageToWebview(state: ExtensionState, message: Record<string, unknown>): void {
+function postMessageToWebview(
+  state: ExtensionState,
+  message: Record<string, unknown>,
+): void {
   state.view?.webview.postMessage(message);
 }
-

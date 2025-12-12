@@ -22,7 +22,7 @@ import {
   googleServicesEvaluate,
   googleServicesFunctionCatalog,
 } from '../reasoning';
-import type { ActionType, Task} from '@codestrap/developer-foundations-types';
+import type { ActionType, Task } from '@codestrap/developer-foundations-types';
 import { SupportedEngines } from '@codestrap/developer-foundations-types';
 
 // Define the shape of the clients map
@@ -30,10 +30,13 @@ export type XReasonEngine = (config: Record<string, any>) => {
   programmer: typeof comsProgrammer;
   aiTransition: typeof comsAiTrasition;
   evaluate: typeof comsEvaluate;
-  functionCatalog: (dispatch: ((action: ActionType) => void) | ((action: ActionType) => Promise<void>)) => Map<string, Task>,
+  functionCatalog: (
+    dispatch:
+      | ((action: ActionType) => void)
+      | ((action: ActionType) => Promise<void>),
+  ) => Map<string, Task>;
   solver: typeof comsSolver;
 };
-
 
 export enum SupportTrainingDataTypes {
   SOLVER = 'solver',
@@ -42,10 +45,11 @@ export enum SupportTrainingDataTypes {
 
 // in your factor injectionb factory
 const factory = curry((map, key, config) => {
-  const supportedKeys = Object.keys(SupportedEngines).map((item) =>
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    SupportedEngines[item]
+  const supportedKeys = Object.keys(SupportedEngines).map(
+    (item) =>
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      SupportedEngines[item],
   );
 
   if (!supportedKeys.includes(key)) {

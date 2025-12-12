@@ -4,4 +4,3 @@ export {
   createWebviewProvider,
   notifyWorktreeChangeFromProvider,
 } from './webview-provider';
-

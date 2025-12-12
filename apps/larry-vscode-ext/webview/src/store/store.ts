@@ -4,10 +4,10 @@ import type { MachineResponse } from '../lib/backend-types';
 
 /**
  * ExtensionState - Full sidebar store state
- * 
+ *
  * Contains LarryState fields (shared with artifact editor)
  * plus sidebar-specific UI state.
- * 
+ *
  * See docs.md for architecture details.
  */
 export interface ExtensionState {
@@ -115,12 +115,13 @@ const initialState: ExtensionState = {
 // Reducer
 function extensionReducer(
   state: ExtensionState,
-  action: ExtensionAction
+  action: ExtensionAction,
 ): ExtensionState {
   switch (action.type) {
     case 'SET_WORKTREE_DETECTION':
       // eslint-disable-next-line no-case-declarations
-      const selectedAgentRoute = state.agents[state.selectedAgent] || Object.values(state.agents)[0];
+      const selectedAgentRoute =
+        state.agents[state.selectedAgent] || Object.values(state.agents)[0];
       return {
         ...state,
         isInWorktree: action.payload.isInWorktree,
@@ -247,7 +248,7 @@ export { ExtensionStoreProvider, useExtensionDispatch, useExtensionStore };
  */
 export function extractLarryStateFromStore(
   state: ExtensionState,
-  machineData?: MachineResponse
+  machineData?: MachineResponse,
 ): LarryState {
   return {
     currentThreadId: state.currentThreadId,

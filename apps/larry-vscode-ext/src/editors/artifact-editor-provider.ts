@@ -5,14 +5,14 @@ import { generateCSP } from '../webview/webview-provider';
 
 /**
  * Custom editor provider for Larry artifact files (.larry/artifact/**)
- * 
+ *
  * Renders markdown/code files with MDXEditor in a Preact webview
  * and integrates with the Larry state machine workflow.
- * 
+ *
  * This editor receives state from the sidebar webview via extension relay:
  * - LarryState (threadId, apiUrl, machineData, etc.)
  * - React Query cache (dehydrated for hydration)
- * 
+ *
  * See webview/src/store/docs.md for architecture details.
  */
 export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
@@ -20,7 +20,7 @@ export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
 
   constructor(
     private readonly context: vscode.ExtensionContext,
-    private readonly extensionState: ExtensionState
+    private readonly extensionState: ExtensionState,
   ) {}
 
   /**
@@ -29,7 +29,7 @@ export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
   async resolveCustomTextEditor(
     document: vscode.TextDocument,
     webviewPanel: vscode.WebviewPanel,
-    _token: vscode.CancellationToken
+    _token: vscode.CancellationToken,
   ): Promise<void> {
     // Register this panel for state broadcasts
     this.extensionState.artifactEditorPanels.add(webviewPanel);
@@ -45,7 +45,7 @@ export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
     // Initial render with bundled editor webview
     webviewPanel.webview.html = this.getHtmlForWebview(
       webviewPanel.webview,
-      this.context.extensionUri
+      this.context.extensionUri,
     );
 
     // Handle messages from webview
@@ -65,7 +65,7 @@ export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
    */
   private sendInitialContent(
     webview: vscode.Webview,
-    document: vscode.TextDocument
+    document: vscode.TextDocument,
   ): void {
     const fileName = path.basename(document.fileName);
 
@@ -86,7 +86,7 @@ export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
   private async handleMessage(
     message: { type: string; content?: string; [key: string]: unknown },
     document: vscode.TextDocument,
-    panel: vscode.WebviewPanel
+    panel: vscode.WebviewPanel,
   ): Promise<void> {
     switch (message.type) {
       case 'getEditorContent':
@@ -101,11 +101,11 @@ export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
           edit.replace(
             document.uri,
             new vscode.Range(0, 0, document.lineCount, 0),
-            message.content as string
+            message.content as string,
           );
           await vscode.workspace.applyEdit(edit);
           // Save the document to disk so the server can read the updated content
-        await document.save();
+          await document.save();
         }
         break;
 
@@ -141,16 +141,16 @@ export class ArtifactEditorProvider implements vscode.CustomTextEditorProvider {
    */
   private getHtmlForWebview(
     webview: vscode.Webview,
-    extensionUri: vscode.Uri
+    extensionUri: vscode.Uri,
   ): string {
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(extensionUri, 'media', 'editor-webview.js')
+      vscode.Uri.joinPath(extensionUri, 'media', 'editor-webview.js'),
     );
     const styleUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(extensionUri, 'media', 'webview.css')
+      vscode.Uri.joinPath(extensionUri, 'media', 'webview.css'),
     );
     const overridesUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(extensionUri, 'media', 'overrides.css')
+      vscode.Uri.joinPath(extensionUri, 'media', 'overrides.css'),
     );
 
     const nonce = String(Date.now());

@@ -16,14 +16,15 @@
  * - keep the comments to call delegates but return the required types using placeholder (emptry strings/arrays)
  */
 
-import type {
-  OfficeServiceV2,
-} from '@codestrap/developer-foundations-types';
+import type { OfficeServiceV2 } from '@codestrap/developer-foundations-types';
 
 import { makeGSuiteClientV2 } from '@codestrap/developer-foundations-services-google';
 
 import { google } from 'googleapis';
-import { loadServiceAccountFromEnv, makeGoogleAuth } from '@codestrap/developer-foundations-services-google/src/lib/helpers/googleAuth';
+import {
+  loadServiceAccountFromEnv,
+  makeGoogleAuth,
+} from '@codestrap/developer-foundations-services-google/src/lib/helpers/googleAuth';
 
 /**
  * OfficeServiceV3
@@ -33,13 +34,18 @@ import { loadServiceAccountFromEnv, makeGoogleAuth } from '@codestrap/developer-
  */
 export type OfficeServiceV3 = OfficeServiceV2 & {
   // Illustrative new capabilities for V3:
-  listDriveSharedDrives?: (args?: { pageSize?: number; pageToken?: string }) => Promise<{
+  listDriveSharedDrives?: (args?: {
+    pageSize?: number;
+    pageToken?: string;
+  }) => Promise<{
     message: string;
     drives: Array<{ id?: string; name?: string }>;
     nextPageToken?: string;
   }>;
 
-  listCalendarLists?: (args?: { minAccessRole?: 'reader' | 'writer' | 'owner' }) => Promise<{
+  listCalendarLists?: (args?: {
+    minAccessRole?: 'reader' | 'writer' | 'owner';
+  }) => Promise<{
     message: string;
     calendars: Array<{ id?: string; summary?: string }>;
   }>;
@@ -56,7 +62,9 @@ export type OfficeServiceV3 = OfficeServiceV2 & {
  * Extends V2 by adding scopes + clients + methods. The V1 client remains accessible
  * through V2’s spread (since V2 spreads V1). Keep *all lower-version methods* intact.
  */
-export async function makeGSuiteClientV3(user: string): Promise<OfficeServiceV3> {
+export async function makeGSuiteClientV3(
+  user: string,
+): Promise<OfficeServiceV3> {
   // Compose with previous client version (V2).
   const v2Client = await makeGSuiteClientV2(user);
 
@@ -132,19 +140,19 @@ export async function makeGSuiteClientV3(user: string): Promise<OfficeServiceV3>
     // Example: list shared drives
     listDriveSharedDrives: async (args = {}) => {
       // TODO call the delegate passing the params including the new driveClient client with the new scopes
-      return { message: '', drives: [{ id: '', name: '' }], nextPageToken: '' }
+      return { message: '', drives: [{ id: '', name: '' }], nextPageToken: '' };
     },
 
     // Example: list calendars for the authenticated user
     listCalendarLists: async (args = {}) => {
       // TODO call the delegate passing the params including the new calendarClient client with the new scopes
-      return { message: '', calendars: [{ id:'', summary: '' }] }
+      return { message: '', calendars: [{ id: '', summary: '' }] };
     },
 
     // Example: list Gmail labels for the user
     listGmailLabels: async (args = {}) => {
       // TODO call the delegate passing the params including the new gmailClient with the new scopes
-      return { message: '', labels: [{ id: '', name: ''}] }
+      return { message: '', labels: [{ id: '', name: '' }] };
     },
 
     // Overwrite getters for the underlying SDK clients if needed by delegates/consumers:

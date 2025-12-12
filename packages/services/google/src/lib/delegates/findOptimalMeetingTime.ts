@@ -11,17 +11,30 @@ const LOG_PREFIX = 'GSUITE - findOptimalMeetingTime - ';
 /* ============================ TZ-ROBUST HELPERS ============================ */
 
 /** Extract Y/M/D/h/m/s in a given TZ for a given instant (host-TZ agnostic) */
-function partsInTZ(d: Date, tz: string): {
-  year: number; month: number; day: number;
-  hour: number; minute: number; second: number;
+function partsInTZ(
+  d: Date,
+  tz: string,
+): {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  second: number;
 } {
   const dtf = new Intl.DateTimeFormat('en-US', {
     timeZone: tz,
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
     hour12: false,
   });
-  const p = Object.fromEntries(dtf.formatToParts(d).map(x => [x.type, x.value]));
+  const p = Object.fromEntries(
+    dtf.formatToParts(d).map((x) => [x.type, x.value]),
+  );
   return {
     year: +p['year'],
     month: +p['month'],
@@ -34,14 +47,25 @@ function partsInTZ(d: Date, tz: string): {
 
 /** Interpret a wall-clock Y-M-D h:m:s in tz as a UTC instant (DST-safe) */
 function wallClockToUTC(
-  year: number, month: number, day: number,
-  hour: number, minute: number, second: number,
-  tz: string
+  year: number,
+  month: number,
+  day: number,
+  hour: number,
+  minute: number,
+  second: number,
+  tz: string,
 ): Date {
   let utcMs = Date.UTC(year, month - 1, day, hour, minute, second);
   for (let i = 0; i < 3; i++) {
     const got = partsInTZ(new Date(utcMs), tz);
-    const gotMs = Date.UTC(got.year, got.month - 1, got.day, got.hour, got.minute, got.second);
+    const gotMs = Date.UTC(
+      got.year,
+      got.month - 1,
+      got.day,
+      got.hour,
+      got.minute,
+      got.second,
+    );
     const wantMs = Date.UTC(year, month - 1, day, hour, minute, second);
     const delta = wantMs - gotMs;
     if (delta === 0) break;
@@ -58,7 +82,14 @@ function utcToWallClock(d: Date, tz: string) {
 /** Offset minutes of tz at instant d (positive if tz AHEAD of UTC, negative if behind) */
 function offsetAt(d: Date, tz: string): number {
   const p = partsInTZ(d, tz);
-  const localAsUTC = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second);
+  const localAsUTC = Date.UTC(
+    p.year,
+    p.month - 1,
+    p.day,
+    p.hour,
+    p.minute,
+    p.second,
+  );
   return Math.round((localAsUTC - d.getTime()) / 60000);
 }
 
@@ -78,7 +109,7 @@ function addDaysTZ(d: Date, days: number, tz: string): Date {
 function roundUpToNextSlotTZ(d: Date, slotMinutes = 30, tz: string): Date {
   const p = partsInTZ(d, tz);
   const rem = p.minute % slotMinutes;
-  const add = (rem === 0 && p.second === 0) ? 0 : (slotMinutes - rem);
+  const add = rem === 0 && p.second === 0 ? 0 : slotMinutes - rem;
   return wallClockToUTC(p.year, p.month, p.day, p.hour, p.minute + add, 0, tz);
 }
 
@@ -102,7 +133,7 @@ function toISOStringWithTimezone(date: Date, timezone: string): string {
 function getTimeZoneOffset(
   timeZone: string,
   date: Date,
-  fallbackOffset?: number
+  fallbackOffset?: number,
 ): number {
   try {
     return offsetAt(date, timeZone);
@@ -123,7 +154,7 @@ function calculateMeetingTime(
   timezone = 'America/Los_Angeles',
   _fallbackOffset?: number,
   skipFridayMeetings = false,
-  meetingDuration = 30 // minutes
+  meetingDuration = 30, // minutes
 ) {
   // Try exact timestamp
   const parsed = new Date(timeframeContext);
@@ -139,9 +170,16 @@ function calculateMeetingTime(
     }
     if (isoNoTZ.test(timeframeContext)) {
       const m = timeframeContext.match(
-        /^\s*(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})(?::(\d{2}))?\s*$/
+        /^\s*(\d{4})-(\d{2})-(\d{2})[T\s](\d{2}):(\d{2})(?::(\d{2}))?\s*$/,
       )!;
-      const [Y, M, D, h, mm, ss] = [+m[1], +m[2], +m[3], +m[4], +m[5], +(m[6] || '0')];
+      const [Y, M, D, h, mm, ss] = [
+        +m[1],
+        +m[2],
+        +m[3],
+        +m[4],
+        +m[5],
+        +(m[6] || '0'),
+      ];
       const startTime = wallClockToUTC(Y, M, D, h, mm, ss, timezone);
       const endTime = new Date(startTime.getTime() + meetingDuration * 60000);
       return { startTime, endTime };
@@ -162,19 +200,25 @@ function calculateMeetingTime(
   }
 
   // Determine base day considering weekend/next week/friday skip
-  const weekdayShort = new Intl.DateTimeFormat('en-US', { timeZone: timezone, weekday: 'short' });
-  const dowIndex = (d: Date) => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(weekdayShort.format(d));
+  const weekdayShort = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    weekday: 'short',
+  });
+  const dowIndex = (d: Date) =>
+    ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].indexOf(
+      weekdayShort.format(d),
+    );
   let baseDay = day0;
 
   const todayDow = dowIndex(baseDay);
   let step = 0;
   if (skipFridayMeetings && todayDow === 5) step = 3; // Fri -> Mon
-  if (todayDow === 6) step = 2;                        // Sat -> Mon
-  if (todayDow === 0) step = 1;                        // Sun -> Mon
+  if (todayDow === 6) step = 2; // Sat -> Mon
+  if (todayDow === 0) step = 1; // Sun -> Mon
 
   if (timeframeContext === 'next week') {
     const d = dowIndex(baseDay);
-    const toNextMonday = ((1 - d + 7) % 7) || 7;
+    const toNextMonday = (1 - d + 7) % 7 || 7;
     step = toNextMonday;
   }
 
@@ -182,7 +226,11 @@ function calculateMeetingTime(
 
   // Choose start hour (if we didn't move days and we're before start_hour, use start_hour; otherwise use max(now, start))
   let startHour = workingHours.start_hour;
-  if (step === 0 && nowParts.hour > workingHours.start_hour && nowParts.hour < workingHours.end_hour) {
+  if (
+    step === 0 &&
+    nowParts.hour > workingHours.start_hour &&
+    nowParts.hour < workingHours.end_hour
+  ) {
     startHour = nowParts.hour;
   }
 
@@ -190,7 +238,10 @@ function calculateMeetingTime(
     partsInTZ(baseDay, timezone).year,
     partsInTZ(baseDay, timezone).month,
     partsInTZ(baseDay, timezone).day,
-    startHour, 0, 0, timezone
+    startHour,
+    0,
+    0,
+    timezone,
   );
 
   // Round to slot boundary in tz
@@ -202,11 +253,10 @@ function calculateMeetingTime(
 
 function calculateTimeSlotScore(
   slot: TimeSlot,
-  allBusyTimes: BusyPeriod[]
+  allBusyTimes: BusyPeriod[],
 ): number {
   let score = 100;
-  const hoursFromNow =
-    (Date.parse(slot.start) - Date.now()) / (1000 * 60 * 60);
+  const hoursFromNow = (Date.parse(slot.start) - Date.now()) / (1000 * 60 * 60);
   score -= Math.min(hoursFromNow * 0.5, 20);
 
   for (const busy of allBusyTimes) {
@@ -229,20 +279,19 @@ function calculateTimeSlotScore(
  * Formats a date as an ISO string including the correct offset for the given timezone.
  * Shows the same instant with the zone's local wall clock and offset.
  */
-function toISOStringWithTimezonePublic(
-  date: Date,
-  timezone: string
-): string {
+function toISOStringWithTimezonePublic(date: Date, timezone: string): string {
   return toISOStringWithTimezone(date, timezone);
 }
 
 // Helper: check if two time slots overlap (using millis)
 function slotsOverlap(
   slot1: { start: string; end: string },
-  slot2: { start: string; end: string }
+  slot2: { start: string; end: string },
 ): boolean {
-  const a0 = Date.parse(slot1.start), a1 = Date.parse(slot1.end);
-  const b0 = Date.parse(slot2.start), b1 = Date.parse(slot2.end);
+  const a0 = Date.parse(slot1.start),
+    a1 = Date.parse(slot1.end);
+  const b0 = Date.parse(slot2.start),
+    b1 = Date.parse(slot2.end);
   return a0 < b1 && b0 < a1;
 }
 
@@ -254,26 +303,29 @@ function calculateEventDuration(start: string, end: string): number {
 
 export async function findOptimalMeetingTime(
   calendar: calendar_v3.Calendar,
-  context: OptimalTimeContext
+  context: OptimalTimeContext,
 ): Promise<FindOptimalMeetingTimeOutput> {
   console.log(
     `${LOG_PREFIX} Finding optimal meeting time for:\n : ${JSON.stringify(
       context,
       null,
-      2
-    )}`
+      2,
+    )}`,
   );
 
   try {
     const duration = context.duration_minutes || 30;
-    const workingHours = context.working_hours || { start_hour: 8, end_hour: 17 };
+    const workingHours = context.working_hours || {
+      start_hour: 8,
+      end_hour: 17,
+    };
 
     // Build initial window (UTC instants)
     const { startTime, endTime } = calculateMeetingTime(
       context.timeframe_context,
       workingHours,
       new Date(),
-      context.timezone
+      context.timezone,
     );
 
     // --- STEP 1: Fetch events (events.list) ---
@@ -295,7 +347,10 @@ export async function findOptimalMeetingTime(
           event.start?.dateTime &&
           event.end?.dateTime
         ) {
-          const dur = calculateEventDuration(event.start.dateTime, event.end.dateTime);
+          const dur = calculateEventDuration(
+            event.start.dateTime,
+            event.end.dateTime,
+          );
           if (dur > 0) {
             eventTimeSlots.push({
               attendees: JSON.stringify(event.attendees),
@@ -315,11 +370,30 @@ export async function findOptimalMeetingTime(
     // Compute today's working window in tz, then format with tz offset
     const dayStart = startOfDayTZ(startTime, context.timezone!); // base day from startTime
     const pDay = partsInTZ(dayStart, context.timezone!);
-    const startFreeBusyTime = wallClockToUTC(pDay.year, pDay.month, pDay.day, workingHours.start_hour, 0, 0, context.timezone!);
-    const lastTimeLocal = wallClockToUTC(pDay.year, pDay.month, pDay.day, workingHours.end_hour, 0, 0, context.timezone!);
+    const startFreeBusyTime = wallClockToUTC(
+      pDay.year,
+      pDay.month,
+      pDay.day,
+      workingHours.start_hour,
+      0,
+      0,
+      context.timezone!,
+    );
+    const lastTimeLocal = wallClockToUTC(
+      pDay.year,
+      pDay.month,
+      pDay.day,
+      workingHours.end_hour,
+      0,
+      0,
+      context.timezone!,
+    );
 
     const freeBusyRequest = {
-      timeMin: toISOStringWithTimezonePublic(startFreeBusyTime, context.timezone!),
+      timeMin: toISOStringWithTimezonePublic(
+        startFreeBusyTime,
+        context.timezone!,
+      ),
       timeMax: toISOStringWithTimezonePublic(lastTimeLocal, context.timezone!),
       items: participants.map((email) => ({ id: email })),
       timeZone: 'UTC',
@@ -345,8 +419,8 @@ export async function findOptimalMeetingTime(
       return !eventTimeSlots.some((eventSlot) =>
         slotsOverlap(
           { start: eventSlot.start, end: eventSlot.end },
-          { start: fbSlot.start, end: fbSlot.end }
-        )
+          { start: fbSlot.start, end: fbSlot.end },
+        ),
       );
     });
 
@@ -381,7 +455,10 @@ export async function findOptimalMeetingTime(
       const lp = partsInTZ(currentTime, context.timezone!);
       const localHour = lp.hour;
 
-      if (localHour >= workingHours.start_hour && localHour < workingHours.end_hour) {
+      if (
+        localHour >= workingHours.start_hour &&
+        localHour < workingHours.end_hour
+      ) {
         const slotStart = new Date(currentTime);
         const slotEnd = new Date(currentTime.getTime() + duration * 60000);
 
@@ -391,7 +468,11 @@ export async function findOptimalMeetingTime(
           const busyEnd = Date.parse(busy.end);
           if (slotStart.getTime() < busyEnd && slotEnd.getTime() > busyStart) {
             isAvailable = false;
-            currentTime = roundUpToNextSlotTZ(new Date(busyEnd), 30, context.timezone!);
+            currentTime = roundUpToNextSlotTZ(
+              new Date(busyEnd),
+              30,
+              context.timezone!,
+            );
             break;
           }
         }
@@ -409,8 +490,24 @@ export async function findOptimalMeetingTime(
         // Move to next day start in tz and recompute window
         const nextDay0 = addDaysTZ(currentTime, 1, context.timezone!);
         const p = partsInTZ(nextDay0, context.timezone!);
-        windowStart = wallClockToUTC(p.year, p.month, p.day, workingHours.start_hour, 0, 0, context.timezone!);
-        windowEnd = wallClockToUTC(p.year, p.month, p.day, workingHours.end_hour, 0, 0, context.timezone!);
+        windowStart = wallClockToUTC(
+          p.year,
+          p.month,
+          p.day,
+          workingHours.start_hour,
+          0,
+          0,
+          context.timezone!,
+        );
+        windowEnd = wallClockToUTC(
+          p.year,
+          p.month,
+          p.day,
+          workingHours.end_hour,
+          0,
+          0,
+          context.timezone!,
+        );
         currentTime = new Date(windowStart);
       }
     }
@@ -429,20 +526,21 @@ export async function findOptimalMeetingTime(
       `${LOG_PREFIX} Found times for:\n  participants: ${JSON.stringify(
         context.participants,
         null,
-        2
+        2,
       )}\n  timeframe: ${JSON.stringify(
         { suggested_times: suggestedTimes, message },
         null,
-        2
-      )}`
+        2,
+      )}`,
     );
 
     return { suggested_times: suggestedTimes, message };
   } catch (error) {
     console.error(
-      `${LOG_PREFIX} Finding optimal meeting time failed:\n  message: ${error instanceof Error ? error.message : error
+      `${LOG_PREFIX} Finding optimal meeting time failed:\n  message: ${
+        error instanceof Error ? error.message : error
       }\n  stack: ${error instanceof Error ? error.stack : ''}`,
-      { response: (error as any).response?.data }
+      { response: (error as any).response?.data },
     );
     throw error;
   }

@@ -3,6 +3,7 @@
 ## Overview
 
 The Larry VS Code extension uses a multi-webview architecture with state synchronization between:
+
 - **Sidebar Webview** (PRIMARY) - The main UI, orchestrates the workflow
 - **Artifact Editor Webview** (CONSUMER) - Rich editor for spec/architecture files
 - **Extension (Node.js)** (RELAY/CACHE) - Message broker and state cache
@@ -57,15 +58,15 @@ interface LarryState {
   // Thread/Machine context
   currentThreadId: string | undefined;
   apiUrl: string;
-  
+
   // Current machine data (from SSE/API)
   machineData: MachineResponse | undefined;
-  
+
   // Environment
   isInWorktree: boolean;
   worktreePort: number;
   mainPort: number;
-  
+
   // Config
   agents: Record<string, string>;
   selectedAgent: string;
@@ -79,9 +80,9 @@ The extension maintains a cached copy plus panel tracking:
 ```typescript
 interface ExtensionState {
   // ... existing fields ...
-  
+
   larryState: LarryState | undefined;
-  queryCache: string | undefined;  // JSON serialized
+  queryCache: string | undefined; // JSON serialized
   artifactEditorPanels: Set<WebviewPanel>;
 }
 ```
@@ -90,32 +91,32 @@ interface ExtensionState {
 
 ### Sidebar → Extension
 
-| Message | Purpose | Payload |
-|---------|---------|---------|
+| Message            | Purpose                      | Payload                      |
+| ------------------ | ---------------------------- | ---------------------------- |
 | `larry_state_sync` | Sync LarryState to extension | `{ larryState: LarryState }` |
-| `query_cache_sync` | Sync dehydrated query cache | `{ queryCache: string }` |
+| `query_cache_sync` | Sync dehydrated query cache  | `{ queryCache: string }`     |
 
 ### Extension → Artifact Editor
 
-| Message | Purpose | Payload |
-|---------|---------|---------|
-| `larry_state_update` | Push LarryState to editor | `{ larryState: LarryState }` |
-| `query_cache_hydrate` | Push query cache to editor | `{ queryCache: string }` |
-| `initialContent` | Initial load with all data | `{ content, fileName, larryState, queryCache }` |
+| Message               | Purpose                    | Payload                                         |
+| --------------------- | -------------------------- | ----------------------------------------------- |
+| `larry_state_update`  | Push LarryState to editor  | `{ larryState: LarryState }`                    |
+| `query_cache_hydrate` | Push query cache to editor | `{ queryCache: string }`                        |
+| `initialContent`      | Initial load with all data | `{ content, fileName, larryState, queryCache }` |
 
 ### Artifact Editor → Extension
 
-| Message | Purpose | Payload |
-|---------|---------|---------|
-| `getEditorContent` | Request initial content | `{}` |
-| `edit` | Save file content | `{ content: string }` |
-| `proceed_complete` | Notify proceed action done | `{}` |
+| Message            | Purpose                    | Payload               |
+| ------------------ | -------------------------- | --------------------- |
+| `getEditorContent` | Request initial content    | `{}`                  |
+| `edit`             | Save file content          | `{ content: string }` |
+| `proceed_complete` | Notify proceed action done | `{}`                  |
 
 ### Extension → Sidebar
 
-| Message | Purpose | Payload |
-|---------|---------|---------|
-| `refetch_machine` | Trigger machine data refetch | `{}` |
+| Message           | Purpose                      | Payload |
+| ----------------- | ---------------------------- | ------- |
+| `refetch_machine` | Trigger machine data refetch | `{}`    |
 
 ## React Query Synchronization
 
@@ -225,15 +226,15 @@ Artifact editor main component:
 
 ## Files
 
-| File | Purpose |
-|------|---------|
-| `store/larry-state.ts` | LarryState type and utilities |
-| `store/query-sync.ts` | Hydration/dehydration utilities |
-| `store/store.ts` | Sidebar ExtensionStore (uses LarryState) |
-| `store/docs.md` | This documentation |
-| `views/LarryStateSync.tsx` | State sync component for sidebar |
-| `views/BootChannel.tsx` | Handles `refetch_machine` to invalidate query |
-| `views/spec-editor/EditorModule.tsx` | Artifact editor component |
+| File                                 | Purpose                                       |
+| ------------------------------------ | --------------------------------------------- |
+| `store/larry-state.ts`               | LarryState type and utilities                 |
+| `store/query-sync.ts`                | Hydration/dehydration utilities               |
+| `store/store.ts`                     | Sidebar ExtensionStore (uses LarryState)      |
+| `store/docs.md`                      | This documentation                            |
+| `views/LarryStateSync.tsx`           | State sync component for sidebar              |
+| `views/BootChannel.tsx`              | Handles `refetch_machine` to invalidate query |
+| `views/spec-editor/EditorModule.tsx` | Artifact editor component                     |
 
 ## Best Practices
 
@@ -242,4 +243,3 @@ Artifact editor main component:
 3. **Hydrate before render** - ensure cache is ready before components mount
 4. **Handle missing state gracefully** - editor may load before sidebar syncs
 5. **Keep queryCache serializable** - only successful queries are dehydrated
-

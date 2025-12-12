@@ -1,10 +1,16 @@
-import type { LarryStream, StreamCallback, Subscription, StreamEntry, LarryNotification } from '@codestrap/developer-foundations-types';
+import type {
+  LarryStream,
+  StreamCallback,
+  Subscription,
+  StreamEntry,
+  LarryNotification,
+} from '@codestrap/developer-foundations-types';
 
 const streamStore = new Map<string, StreamEntry>();
 
 export function subscribe<T = unknown>(
   id: string,
-  callback: StreamCallback<T>
+  callback: StreamCallback<T>,
 ): Subscription<T> {
   if (!streamStore.has(id)) {
     streamStore.set(id, { value: null, subscribers: new Set() });
@@ -20,7 +26,10 @@ export function subscribe<T = unknown>(
   };
 }
 
-export function publish<T = unknown>(opts: { id: string; payload: LarryNotification }): void {
+export function publish<T = unknown>(opts: {
+  id: string;
+  payload: LarryNotification;
+}): void {
   const { id, payload } = opts;
   if (!streamStore.has(id)) {
     streamStore.set(id, { value: null, subscribers: new Set() });

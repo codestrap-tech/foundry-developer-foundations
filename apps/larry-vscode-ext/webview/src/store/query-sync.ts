@@ -1,17 +1,21 @@
-import { dehydrate, hydrate, type DehydratedState } from '@tanstack/react-query';
+import {
+  dehydrate,
+  hydrate,
+  type DehydratedState,
+} from '@tanstack/react-query';
 import { queryClient } from '../lib/query';
 
 /**
  * Query Cache Synchronization Utilities
- * 
+ *
  * These utilities enable sharing React Query cache between webviews
  * via the extension (Node.js) as a message relay.
- * 
+ *
  * Flow:
  * 1. Sidebar dehydrates cache → sends to extension
  * 2. Extension caches the dehydrated state
  * 3. Artifact editor receives → hydrates its cache
- * 
+ *
  * See docs.md for detailed architecture.
  */
 
@@ -55,4 +59,3 @@ export function invalidateMachineQuery(apiUrl: string, machineId: string) {
     queryKey: ['machine', { baseUrl: apiUrl, machineId }],
   });
 }
-
