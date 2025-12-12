@@ -19,6 +19,7 @@ import {
     readWebPage,
     sendSlackMessage,
     writeSlackMessage,
+    generateSlides,
 } from '../../../functions';
 
 
@@ -40,6 +41,25 @@ function getPayload(context: Context, result: Record<string, any>) {
 }
 export function getFunctionCatalog(dispatch: (action: ActionType) => void) {
     return new Map<string, Task>([
+        [
+            "generateSlides",
+            {
+                description:
+                    "Use this tool to generate slides based on the user's instructions",
+                implementation: async (context: Context, event?: MachineEvent, task?: string) => {
+                    console.log('generateSlides implementation in function catalog called');
+                    const result = await generateSlides(context, event, task);
+                    const payload = getPayload(context, result);
+                    console.log(`generateSlides returned: ${JSON.stringify(result)}`);
+                    console.log('dispatching CONTINUE from generateSlides');
+
+                    dispatch({
+                        type: 'CONTINUE',
+                        payload,
+                    });
+                },
+            },
+        ],
         [
             "summarizeCalendars",
             {
