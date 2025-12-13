@@ -14,7 +14,7 @@
     "xstate": "4.37.2"
   },
   "devDependencies": {
-    "@types/node": "^22.15.3"
+    "@types/node": "22.19.2"
   },
   "publishConfig": {
     "access": "public"
