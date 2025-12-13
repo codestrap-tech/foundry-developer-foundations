@@ -13,10 +13,10 @@
     "googleapis": "^149.0.0",
     "openai": "^4.92.1",
     "prettier": "^3.6.2",
-    "ramda": "^0.30.1",
-    "ts-morph": "^27.0.0",
+    "ramda": "0.30.1",
+    "ts-morph": "27.0.2",
     "tslib": "^2.3.0",
-    "xstate": "4.37.2"
+    "xstate": "4.38.3"
   },
   "publishConfig": {
     "access": "public"

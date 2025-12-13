@@ -11,7 +11,7 @@
     "@sinclair/typebox": "^0.34.33",
     "googleapis": "^149.0.0",
     "tslib": "^2.3.0",
-    "xstate": "4.37.2"
+    "xstate": "4.38.3"
   },
   "devDependencies": {
     "@types/node": "^22.15.3"

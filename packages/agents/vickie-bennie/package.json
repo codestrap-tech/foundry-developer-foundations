@@ -14,7 +14,7 @@
     "@palantir/compute-module": "0.2.7",
     "@sinclair/typebox": "^0.34.33",
     "dotenv": "^16.5.0",
-    "xstate": "4.37.2"
+    "xstate": "4.38.3"
   },
   "publishConfig": {
     "access": "public"
