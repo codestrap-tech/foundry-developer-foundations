@@ -11,12 +11,12 @@
     "@google/genai": "1.12.0",
     "@nx/devkit": "21.6.5",
     "@nx/node": "21.6.5",
-    "dotenv": "^16.5.0",
+    "dotenv": "16.6.1",
     "googleapis": "^149.0.0",
     "jest": "^29.7.0",
-    "jsonc-eslint-parser": "^2.1.0",
+    "jsonc-eslint-parser": "2.4.2",
     "ramda": "^0.30.1",
-    "tslib": "^2.3.0"
+    "tslib": "2.8.1"
   },
   "generators": "./generators.json"
 }
