@@ -10,7 +10,7 @@
     "@osdk/client": "^2.2.1",
     "@osdk/foundry.admin": "^2.22.0",
     "@osdk/oauth": "^1.1.2",
-    "ramda": "^0.30.1",
+    "ramda": "0.30.1",
     "tslib": "^2.3.0"
   },
   "publishConfig": {

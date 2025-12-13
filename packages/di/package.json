@@ -15,7 +15,7 @@
     "@codestrap/developer-foundations-utils": "0.0.1",
     "@codestrap/github": "0.0.1",
     "@codestrap/larry-config": "0.0.1",
-    "inversify": "^7.5.1",
+    "inversify": "7.10.6",
     "reflect-metadata": "0.2.2",
     "tslib": "^2.3.0"
   },
