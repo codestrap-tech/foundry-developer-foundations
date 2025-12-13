@@ -187,5 +187,5 @@
   "nx": {
     "includedScripts": []
   },
-  "packageManager": "npm@10.9.0"
+  "packageManager": "npm@10.9.4"
 }
