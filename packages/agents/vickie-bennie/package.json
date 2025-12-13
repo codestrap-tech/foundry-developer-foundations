@@ -12,8 +12,8 @@
     "@codestrap/developer-foundations-x-reason": "*",
     "@codestrap/developer-foundations.foundry-tracing-foundations": "^1.2.3",
     "@palantir/compute-module": "0.2.7",
-    "@sinclair/typebox": "^0.34.33",
-    "dotenv": "^16.5.0",
+    "@sinclair/typebox": "0.34.41",
+    "dotenv": "16.6.1",
     "xstate": "4.37.2"
   },
   "publishConfig": {

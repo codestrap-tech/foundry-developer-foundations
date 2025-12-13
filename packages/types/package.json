@@ -8,9 +8,9 @@
     "@osdk/client": "^2.2.1",
     "@osdk/foundry.admin": "^2.22.0",
     "@palantir/compute-module": "0.2.7",
-    "@sinclair/typebox": "^0.34.33",
+    "@sinclair/typebox": "0.34.41",
     "googleapis": "^149.0.0",
-    "tslib": "^2.3.0",
+    "tslib": "2.8.1",
     "xstate": "4.37.2"
   },
   "devDependencies": {
