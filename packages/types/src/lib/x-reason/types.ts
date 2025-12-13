@@ -1,4 +1,4 @@
-import { EventObject, StateNode } from 'xstate';
+import type { EventObject, StateNode } from 'xstate';
 import { Message } from '../types';
 
 export type ActionType = {
@@ -37,7 +37,7 @@ export type Task = {
   implementation: (
     context: Context,
     event?: MachineEvent,
-    task?: string
+    task?: string,
   ) => void;
   component?: (context: Context, event?: MachineEvent, task?: string) => any;
   transitions?: Transition;
@@ -58,7 +58,7 @@ export type Programer = {
   program(
     query: string,
     functionCatalog: string,
-    programmer: Prompt
+    programmer: Prompt,
   ): Promise<StateConfig[]>;
 };
 
@@ -91,7 +91,7 @@ export type AiTransition = {
     currentState: string,
     stateValue: string,
     aiTransition: Prompt,
-    executionId: string
+    executionId: string,
   ): Promise<string>;
 };
 
@@ -197,7 +197,7 @@ export type FileOp = {
   type: string;
   contents?: string;
   stubCode?: string;
-}
+};
 
 export const EditOpsJsonSchema = {
   $schema: 'https://json-schema.org/draft/2020-12/schema',

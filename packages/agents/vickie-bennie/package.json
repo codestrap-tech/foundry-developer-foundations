@@ -4,34 +4,19 @@
   "type": "commonjs",
   "main": "./index.cjs",
   "types": "./src/index.d.ts",
-  "publishConfig": {
-    "access": "public"
-  },
   "dependencies": {
-    "@sinclair/typebox": "^0.34.33",
-    "dotenv": "^16.5.0",
-    "reflect-metadata": "^0.2.2",
-    "ramda": "^0.30.1",
-    "@codestrap/developer-foundations.foundry-tracing-foundations": "^1.2.3",
-    "@codestrap/developer-foundations-types": "*",
-    "@codestrap/developer-foundations-utils": "*",
     "@codestrap/developer-foundations-di": "*",
     "@codestrap/developer-foundations-services-google": "*",
-    "@codestrap/developer-foundations-services-palantir": "*",
-    "@codestrap/developer-foundations-services-eia": "*",
-    "@codestrap/developer-foundations-services-weather": "*",
-    "@codestrap/developer-foundations-services-rangr": "*",
-    "@codestrap/developer-foundations-services-slack": "*",
+    "@codestrap/developer-foundations-types": "*",
+    "@codestrap/developer-foundations-utils": "*",
     "@codestrap/developer-foundations-x-reason": "*",
-    "@google/genai": "1.12.0",
-    "@google/generative-ai": "^0.24.1",
-    "@mendable/firecrawl-js": "^1.29.3",
-    "@osdk/client": "^2.2.1",
-    "@osdk/foundry.admin": "^2.22.0",
-    "@osdk/oauth": "^1.1.2",
+    "@codestrap/developer-foundations.foundry-tracing-foundations": "^1.2.3",
     "@palantir/compute-module": "0.2.7",
-    "googleapis": "^149.0.0",
-    "inversify": "^7.5.1",
+    "@sinclair/typebox": "^0.34.33",
+    "dotenv": "^16.5.0",
     "xstate": "4.37.2"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

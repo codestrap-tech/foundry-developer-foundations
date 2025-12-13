@@ -1,4 +1,4 @@
-import { ProposeMeetingConflictResolutionsOutput } from '@codestrap/developer-foundations-types';
+import type { ProposeMeetingConflictResolutionsOutput } from '@codestrap/developer-foundations-types';
 import { makeGSuiteClientV3 } from './gsuiteClient.v3';
 
 if (!process.env.E2E) {
@@ -34,7 +34,7 @@ if (!process.env.E2E) {
         timeFrameTo,
       }) => {
         console.log(
-          `Checking conflicts for ${emailForCalendarConflictResolution} from ${timeFrameFrom} to ${timeFrameTo}`
+          `Checking conflicts for ${emailForCalendarConflictResolution} from ${timeFrameFrom} to ${timeFrameTo}`,
         );
 
         const result = await client.proposeMeetingConflictResolutions({
@@ -62,9 +62,9 @@ if (!process.env.E2E) {
                 }),
               ]),
             }),
-          ] as ProposeMeetingConflictResolutionsOutput)
+          ] as ProposeMeetingConflictResolutionsOutput),
         );
-      }
+      },
     );
   });
 }

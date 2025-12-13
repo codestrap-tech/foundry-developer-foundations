@@ -1,15 +1,15 @@
 /* JSX */
 /* @jsxImportSource preact */
 import { useState, useEffect, useRef, useMemo } from 'preact/hooks';
-import { 
-  MDXEditor, 
-  headingsPlugin, 
-  listsPlugin, 
-  quotePlugin, 
-  thematicBreakPlugin, 
-  markdownShortcutPlugin, 
+import {
+  MDXEditor,
+  headingsPlugin,
+  listsPlugin,
+  quotePlugin,
+  thematicBreakPlugin,
+  markdownShortcutPlugin,
   codeBlockPlugin,
-  codeMirrorPlugin
+  codeMirrorPlugin,
 } from '@mdxeditor/editor';
 import { postMessage, onMessage } from '../../lib/vscode';
 import { BookText, MessageSquareCode } from 'lucide-preact';
@@ -31,14 +31,14 @@ interface EditorState {
 
 /**
  * EditorModule - Main artifact editor component
- * 
+ *
  * Receives state from sidebar via extension relay:
  * - LarryState (threadId, apiUrl, machineData)
  * - Query cache (hydrated on load)
- * 
+ *
  * Footer only shows when machine status is 'awaiting_human'.
  * WorkingIndicator and error handling is done in sidebar's StateVisualization2.
- * 
+ *
  * See store/docs.md for architecture details.
  */
 export function EditorModule() {
@@ -56,32 +56,50 @@ export function EditorModule() {
   const initPhase = useRef<'waiting' | 'normalizing' | 'ready'>('waiting');
 
   // Dirty = current content differs from normalized baseline (only after init complete)
-  const isDirty = initPhase.current === 'ready' && originalContent.current !== editorState.currentContent;
+  const isDirty =
+    initPhase.current === 'ready' &&
+    originalContent.current !== editorState.currentContent;
 
-  const {data: machineData, refetch: refetchMachineData} = useMachineQuery(editorState.larryState?.apiUrl || '', editorState.larryState?.currentThreadId || '');
-  const {fetch: fetchNextState} = useNextMachineState(editorState.larryState?.apiUrl || '');
-  const {fetch: getContentFile} = useReadFile();
+  const { data: machineData, refetch: refetchMachineData } = useMachineQuery(
+    editorState.larryState?.apiUrl || '',
+    editorState.larryState?.currentThreadId || '',
+  );
+  const { fetch: fetchNextState } = useNextMachineState(
+    editorState.larryState?.apiUrl || '',
+  );
+  const { fetch: getContentFile } = useReadFile();
 
   const machineStatus = machineData?.status;
 
-
   const fullStateKey = useMemo(() => {
-    const larryStateMachineData = editorState.larryState?.machineData as MachineResponse | undefined;
-    
+    const larryStateMachineData = editorState.larryState?.machineData as
+      | MachineResponse
+      | undefined;
+
     return larryStateMachineData?.currentState || machineData?.currentState;
   }, [editorState.larryState?.machineData, machineData?.currentState]);
 
   // Get state data from machine context
   const stateData = useMemo(() => {
-    const larryStateMachineData = editorState.larryState?.machineData as MachineResponse | undefined;
-    if (!fullStateKey || (!larryStateMachineData?.context || !machineData?.context)) return undefined;
-    return larryStateMachineData.context[fullStateKey] || machineData?.context?.[fullStateKey];
+    const larryStateMachineData = editorState.larryState?.machineData as
+      | MachineResponse
+      | undefined;
+    if (
+      !fullStateKey ||
+      !larryStateMachineData?.context ||
+      !machineData?.context
+    )
+      return undefined;
+    return (
+      larryStateMachineData.context[fullStateKey] ||
+      machineData?.context?.[fullStateKey]
+    );
   }, [fullStateKey, editorState.larryState?.machineData, machineData?.context]);
 
-
   const reloadCurrentContent = () => {
-    getContentFile(editorState.filePath).then(content => {
-      setEditorState(prev => ({
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    getContentFile(editorState.filePath).then((content) => {
+      setEditorState((prev) => ({
         ...prev,
         currentContent: content,
       }));
@@ -97,7 +115,7 @@ export function EditorModule() {
       switch (msg.type) {
         case 'initialContent':
           initPhase.current = 'normalizing';
-          
+
           // Hydrate query cache if provided
           if (msg.queryCache) {
             hydrateQueryCache(msg.queryCache);
@@ -116,22 +134,26 @@ export function EditorModule() {
 
         case 'larry_state_update':
           // Update LarryState from sidebar sync
-          setEditorState(prev => ({
+          setEditorState((prev) => ({
             ...prev,
             larryState: msg.larryState,
           }));
           // Unlock footer when machine returns to awaiting human
-          const updatedStatus = (msg.larryState?.machineData as MachineResponse | undefined)?.status;
+          // eslint-disable-next-line no-case-declarations
+          const updatedStatus = (
+            msg.larryState?.machineData as MachineResponse | undefined
+          )?.status;
           if (updatedStatus === 'awaiting_human') {
             setFooterLocked(false);
           }
-          
+
           break;
 
         case 'query_cache_hydrate':
           if (msg.queryCache) {
             hydrateQueryCache(msg.queryCache);
             setTimeout(() => {
+              // eslint-disable-next-line @typescript-eslint/no-floating-promises
               refetchMachineData();
               reloadCurrentContent();
             }, 1000);
@@ -146,15 +168,14 @@ export function EditorModule() {
     return cleanup;
   }, []);
 
-
   const handleContentChange = (newContent: string) => {
     if (initPhase.current === 'normalizing') {
       // First change is MDXEditor normalization - save immediately
       postMessage({ type: 'edit', content: newContent });
       originalContent.current = newContent;
       initPhase.current = 'ready';
-      
-      setEditorState(prev => ({
+
+      setEditorState((prev) => ({
         ...prev,
         currentContent: newContent,
       }));
@@ -162,7 +183,7 @@ export function EditorModule() {
     }
 
     // Normal editing - debounced save
-    setEditorState(prev => ({
+    setEditorState((prev) => ({
       ...prev,
       currentContent: newContent,
     }));
@@ -193,13 +214,13 @@ export function EditorModule() {
       clearTimeout(debounceTimerRef.current);
       debounceTimerRef.current = null;
     }
-    
+
     // Force save current content immediately
     postMessage({ type: 'edit', content: editorState.currentContent });
 
     const threadId = editorState.larryState?.currentThreadId;
     const apiUrl = editorState.larryState?.apiUrl;
-    
+
     if (!threadId || !fullStateKey || !apiUrl) {
       console.error('Missing required values for proceed action:', {
         threadId,
@@ -216,13 +237,16 @@ export function EditorModule() {
 
     // 2s delay to ensure save is processed
     // and also synced with Docker container
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     const contextUpdate = buildContextUpdate(isDirty, fullStateKey, stateData);
 
     try {
       setFooterLocked(true);
-      await fetchNextState({ machineId: threadId, contextUpdate: { [fullStateKey]: contextUpdate } });
+      await fetchNextState({
+        machineId: threadId,
+        contextUpdate: { [fullStateKey]: contextUpdate },
+      });
     } catch (error) {
       console.error('Failed to call proceed:', error);
       setFooterLocked(false);
@@ -232,7 +256,8 @@ export function EditorModule() {
 
   // Determine review type
   const isSpecReview = machineData?.currentState?.includes('specReview');
-  const isArchitectureReview = machineData?.currentState?.includes('architectureReview');
+  const isArchitectureReview =
+    machineData?.currentState?.includes('architectureReview');
 
   // Unlock footer when machine status returns to awaiting human
   useEffect(() => {
@@ -244,16 +269,24 @@ export function EditorModule() {
   // Only show footer when awaiting human review and not locked
   const showFooter = machineStatus === 'awaiting_human' && !footerLocked;
 
-  const isProceedDisabled = !editorState.larryState?.currentThreadId || !editorState.larryState?.apiUrl || !fullStateKey;
+  const isProceedDisabled =
+    !editorState.larryState?.currentThreadId ||
+    !editorState.larryState?.apiUrl ||
+    !fullStateKey;
 
   return (
     <div className="editor-module">
       <div className="editor-header">
         <h2 className="editor-title">
           {isSpecReview ? (
-            <span><BookText className="editor-title--icon" /> Specification Review</span>
+            <span>
+              <BookText className="editor-title--icon" /> Specification Review
+            </span>
           ) : isArchitectureReview ? (
-            <span><MessageSquareCode className="editor-title--icon" /> Architecture Review</span>
+            <span>
+              <MessageSquareCode className="editor-title--icon" /> Architecture
+              Review
+            </span>
           ) : (
             <span>Larry AI Editor</span>
           )}
@@ -274,11 +307,11 @@ export function EditorModule() {
               thematicBreakPlugin(),
               markdownShortcutPlugin(),
               codeBlockPlugin({ defaultCodeBlockLanguage: 'typescript' }),
-              codeMirrorPlugin({ 
-                codeBlockLanguages: { 
-                  js: 'JavaScript', 
+              codeMirrorPlugin({
+                codeBlockLanguages: {
+                  js: 'JavaScript',
                   jsx: 'JavaScript (React)',
-                  ts: 'TypeScript', 
+                  ts: 'TypeScript',
                   typescript: 'TypeScript',
                   tsx: 'TypeScript (React)',
                   css: 'CSS',
@@ -293,8 +326,8 @@ export function EditorModule() {
                   graphql: 'GraphQL',
                   diff: 'diff',
                   gherkin: 'Gherkin',
-                  '': 'Plain Text'
-                } 
+                  '': 'Plain Text',
+                },
               }),
             ]}
           />
@@ -310,13 +343,16 @@ export function EditorModule() {
           >
             Proceed
           </button>
-          {isDirty && <span className="editor-dirty-indicator">● Modified</span>}
+          {isDirty && (
+            <span className="editor-dirty-indicator">● Modified</span>
+          )}
           {!editorState.larryState?.currentThreadId && (
-            <span className="editor-warning">Open Larry sidebar to enable proceed</span>
+            <span className="editor-warning">
+              Open Larry sidebar to enable proceed
+            </span>
           )}
         </div>
       )}
     </div>
   );
 }
-

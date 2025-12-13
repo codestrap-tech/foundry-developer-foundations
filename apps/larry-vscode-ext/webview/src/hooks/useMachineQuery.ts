@@ -1,7 +1,7 @@
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { fetchMachine } from '../lib/http';
 import { queryClient } from '../lib/query';
-import { MachineResponse, MachineStatus } from '../lib/backend-types';
+import type { MachineResponse, MachineStatus } from '../lib/backend-types';
 
 export function useMachineQuery(baseUrl: string, machineId?: string) {
   const query = useQuery(
@@ -19,13 +19,17 @@ export function useMachineQuery(baseUrl: string, machineId?: string) {
       staleTime: 1000,
       refetchInterval: false,
     },
-    queryClient
+    queryClient,
   );
 
   return query;
 }
 
-export function setMachineQuery(baseUrl: string, machineId: string, status: MachineStatus) {
+export function setMachineQuery(
+  baseUrl: string,
+  machineId: string,
+  status: MachineStatus,
+) {
   queryClient.setQueryData(['machine', { baseUrl, machineId }], (prev) => {
     return {
       ...(prev as MachineResponse),

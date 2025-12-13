@@ -2,14 +2,17 @@ import {
   SupportedFoundryClients,
   type GeminiParameters,
 } from '@codestrap/developer-foundations-types';
-import { foundryClientFactory } from "./factory/foundryClientFactory";
+import { foundryClientFactory } from './factory/foundryClientFactory';
 
 export async function geminiService(
   user: string,
   system: string,
-  params?: GeminiParameters
+  params?: GeminiParameters,
 ): Promise<string> {
-  const { getToken, url, ontologyRid } = foundryClientFactory(process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE, undefined);
+  const { getToken, url, ontologyRid } = foundryClientFactory(
+    process.env.FOUNDRY_CLIENT_TYPE || SupportedFoundryClients.PRIVATE,
+    undefined,
+  );
 
   const apiKey = await getToken();
 

@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import { Buffer } from 'buffer';
-import { ServiceAccountCredentials } from '@codestrap/developer-foundations-types';
+import type { ServiceAccountCredentials } from '@codestrap/developer-foundations-types';
 
 export async function loadServiceAccountFromEnv(): Promise<ServiceAccountCredentials> {
   if (!process.env['GSUITE_SERVICE_ACCOUNT']) {
@@ -9,7 +9,7 @@ export async function loadServiceAccountFromEnv(): Promise<ServiceAccountCredent
 
   const jsonString = Buffer.from(
     process.env['GSUITE_SERVICE_ACCOUNT'],
-    'base64'
+    'base64',
   ).toString('utf8');
   const credentials = JSON.parse(jsonString) as ServiceAccountCredentials;
 
@@ -20,7 +20,7 @@ export async function loadServiceAccountFromEnv(): Promise<ServiceAccountCredent
 export function makeGoogleAuth(
   credentials: ServiceAccountCredentials,
   scopes: string[],
-  user: string
+  user: string,
 ) {
   return new google.auth.GoogleAuth({
     credentials,
@@ -28,4 +28,3 @@ export function makeGoogleAuth(
     clientOptions: { subject: user },
   });
 }
-

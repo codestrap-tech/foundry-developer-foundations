@@ -1,7 +1,15 @@
+// @ts-check
 import nx from '@nx/eslint-plugin';
+import * as regexpPlugin from 'eslint-plugin-regexp';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
 
+/** @type {import('eslint').Linter.Config[]} */
 export default [
+  reactRefresh.configs.next,
+  regexpPlugin.configs['flat/recommended'],
   {
+    // JSON files
     files: ['**/*.json'],
     // Override or add rules here
     rules: {},
@@ -10,12 +18,18 @@ export default [
     },
   },
   ...nx.configs['flat/base'],
-  ...nx.configs['flat/typescript'],
-  ...nx.configs['flat/javascript'],
+  .../** @type {import('eslint').Linter.Config[]} */ (
+    nx.configs['flat/typescript']
+  ),
+  .../** @type {import('eslint').Linter.Config[]} */ (
+    nx.configs['flat/javascript']
+  ),
   {
+    // Ignore dist directory
     ignores: ['**/dist'],
   },
   {
+    // All TypeScript and JavaScript files
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     rules: {
       '@nx/enforce-module-boundaries': [
@@ -34,6 +48,7 @@ export default [
     },
   },
   {
+    // All JavaScript and TypeScript files
     files: [
       '**/*.ts',
       '**/*.tsx',
@@ -44,7 +59,33 @@ export default [
       '**/*.cjs',
       '**/*.mjs',
     ],
-    // Override or add rules here
-    rules: {},
+    // TODO: @kopach - fix those
+    rules: {
+      'no-empty': 'off',
+      'no-useless-escape': 'off',
+      'regexp/no-super-linear-backtracking': 'off',
+    },
+  },
+  ...tseslint.configs.recommended.map((config) => ({
+    ...config,
+    files: ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'],
+  })),
+  {
+    // TypeScript files
+    files: ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.base.json'],
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/no-import-type-side-effects': 'error',
+      // disabled from recommended
+      '@typescript-eslint/no-empty-function': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+    },
   },
 ];

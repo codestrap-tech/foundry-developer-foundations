@@ -1,11 +1,11 @@
-import { drive_v3, slides_v1 } from "googleapis";
-import {
+import type { drive_v3, slides_v1 } from 'googleapis';
+import type {
   CreateGoogleSlidesInput,
   CreateGoogleSlidesOutput,
   GoogleSlideCreationFailure,
   GoogleSlideCreationSuccess,
   GoogleSlideContentItem,
-} from "@codestrap/developer-foundations-types";
+} from '@codestrap/developer-foundations-types';
 
 /**
  * createGoogleSlidesDelegate
@@ -42,13 +42,13 @@ type DelegateArgs = {
   slides?: slides_v1.Slides;
 };
 
-const DRIVE_ID_REGEX = /\/d\/([a-zA-Z0-9_-]{10,})/;
+const DRIVE_ID_REGEX = /\/d\/([\w-]{10,})/;
 
 function normalizeTemplateId(templateId: string): string | null {
   const m = templateId.match(DRIVE_ID_REGEX);
   if (m && m[1]) return m[1];
   // simple validation: Drive IDs are typically 10+ chars with - or _
-  if (/^[a-zA-Z0-9_-]{10,}$/.test(templateId)) return templateId;
+  if (/^[\w-]{10,}$/.test(templateId)) return templateId;
   return null;
 }
 
@@ -57,7 +57,7 @@ function nowIso(): string {
 }
 
 function formatDefaultName(templateName: string): string {
-  const pad = (n: number) => n.toString().padStart(2, "0");
+  const pad = (n: number) => n.toString().padStart(2, '0');
   const d = new Date();
   const yyyy = d.getUTCFullYear();
   const mm = pad(d.getUTCMonth() + 1);
@@ -69,25 +69,25 @@ function formatDefaultName(templateName: string): string {
 }
 
 function validateContentItem(item: GoogleSlideContentItem): string | null {
-  if (!item || !item.targetType || typeof item.text !== "string") {
-    return "content item missing required fields (targetType and text)";
+  if (!item || !item.targetType || typeof item.text !== 'string') {
+    return 'content item missing required fields (targetType and text)';
   }
 
   // For this “repeat base slide” behavior, we *only* support PLACEHOLDER
   // because objectIds change when slides are duplicated.
-  if (item.targetType === "OBJECT_ID") {
-    return "targetType OBJECT_ID is not supported when duplicating template slides; use PLACEHOLDER instead";
+  if (item.targetType === 'OBJECT_ID') {
+    return 'targetType OBJECT_ID is not supported when duplicating template slides; use PLACEHOLDER instead';
   }
 
-  if (item.targetType === "PLACEHOLDER" && !item.placeholder) {
-    return "content item targetType PLACEHOLDER requires placeholder";
+  if (item.targetType === 'PLACEHOLDER' && !item.placeholder) {
+    return 'content item targetType PLACEHOLDER requires placeholder';
   }
 
   return null;
 }
 
 export async function createGoogleSlidesDelegate(
-  args: DelegateArgs
+  args: DelegateArgs,
 ): Promise<CreateGoogleSlidesOutput> {
   const { input, drive, slides } = args;
   const successes: GoogleSlideCreationSuccess[] = [];
@@ -100,9 +100,9 @@ export async function createGoogleSlidesDelegate(
       failures: input.map((item, index) => ({
         inputIndex: index,
         templateId: item.templateId,
-        errorCode: "CONFIG_ERROR",
+        errorCode: 'CONFIG_ERROR',
         errorMessage:
-          "Slides client not available; createGoogleSlidesDelegate requires an authenticated Slides client.",
+          'Slides client not available; createGoogleSlidesDelegate requires an authenticated Slides client.',
       })),
     };
   }
@@ -114,7 +114,7 @@ export async function createGoogleSlidesDelegate(
       failures.push({
         inputIndex: index,
         templateId: item.templateId,
-        errorCode: "VALIDATION_ERROR",
+        errorCode: 'VALIDATION_ERROR',
         errorMessage: `Invalid Google Drive file ID or URL format for templateId: ${item.templateId}`,
       });
       return;
@@ -140,13 +140,10 @@ export async function createGoogleSlidesDelegate(
       failures.push({
         inputIndex: index,
         templateId: normalized,
-        errorCode: "VALIDATION_ERROR",
+        errorCode: 'VALIDATION_ERROR',
         errorMessage: `Invalid content items: ${invalid
-          .map(
-            (x) =>
-              `slide:${x.slideIdx} index:${x.itemIdx} -> ${x.err}`
-          )
-          .join("; ")}`,
+          .map((x) => `slide:${x.slideIdx} index:${x.itemIdx} -> ${x.err}`)
+          .join('; ')}`,
       });
       return;
     }
@@ -159,7 +156,7 @@ export async function createGoogleSlidesDelegate(
       const copyRes = await drive.files.copy({
         fileId: normalized,
         requestBody: { name: targetName },
-        fields: "id,name",
+        fields: 'id,name',
         supportsAllDrives: true, //required for shared drive files
       });
 
@@ -172,9 +169,9 @@ export async function createGoogleSlidesDelegate(
         fileId: presentationId,
         requestBody: {
           type: 'domain',
-          role: 'writer',              // or 'reader' if you prefer
-          domain: 'codestrap.me',      // or pull from env if you want
-          allowFileDiscovery: false,   // “with the link” semantics
+          role: 'writer', // or 'reader' if you prefer
+          domain: 'codestrap.me', // or pull from env if you want
+          allowFileDiscovery: false, // “with the link” semantics
         },
         supportsAllDrives: true,
       });
@@ -183,10 +180,10 @@ export async function createGoogleSlidesDelegate(
       if (!targetName) {
         const templateMeta = await drive.files.get({
           fileId: normalized,
-          fields: "name",
+          fields: 'name',
           supportsAllDrives: true, //required for shared drive files
         });
-        const templateName = templateMeta.data.name || "Template";
+        const templateName = templateMeta.data.name || 'Template';
         targetName = formatDefaultName(templateName);
         // update copied file name
         await drive.files.update({
@@ -206,9 +203,9 @@ export async function createGoogleSlidesDelegate(
         failures.push({
           inputIndex: index,
           templateId: normalized,
-          errorCode: "TEMPLATE_ERROR",
+          errorCode: 'TEMPLATE_ERROR',
           errorMessage:
-            "Template presentation has no slides or first slide is missing an objectId.",
+            'Template presentation has no slides or first slide is missing an objectId.',
         });
         return;
       }
@@ -221,7 +218,8 @@ export async function createGoogleSlidesDelegate(
       const orderedSlides = [...item.content]
         .map((slide, index) => ({
           ...slide,
-          sortKey: typeof slide.slideNumber === 'number' ? slide.slideNumber : index,
+          sortKey:
+            typeof slide.slideNumber === 'number' ? slide.slideNumber : index,
         }))
         .sort((a, b) => a.sortKey - b.sortKey); // ASC: s1, s2, s3...
 
@@ -296,7 +294,7 @@ export async function createGoogleSlidesDelegate(
       // 5) Fetch final file metadata
       const meta = await drive.files.get({
         fileId: presentationId,
-        fields: "id,name,webViewLink,webContentLink",
+        fields: 'id,name,webViewLink,webContentLink',
         supportsAllDrives: true, //required for shared drive files
       });
 
@@ -305,8 +303,8 @@ export async function createGoogleSlidesDelegate(
         templateId: normalized,
         presentationId,
         fileId: presentationId,
-        name: meta.data.name || targetName || "",
-        webViewLink: meta.data.webViewLink || "",
+        name: meta.data.name || targetName || '',
+        webViewLink: meta.data.webViewLink || '',
         webContentLink: meta.data.webContentLink!,
         createdAt: nowIso(),
         warnings: warnings.length ? warnings : undefined,
@@ -315,8 +313,8 @@ export async function createGoogleSlidesDelegate(
       failures.push({
         inputIndex: index,
         templateId: normalized,
-        errorCode: err?.code ? String(err.code) : "DRIVE_API_ERROR",
-        errorMessage: err?.message || "Unknown error during slide creation",
+        errorCode: err?.code ? String(err.code) : 'DRIVE_API_ERROR',
+        errorMessage: err?.message || 'Unknown error during slide creation',
         details: err?.response?.data || undefined,
       });
     }

@@ -1,20 +1,24 @@
 /* JSX */
 /* @jsxImportSource preact */
-import { useState, useEffect, useRef } from "preact/hooks";
-import { MachineResponse, StateComponentProps } from "../../lib/backend-types.ts";
-import { ConfirmUserIntent } from "./states/ConfirmUserIntent.tsx";
-import { ChevronRight, CircleUser, RotateCcw, Sparkles } from "lucide-preact";
-import { ChevronDown } from "lucide-preact";
-import { useExtensionDispatch, useExtensionStore } from "../../store/store.ts";
-import { SpecReview } from "./states/SpecReview.tsx";
-import { useNextMachineState } from "../../hooks/useNextState.ts";
-import { ArchitectureReview } from "./states/ArchitectureReview/ArchitectureReview.tsx";
-import { GeneralMessageBubble } from "./GeneralMessageBubble.tsx";
-import { CodeReview } from "./states/CodeReview.tsx";
-import { GenerateEditMachine } from "./states/generateEditMachine.tsx";
-import { LarryUpdateEvent, useLarryStream } from "../../hooks/useLarryStream.ts";
-import WorkingIndicator from "./WorkingIndicator.tsx";
-import { setMachineQuery } from "../../hooks/useMachineQuery.ts";
+import { useState, useEffect, useRef } from 'preact/hooks';
+import type {
+  MachineResponse,
+  StateComponentProps,
+} from '../../lib/backend-types.ts';
+import { ConfirmUserIntent } from './states/ConfirmUserIntent.tsx';
+import { ChevronRight, CircleUser, RotateCcw, Sparkles } from 'lucide-preact';
+import { ChevronDown } from 'lucide-preact';
+import { useExtensionDispatch, useExtensionStore } from '../../store/store.ts';
+import { SpecReview } from './states/SpecReview.tsx';
+import { useNextMachineState } from '../../hooks/useNextState.ts';
+import { ArchitectureReview } from './states/ArchitectureReview/ArchitectureReview.tsx';
+import { GeneralMessageBubble } from './GeneralMessageBubble.tsx';
+import { CodeReview } from './states/CodeReview.tsx';
+import { GenerateEditMachine } from './states/generateEditMachine.tsx';
+import type { LarryUpdateEvent } from '../../hooks/useLarryStream.ts';
+import { useLarryStream } from '../../hooks/useLarryStream.ts';
+import WorkingIndicator from './WorkingIndicator.tsx';
+import { setMachineQuery } from '../../hooks/useMachineQuery.ts';
 
 // ============================================================================
 // State Component Registry
@@ -60,33 +64,33 @@ function parseStateKey(stateKey: string) {
  */
 function getDeduplicatedStack(stack: string[] | undefined): string[] {
   if (!stack) return [];
-  
+
   const processedStack: string[] = [];
-  
+
   // First pass: count total occurrences
   const stateOccurrences = new Map<string, number>();
   for (const stateKey of stack) {
     const count = stateOccurrences.get(stateKey) || 0;
     stateOccurrences.set(stateKey, count + 1);
   }
-  
+
   const seenStates = new Map<string, number>();
-  
+
   for (const stateKey of stack) {
     const seenCount = seenStates.get(stateKey) || 0;
     const totalOccurrences = stateOccurrences.get(stateKey) || 0;
     seenStates.set(stateKey, seenCount + 1);
-    
+
     // Check if this is the last occurrence of this state
     const isLastOccurrence = seenCount + 1 === totalOccurrences;
-    
+
     if (!isLastOccurrence) {
       processedStack.push(`${stateKey}|prev-${seenCount + 1}`);
     } else {
       processedStack.push(stateKey);
     }
   }
-  
+
   return processedStack;
 }
 
@@ -99,14 +103,19 @@ interface StateVisualizationProps {
   userQuestion: string | undefined;
 }
 
-export function StateVisualization({ data, userQuestion }: StateVisualizationProps) {
+export function StateVisualization({
+  data,
+  userQuestion,
+}: StateVisualizationProps) {
   const { apiUrl, isLarryWorking } = useExtensionStore();
   const dispatch = useExtensionDispatch();
   const { fetch: fetchGetNextState } = useNextMachineState(apiUrl);
-  
+
   // Working indicator state
   const [workingStatus, setWorkingStatus] = useState<string>('Working on it');
-  const [workingError, setWorkingError] = useState<string | undefined>(undefined);
+  const [workingError, setWorkingError] = useState<string | undefined>(
+    undefined,
+  );
   const [isWorking, setIsWorking] = useState(false);
   const [stateRetry, setStateRetry] = useState({
     actionButton: (
@@ -120,10 +129,12 @@ export function StateVisualization({ data, userQuestion }: StateVisualizationPro
 
   const dispatchLarryStatus = (isWorking: boolean) => {
     dispatch({ type: 'SET_LARRY_WORKING', payload: isWorking });
-  }
+  };
 
   // Collapse state management
-  const [collapsedStates, setCollapsedStates] = useState<Set<string>>(new Set());
+  const [collapsedStates, setCollapsedStates] = useState<Set<string>>(
+    new Set(),
+  );
   const currentStateRef = useRef<HTMLDivElement>(null);
 
   // ============================================================================
@@ -143,7 +154,7 @@ export function StateVisualization({ data, userQuestion }: StateVisualizationPro
   const { start: startLarryStream, stop: stopLarryStream } = useLarryStream(
     apiUrl,
     data.context?.machineExecutionId,
-    { onUpdate: onLarryUpdate }
+    { onUpdate: onLarryUpdate },
   );
 
   useEffect(() => {
@@ -171,7 +182,7 @@ export function StateVisualization({ data, userQuestion }: StateVisualizationPro
       setMachineQuery(apiUrl, data.id, 'running');
       setWorkingStatus('Working on it');
     }
-  }, [isLarryWorking])
+  }, [isLarryWorking]);
 
   // ============================================================================
   // Collapse State Management
@@ -183,13 +194,13 @@ export function StateVisualization({ data, userQuestion }: StateVisualizationPro
   useEffect(() => {
     const currentStateKey = data.context?.currentState || data.context?.stateId;
     const newCollapsed = new Set<string>();
-    
+
     deduplicatedStack.forEach((stateKey) => {
       if (stateKey !== currentStateKey) {
         newCollapsed.add(stateKey);
       }
     });
-    
+
     setCollapsedStates(newCollapsed);
   }, [data.context?.stack, data.context?.currentState, data.context?.stateId]);
 
@@ -220,13 +231,16 @@ export function StateVisualization({ data, userQuestion }: StateVisualizationPro
   const isCurrentState = (stateKey: string) => {
     const { isPrevious } = parseStateKey(stateKey);
     if (isPrevious) return false;
-    return data.context?.currentState === stateKey || data.context?.stateId === stateKey;
+    return (
+      data.context?.currentState === stateKey ||
+      data.context?.stateId === stateKey
+    );
   };
 
   const renderStateComponent = (stateKey: string) => {
     const { stateName, stateId, isPrevious } = parseStateKey(stateKey);
     const Component = stateComponentMap[stateName];
-    
+
     if (!Component) {
       return (
         <div className="p-4 bg-red-50 rounded border">
@@ -259,19 +273,20 @@ export function StateVisualization({ data, userQuestion }: StateVisualizationPro
   const continueToNextState = () => {
     dispatchLarryStatus(true);
     setMachineQuery(apiUrl, data.id, 'running');
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     fetchGetNextState({ machineId: data.id, contextUpdate: {} });
   };
 
-  const finished = 
-    data.currentState === 'applyEdits' || 
-    data.currentState === 'success' || 
+  const finished =
+    data.currentState === 'applyEdits' ||
+    data.currentState === 'success' ||
     deduplicatedStack.includes('success');
 
   const handleWorkingIndicatorAction = () => {
     setWorkingError(undefined);
     setWorkingStatus('Retrying...');
     continueToNextState();
-  }
+  };
 
   // ============================================================================
   // Render
@@ -284,26 +299,29 @@ export function StateVisualization({ data, userQuestion }: StateVisualizationPro
         <div className="space-y-4">
           {/* Welcome message */}
           {data.context?.solution && (
-<div>
-            {userQuestion && (
+            <div>
+              {userQuestion && (
+                <GeneralMessageBubble
+                  content={userQuestion}
+                  icon={<CircleUser size={16} />}
+                  topActions={null}
+                />
+              )}
               <GeneralMessageBubble
-                content={userQuestion}
-                icon={<CircleUser size={16} />}
+                icon={<Sparkles size={16} />}
+                content={`Let's handle that, below you will see the states I'm in and the actions I'm taking to help you out with your task.`}
                 topActions={null}
               />
-            )}
-            <GeneralMessageBubble
-              icon={<Sparkles size={16} />}
-              content={`Let's handle that, below you will see the states I'm in and the actions I'm taking to help you out with your task.`}
-              topActions={null}
-            />
-  </div>
+            </div>
           )}
 
           {/* State stack */}
           {deduplicatedStack.map((stateKey) => {
-            const { stateName, isPrevious, previousNumber } = parseStateKey(stateKey);
-            const formattedName = isPrevious ? `${stateName} (previous ${previousNumber})` : stateName;
+            const { stateName, isPrevious, previousNumber } =
+              parseStateKey(stateKey);
+            const formattedName = isPrevious
+              ? `${stateName} (previous ${previousNumber})`
+              : stateName;
             const isCurrent = isCurrentState(stateKey);
             const isCollapsed = collapsedStates.has(stateKey) && !isCurrent;
 
@@ -325,7 +343,11 @@ export function StateVisualization({ data, userQuestion }: StateVisualizationPro
                   </div>
                   {!isCurrent && (
                     <div className="d-flex" style={{ opacity: '0.5' }}>
-                      {isCollapsed ? <ChevronRight size={16} /> : <ChevronDown size={16} />}
+                      {isCollapsed ? (
+                        <ChevronRight size={16} />
+                      ) : (
+                        <ChevronDown size={16} />
+                      )}
                     </div>
                   )}
                 </div>
@@ -339,18 +361,19 @@ export function StateVisualization({ data, userQuestion }: StateVisualizationPro
           })}
         </div>
 
-        {(data.status === 'running' || isWorking || workingError) && !finished && (
-          <div>
-            <WorkingIndicator
-              status={workingStatus}
-              isWorking={isWorking}
-              error={workingError}
-              actionButton={!!workingError}
-              actionNode={stateRetry.actionButton}
-              onActionClick={handleWorkingIndicatorAction}
-            />
-          </div>
-        )}
+        {(data.status === 'running' || isWorking || workingError) &&
+          !finished && (
+            <div>
+              <WorkingIndicator
+                status={workingStatus}
+                isWorking={isWorking}
+                error={workingError}
+                actionButton={!!workingError}
+                actionNode={stateRetry.actionButton}
+                onActionClick={handleWorkingIndicatorAction}
+              />
+            </div>
+          )}
 
         {/* Finished indicator */}
         {finished && (
@@ -363,9 +386,14 @@ export function StateVisualization({ data, userQuestion }: StateVisualizationPro
         {data.status === 'pending' && !finished && (
           <div>
             <div className="mb-2">
-              Cannot automatically proceed to next state. Click "Continue" button to proceed.
+              Cannot automatically proceed to next state. Click "Continue"
+              button to proceed.
             </div>
-            <button onClick={continueToNextState} type="submit" className="btn btn-primary">
+            <button
+              onClick={continueToNextState}
+              type="submit"
+              className="btn btn-primary"
+            >
               Continue
             </button>
           </div>
@@ -374,4 +402,3 @@ export function StateVisualization({ data, userQuestion }: StateVisualizationPro
     </div>
   );
 }
-

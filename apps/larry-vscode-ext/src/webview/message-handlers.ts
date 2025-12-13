@@ -1,24 +1,29 @@
 import * as vscode from 'vscode';
 import type { ExtensionState, LarryState } from '../types';
-import { 
+import {
   openFile,
   readFileContent,
   writeCurrentThreadId,
   readCurrentThreadId,
   getWorktreePath,
 } from '../workspace/files';
-import { 
-  listLocalWorktrees,
-  removeWorktree,
-} from '../workspace/git';
-import { handleOpenWorktree, notifyWorktreeChange } from '../workspace/worktree';
-import { 
+import { listLocalWorktrees, removeWorktree } from '../workspace/git';
+import {
+  handleOpenWorktree,
+  notifyWorktreeChange,
+} from '../workspace/worktree';
+import {
   getWorktreeContainerStatus,
   startWorktreeDockerContainer,
   stopWorktreeDockerContainer,
   removeWorktreeDockerContainer,
 } from '../docker/server-management';
-import { startLarryStream, stopLarryStream, startWorktreeSSE, stopWorktreeSSE } from '../sse/sse-streams';
+import {
+  startLarryStream,
+  stopLarryStream,
+  startWorktreeSSE,
+  stopWorktreeSSE,
+} from '../sse/sse-streams';
 
 // ============================================================================
 // Message Handler Type
@@ -27,7 +32,7 @@ import { startLarryStream, stopLarryStream, startWorktreeSSE, stopWorktreeSSE } 
 type MessageHandler = (
   state: ExtensionState,
   msg: Record<string, unknown>,
-  view: vscode.WebviewView
+  view: vscode.WebviewView,
 ) => Promise<void>;
 
 // ============================================================================
@@ -45,7 +50,7 @@ const handleOpenWorktreeMsg: MessageHandler = async (state, msg) => {
     (msg.worktreeName as string) || '',
     (msg.threadId as string) || undefined,
     msg.label as string,
-    (msg.agentKey as string) || undefined
+    (msg.agentKey as string) || undefined,
   );
 };
 
@@ -60,7 +65,7 @@ const handleOpenFile: MessageHandler = async (_state, msg) => {
 const handleSaveThreadId: MessageHandler = async (state, msg, view) => {
   const worktreeName = msg.worktreeName as string;
   const threadId = msg.threadId as string;
-  
+
   await writeCurrentThreadId(worktreeName, threadId);
   const threadIds = await readCurrentThreadId(worktreeName);
 
@@ -79,7 +84,7 @@ const handleSaveThreadId: MessageHandler = async (state, msg, view) => {
 const handleReadThreadIds: MessageHandler = async (_state, msg, view) => {
   const worktreeName = msg.worktreeName as string;
   const threadIds = await readCurrentThreadId(worktreeName);
-  
+
   view.webview.postMessage({
     type: 'threadIds',
     worktreeName,
@@ -107,7 +112,7 @@ const handleStopLarryStream: MessageHandler = async (state, msg) => {
 const handleReadFile: MessageHandler = async (_state, msg, view) => {
   const filePath = msg.filePath as string;
   const content = await readFileContent(filePath);
-  
+
   view.webview.postMessage({
     type: 'fileContent',
     filePath,
@@ -118,7 +123,7 @@ const handleReadFile: MessageHandler = async (_state, msg, view) => {
 const handleListLocalWorktrees: MessageHandler = async (_state, _msg, view) => {
   try {
     const worktrees = await listLocalWorktrees();
-    
+
     view.webview.postMessage({
       type: 'local_worktrees_response',
       worktrees,
@@ -135,10 +140,13 @@ const handleListLocalWorktrees: MessageHandler = async (_state, _msg, view) => {
 
 const handleGetDockerStatus: MessageHandler = async (state, msg, view) => {
   const worktreeName = msg.worktreeName as string;
-  
+
   try {
-    const status = await getWorktreeContainerStatus(state.config?.name, worktreeName);
-    
+    const status = await getWorktreeContainerStatus(
+      state.config?.name,
+      worktreeName,
+    );
+
     view.webview.postMessage({
       type: 'docker_status_response',
       worktreeName,
@@ -157,26 +165,33 @@ const handleGetDockerStatus: MessageHandler = async (state, msg, view) => {
 
 const handleStartDockerContainer: MessageHandler = async (state, msg, view) => {
   const worktreeName = msg.worktreeName as string;
-  
+
   try {
     const worktreePath = getWorktreePath(worktreeName);
     if (!worktreePath) {
       throw new Error('Worktree path not found');
     }
-    
-    await startWorktreeDockerContainer(state, worktreeName, worktreePath, undefined);
-    
+
+    await startWorktreeDockerContainer(
+      state,
+      worktreeName,
+      worktreePath,
+      undefined,
+    );
+
     view.webview.postMessage({
       type: 'docker_action_complete',
       action: 'start',
       worktreeName,
       success: true,
     });
-    
+
     // Start SSE connection - SSEProxy has built-in retry logic (10 retries, 2s delay)
     // so it will keep trying until the container is ready
     if (state.config) {
-      console.log('🔌 Starting SSE connection (will retry until container is ready)...');
+      console.log(
+        '🔌 Starting SSE connection (will retry until container is ready)...',
+      );
       startWorktreeSSE(state, state.config);
     }
   } catch (error) {
@@ -193,14 +208,14 @@ const handleStartDockerContainer: MessageHandler = async (state, msg, view) => {
 
 const handleStopDockerContainer: MessageHandler = async (state, msg, view) => {
   const worktreeName = msg.worktreeName as string;
-  
+
   try {
     // Stop SSE connection first
     console.log('🔌 Stopping SSE connection before stopping container...');
     stopWorktreeSSE(state);
-    
+
     await stopWorktreeDockerContainer(state, worktreeName);
-    
+
     view.webview.postMessage({
       type: 'docker_action_complete',
       action: 'stop',
@@ -221,18 +236,18 @@ const handleStopDockerContainer: MessageHandler = async (state, msg, view) => {
 
 const handleDeleteWorktree: MessageHandler = async (state, msg, view) => {
   const worktreeName = msg.worktreeName as string;
-  
+
   try {
     // Stop SSE connection first
     console.log('🔌 Stopping SSE connection before deleting worktree...');
     stopWorktreeSSE(state);
-    
+
     // Remove Docker container
     await removeWorktreeDockerContainer(state.config?.name, worktreeName);
-    
+
     // Remove git worktree
     await removeWorktree(worktreeName);
-    
+
     view.webview.postMessage({
       type: 'worktree_deleted',
       worktreeName,
@@ -259,12 +274,12 @@ const handleDeleteWorktree: MessageHandler = async (state, msg, view) => {
  */
 const handleLarryStateSync: MessageHandler = async (state, msg) => {
   const larryState = msg.larryState as LarryState;
-  
+
   // Cache the state
   state.larryState = larryState;
-  
+
   // Broadcast to all artifact editors
-  state.artifactEditorPanels?.forEach(panel => {
+  state.artifactEditorPanels?.forEach((panel) => {
     panel.webview.postMessage({
       type: 'larry_state_update',
       larryState,
@@ -278,12 +293,12 @@ const handleLarryStateSync: MessageHandler = async (state, msg) => {
  */
 const handleQueryCacheSync: MessageHandler = async (state, msg) => {
   const queryCache = msg.queryCache as string;
-  
+
   // Cache the dehydrated query state
   state.queryCache = queryCache;
-  
+
   // Broadcast to all artifact editors
-  state.artifactEditorPanels?.forEach(panel => {
+  state.artifactEditorPanels?.forEach((panel) => {
     panel.webview.postMessage({
       type: 'query_cache_hydrate',
       queryCache,
@@ -338,17 +353,17 @@ const messageHandlers: Record<string, MessageHandler> = {
 export async function handleWebviewMessage(
   state: ExtensionState,
   msg: Record<string, unknown>,
-  view: vscode.WebviewView
+  view: vscode.WebviewView,
 ): Promise<void> {
   const messageType = msg?.type as string;
-  
+
   if (!messageType) {
     console.warn('Received message without type:', msg);
     return;
   }
 
   const handler = messageHandlers[messageType];
-  
+
   if (handler) {
     try {
       await handler(state, msg, view);
@@ -359,4 +374,3 @@ export async function handleWebviewMessage(
     console.warn(`Unknown message type: ${messageType}`);
   }
 }
-

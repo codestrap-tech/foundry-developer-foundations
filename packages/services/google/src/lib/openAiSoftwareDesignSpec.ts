@@ -1,12 +1,12 @@
 export async function openAiSoftwareDesignSpec(
-    userInput: string,
-    num = 5,
-    dateRestrict?: string,
-    siteSearch?: string,
-    siteSearchFilter?: string,
-    searchEngineId?: string
+  userInput: string,
+  num = 5,
+  dateRestrict?: string,
+  siteSearch?: string,
+  siteSearchFilter?: string,
+  searchEngineId?: string,
 ): Promise<string> {
-    const system = `
+  const system = `
 You are a helpful AI engineering architect assistant that specializes in formulating design specification from user input.
 Your job is to search the web and create a clean specification grounded in your search results and knowledge that solves for the user inputs.
 
@@ -22,7 +22,7 @@ Your job is to search the web and create a clean specification grounded in your 
 You always carefully evaluate user input before crafting your search queries and obey all search rules provided by the user.
   `;
 
-    const user = `
+  const user = `
 Generate a design specification that solves for the user input by searching the web for relevant documentation.
 
 ### Hard Rules for Web Search
@@ -57,96 +57,97 @@ Include optional suggested enhancements over the MVP solution
 ${userInput}
   `;
 
-    const response = await fetch('https://api.openai.com/v1/responses', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${process.env.OPEN_AI_KEY}`,
+  const response = await fetch('https://api.openai.com/v1/responses', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${process.env.OPEN_AI_KEY}`,
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      input: [
+        {
+          role: 'system',
+          content: [{ type: 'input_text', text: system }],
         },
-        body: JSON.stringify({
-            model: 'gpt-4o',
-            input: [
-                {
-                    role: 'system',
-                    content: [{ type: 'input_text', text: system }],
-                },
-                {
-                    role: 'user',
-                    content: [{ type: 'input_text', text: user }],
-                },
-            ],
-            text: { format: { type: 'text' } },
-            reasoning: {},
-            tools: [
-                {
-                    type: 'web_search_preview',
-                    user_location: { type: 'approximate', country: 'US' },
-                    search_context_size: 'high',
-                },
-            ],
-            temperature: 1,
-            max_output_tokens: 8192,
-            top_p: 1,
-            store: true,
-        }),
-    });
+        {
+          role: 'user',
+          content: [{ type: 'input_text', text: user }],
+        },
+      ],
+      text: { format: { type: 'text' } },
+      reasoning: {},
+      tools: [
+        {
+          type: 'web_search_preview',
+          user_location: { type: 'approximate', country: 'US' },
+          search_context_size: 'high',
+        },
+      ],
+      temperature: 1,
+      max_output_tokens: 8192,
+      top_p: 1,
+      store: true,
+    }),
+  });
 
-    const data = (await response.json()) as any;
+  const data = (await response.json()) as any;
 
-    // Grab the assistant message content items
-    const message = data?.output?.find((o: any) => o?.type === 'message');
-    const contentItems: any[] = message?.content ?? [];
+  // Grab the assistant message content items
+  const message = data?.output?.find((o: any) => o?.type === 'message');
+  const contentItems: any[] = message?.content ?? [];
 
-    // Prefer the main output text (if present)
-    const outputTextItem =
-        contentItems.find((c) => c?.type === 'output_text') ??
-        contentItems.find((c) => typeof c?.text === 'string');
+  // Prefer the main output text (if present)
+  const outputTextItem =
+    contentItems.find((c) => c?.type === 'output_text') ??
+    contentItems.find((c) => typeof c?.text === 'string');
 
-    const mainText: string = outputTextItem?.text ?? '';
+  const mainText: string = outputTextItem?.text ?? '';
 
-    // Collect annotations from all content items (if any)
-    const allAnnotations: any[] = contentItems
-        .flatMap((c) => (Array.isArray(c?.annotations) ? c.annotations : []))
-        .filter(Boolean);
+  // Collect annotations from all content items (if any)
+  const allAnnotations: any[] = contentItems
+    .flatMap((c) => (Array.isArray(c?.annotations) ? c.annotations : []))
+    .filter(Boolean);
 
-    // Filter to URL citations and dedupe by URL
-    type UrlCitation = {
-        type?: string;
-        url?: string;
-        title?: string;
-        start_index?: number;
-        end_index?: number;
-    };
+  // Filter to URL citations and dedupe by URL
+  type UrlCitation = {
+    type?: string;
+    url?: string;
+    title?: string;
+    start_index?: number;
+    end_index?: number;
+  };
 
-    const urlCitations: UrlCitation[] = allAnnotations.filter(
-        (a: UrlCitation) => (a?.type ?? '').toLowerCase().includes('citation') && a?.url
-    );
+  const urlCitations: UrlCitation[] = allAnnotations.filter(
+    (a: UrlCitation) =>
+      (a?.type ?? '').toLowerCase().includes('citation') && a?.url,
+  );
 
-    const deduped = Array.from(
-        new Map(
-            urlCitations.map((c) => [c.url!, c]) // key by URL
-        ).values()
-    );
+  const deduped = Array.from(
+    new Map(
+      urlCitations.map((c) => [c.url!, c]), // key by URL
+    ).values(),
+  );
 
-    // Build a "Sources" markdown section (if any)
-    const sourcesMd =
-        deduped.length > 0
-            ? `\n\n---\n### Sources\n${deduped
-                .map((c, i) => {
-                    const url = c.url!;
-                    let title = (c.title || '').trim();
-                    if (!title) {
-                        try {
-                            const { hostname } = new URL(url);
-                            title = hostname.replace(/^www\./, '');
-                        } catch {
-                            title = url;
-                        }
-                    }
-                    return `${i + 1}. [${title}](${url})`;
-                })
-                .join('\n')}\n`
-            : '';
+  // Build a "Sources" markdown section (if any)
+  const sourcesMd =
+    deduped.length > 0
+      ? `\n\n---\n### Sources\n${deduped
+          .map((c, i) => {
+            const url = c.url!;
+            let title = (c.title || '').trim();
+            if (!title) {
+              try {
+                const { hostname } = new URL(url);
+                title = hostname.replace(/^www\./, '');
+              } catch {
+                title = url;
+              }
+            }
+            return `${i + 1}. [${title}](${url})`;
+          })
+          .join('\n')}\n`
+      : '';
 
-    return `${mainText}${sourcesMd}`;
+  return `${mainText}${sourcesMd}`;
 }

@@ -1,6 +1,6 @@
 import { interpret } from 'xstate';
 
-import {
+import type {
   StateConfig,
   EvaluationInput,
   EvaluatorResult,
@@ -11,11 +11,11 @@ import programV1 from './programmerV1';
 
 import { extractJsonFromBackticks } from '@codestrap/developer-foundations-utils';
 import { container } from '@codestrap/developer-foundations-di';
-import {
+import type {
   GeminiService,
   LoggingService,
-  TYPES,
 } from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 
 async function solve(query: string, solver: Prompt): Promise<string> {
   // TODO remove the use of the threads API and go with completions
@@ -31,7 +31,7 @@ async function solve(query: string, solver: Prompt): Promise<string> {
 async function program(
   query: string,
   functionCatalog: string,
-  programmer: Prompt
+  programmer: Prompt,
 ): Promise<StateConfig[]> {
   const { user, system } = await programmer(query, functionCatalog);
 
@@ -42,7 +42,7 @@ async function program(
   let unwrapped = extractJsonFromBackticks(value) || value;
 
   console.log(
-    `programmer generated the following unchecked solution: ${unwrapped}`
+    `programmer generated the following unchecked solution: ${unwrapped}`,
   );
 
   // check the quality of the result
@@ -94,18 +94,18 @@ Only respond with the updated JSON! Your response will be sent to JSON.parse
   if (notFound.length > 0) {
     console.log(
       `Unknown state ID encountered: ${notFound.join(
-        ','
-      )}. Calling GPT4o to fix.`
+        ',',
+      )}. Calling GPT4o to fix.`,
     );
     //console.log(`functionCatalog:\n${functionCatalog}`);
     const notFoundTransitionsMessage =
       notFoundTransitions.length > 0
         ? `The following transitions triggered an unknown state ID error: ${notFoundTransitions.join(
-          ','
-        )}. Please ensure all targets are referencing a valid state node. If these state nodes are invalid replace them with valid ones.`
+            ',',
+          )}. Please ensure all targets are referencing a valid state node. If these state nodes are invalid replace them with valid ones.`
         : undefined;
     console.log(
-      `Unknown transition target encountered: ${notFoundTransitionsMessage}. Calling GPT4o to fix.`
+      `Unknown transition target encountered: ${notFoundTransitionsMessage}. Calling GPT4o to fix.`,
     );
     // TODO, return a recursive call to program if max count has not been exceeded
     const updatedUserMessage = `${user}
@@ -125,7 +125,7 @@ Only respond with the updated JSON and don't be chatty! Your response will be se
     // TODO retest valid states by moving logic to a util function
     unwrapped = extractJsonFromBackticks(value) || value;
     console.log(
-      `model returned the following updated state machine to correct errors:\n${unwrapped}`
+      `model returned the following updated state machine to correct errors:\n${unwrapped}`,
     );
   }
 
@@ -134,7 +134,7 @@ Only respond with the updated JSON and don't be chatty! Your response will be se
 
 async function evaluate(
   input: EvaluationInput,
-  evaluate: Prompt
+  evaluate: Prompt,
 ): Promise<EvaluatorResult> {
   let evaluation = {
     rating: 0,
@@ -144,7 +144,7 @@ async function evaluate(
     const machine = programV1(input.states, input.tools!);
     const { user, system } = await evaluate(
       input.query,
-      JSON.stringify(input.states)
+      JSON.stringify(input.states),
     );
 
     // see if the machine compiles
@@ -215,7 +215,7 @@ async function transition(
   currentState: string,
   payload: string,
   aiTransition: Prompt,
-  executionId: string
+  executionId: string,
 ): Promise<string> {
   const { user, system } = await aiTransition(taskList, currentState, payload);
   const { log } = container.get<LoggingService>(TYPES.LoggingService);
@@ -240,7 +240,9 @@ Do not be chatty!
   value = value.trim();
   // check that there is a | followed by a GUID
   // https://regex101.com/r/D5Dq4R/1
-  const matchGuid = value.match(/\|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/)?.[0]
+  const matchGuid = value.match(
+    /\|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i,
+  )?.[0];
 
   // TODO improve retry mechanism
   if (!currentState.includes(value) || !matchGuid) {

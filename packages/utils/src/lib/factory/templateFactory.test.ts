@@ -20,7 +20,10 @@ describe('templateFactory (bound to default registry)', () => {
 
   it('returns the google client generator for a matching GSuite path (case-insensitive)', async () => {
     const getTemplate = templateFactory();
-    const { generator, samplePrompts, promptGuide, projectJson } = await getTemplate('/Users/test/workspace/google/src/lib/GSuiteClient.v2.ts');
+    const { generator, samplePrompts, promptGuide, projectJson } =
+      await getTemplate(
+        '/Users/test/workspace/google/src/lib/GSuiteClient.v2.ts',
+      );
 
     const projectConfigFile = await projectJson();
     const config = JSON.parse(projectConfigFile) as {
@@ -40,7 +43,8 @@ describe('templateFactory (bound to default registry)', () => {
 
   it('resolves the curry-factory generator when filename contains factory (case-insensitive)', async () => {
     const getTemplate = templateFactory();
-    const { generator, samplePrompts, promptGuide, projectJson } = await getTemplate('/path/to/my/new-Factory.file.ts');
+    const { generator, samplePrompts, promptGuide, projectJson } =
+      await getTemplate('/path/to/my/new-Factory.file.ts');
 
     const projectConfigFile = await projectJson();
     const config = JSON.parse(projectConfigFile) as {

@@ -6,4 +6,3 @@
   "workspaceSetupCommand": ["npm install"],
   "larryEnvPath": "apps/cli-tools/.env"
 }
-

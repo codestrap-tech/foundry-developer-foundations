@@ -1,4 +1,5 @@
-import { FoundryClient, Threads } from '@codestrap/developer-foundations-types';
+import type { Threads } from '@codestrap/developer-foundations-types';
+import { FoundryClient } from '@codestrap/developer-foundations-types';
 
 export async function upsertThread(
   messages: string,
@@ -6,7 +7,7 @@ export async function upsertThread(
   token: string,
   ontologyRid: string,
   url: string,
-  id?: string
+  id?: string,
 ): Promise<Threads> {
   console.log(`upsertThread threadId: ${id}`);
 

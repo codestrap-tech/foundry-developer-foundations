@@ -1,15 +1,19 @@
 import { Bennie } from '../Bennie';
 import { container } from '@codestrap/developer-foundations-di';
-import {
+import type {
   Context,
   MachineEvent,
   StateConfig,
   MachineDao,
   RfpRequestResponse,
   RfpRequestsDao,
-  TYPES,
 } from '@codestrap/developer-foundations-types';
-import { State } from 'xstate';
+import { TYPES } from '@codestrap/developer-foundations-types';
+import type { State } from 'xstate';
+
+jest.mock('prettier', () => ({
+  format: jest.fn((text: string) => Promise.resolve(text)),
+}));
 
 if (!process.env.E2E) {
   test.skip('e2e test skipped in default run', () => {
@@ -27,7 +31,7 @@ if (!process.env.E2E) {
 
       const result = await bennie.askBennie(
         'Create an RFP for Northslope and RangrData to deliver a tariff solution on Foundry. The solution must include support for pricing models, simulations, and A/B testing of the outcomes. We expect this to be an 4 week engagement requiring 3 Python engineer, 1 TypeScript engineer, and 2 SME on developing pricing models. Then email me the responses.',
-        process.env.FOUNDRY_TEST_USER
+        process.env.FOUNDRY_TEST_USER,
       );
       expect(result.executionId).toBeDefined();
       expect(result.message).toBeDefined();
@@ -52,7 +56,7 @@ if (!process.env.E2E) {
 
       if (!machine) {
         throw new Error(
-          `no programmed state machine found for: ${machineExecutionId}`
+          `no programmed state machine found for: ${machineExecutionId}`,
         );
       }
 
@@ -71,7 +75,7 @@ if (!process.env.E2E) {
       // add the response to the requestRfp object.
       if (!vendorRfpRequest) {
         throw new Error(
-          `Could not find matching RFP request for vendorId: ${rangrVendorId}`
+          `Could not find matching RFP request for vendorId: ${rangrVendorId}`,
         );
       }
       // get the rfp response and poll until RANGR send back missing information, ie rfpResponseStatus === 400
@@ -79,7 +83,7 @@ if (!process.env.E2E) {
       // find the associated RFPs
       const rangrRfpRequest = await rfpDao.search(
         machineExecutionId,
-        rangrVendorId
+        rangrVendorId,
       );
 
       let found = false;
@@ -102,12 +106,12 @@ if (!process.env.E2E) {
       const threadMessage = await bennie.sendThreadMessage(
         `The company is John Doe's Manufacturing and there address is 123 main street dallas tx, 75081 and the main contact is johndoe@johnsdoes.com.`,
         process.env.FOUNDRY_TEST_USER,
-        machineExecutionId
+        machineExecutionId,
       );
       expect(
         threadMessage.messages!.indexOf(
-          '# RFPs for the following vendors were resubmitted:'
-        )
+          '# RFPs for the following vendors were resubmitted:',
+        ),
       ).toBeGreaterThanOrEqual(0);
 
       // wait for the update from RANGR
@@ -126,7 +130,7 @@ if (!process.env.E2E) {
 
       if (attempts > maxAttempts) {
         throw new Error(
-          'Exceeded max attempts waiting for RANGR to respond to the resubmitted RFP'
+          'Exceeded max attempts waiting for RANGR to respond to the resubmitted RFP',
         );
       }
       // submit the RFP responses, this will also advance the state machine
@@ -152,7 +156,7 @@ Total weekly cost: $798 + $1,596 + $1,942 = $3,842.50
 Multiplying the weekly blended cost of $3,842.50 by the project duration of 8 weeks results in an estimated total cost of $30,740.00.
 `,
         northslopeVendorId,
-        machineExecutionId
+        machineExecutionId,
       );
 
       expect(northSlopeRfpSubmissionResponse.status).toBe(200);
@@ -167,7 +171,7 @@ Multiplying the weekly blended cost of $3,842.50 by the project duration of 8 we
 
       if (!machine) {
         throw new Error(
-          `no programmed state machine found for: ${machineExecutionId}`
+          `no programmed state machine found for: ${machineExecutionId}`,
         );
       }
 

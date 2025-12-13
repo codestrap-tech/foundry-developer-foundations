@@ -1,7 +1,5 @@
-import {
-  FoundryClient,
-  Communications,
-} from '@codestrap/developer-foundations-types';
+import type { Communications } from '@codestrap/developer-foundations-types';
+import { FoundryClient } from '@codestrap/developer-foundations-types';
 
 export async function readCommunications(
   id: string,
@@ -29,10 +27,10 @@ export async function readCommunications(
   // NOT_FOUND errors are expected during polling operations. They are cluttering the console so I turned logging them off
   if (apiResponse.errorCode && apiResponse.errorCode !== 'NOT_FOUND') {
     console.log(
-      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`
+      `errorInstanceId: ${apiResponse.errorCode} errorName: ${apiResponse.errorName} errorCode: ${apiResponse.errorCode}`,
     );
     throw new Error(
-      `An error occurred while calling read communication errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`
+      `An error occurred while calling read communication errorInstanceId: ${apiResponse.errorInstanceId} errorCode: ${apiResponse.errorCode}`,
     );
   }
 

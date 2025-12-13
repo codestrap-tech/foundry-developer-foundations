@@ -1,7 +1,9 @@
 export const runtime = 'nodejs';
 
-import { NextRequest, NextResponse } from 'next/server';
-import { TYPES, MachineDao } from '@codestrap/developer-foundations-types';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
+import type { MachineDao } from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 import { uuidv4 } from '@codestrap/developer-foundations-utils';
 import { withRequestContext } from '@codestrap/developer-foundations-utils/src/lib/asyncLocalStorage';
@@ -12,7 +14,8 @@ export async function OPTIONS() {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-foundry-access-token',
+      'Access-Control-Allow-Headers':
+        'Content-Type, Authorization, x-foundry-access-token',
     },
   });
 }

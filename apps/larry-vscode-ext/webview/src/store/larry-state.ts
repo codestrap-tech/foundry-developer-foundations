@@ -2,27 +2,27 @@ import type { MachineResponse } from '../lib/backend-types';
 
 /**
  * LarryState - Shared state between extension and webviews
- * 
+ *
  * This is the authoritative state for the Larry workflow:
  * - Sidebar webview: PRIMARY - holds and updates this state
  * - Extension (Node.js): CACHE - stores for artifact editors
  * - Artifact editor: CONSUMER - receives via messages
- * 
+ *
  * See docs.md for communication architecture details.
  */
 export interface LarryState {
   // Thread/Machine context
   currentThreadId: string | undefined;
   apiUrl: string;
-  
+
   // Current machine data (from SSE/API)
   machineData: MachineResponse | undefined;
-  
+
   // Environment
   isInWorktree: boolean;
   worktreePort: number;
   mainPort: number;
-  
+
   // Config
   agents: Record<string, string>;
   selectedAgent: string;
@@ -47,15 +47,18 @@ export function createInitialLarryState(): LarryState {
 /**
  * Extracts LarryState from the full extension store state
  */
-export function extractLarryState(storeState: {
-  currentThreadId?: string;
-  apiUrl: string;
-  isInWorktree: boolean;
-  worktreePort: number;
-  mainPort: number;
-  agents: Record<string, string>;
-  selectedAgent: string;
-}, machineData?: MachineResponse): LarryState {
+export function extractLarryState(
+  storeState: {
+    currentThreadId?: string;
+    apiUrl: string;
+    isInWorktree: boolean;
+    worktreePort: number;
+    mainPort: number;
+    agents: Record<string, string>;
+    selectedAgent: string;
+  },
+  machineData?: MachineResponse,
+): LarryState {
   return {
     currentThreadId: storeState.currentThreadId,
     apiUrl: storeState.apiUrl,
@@ -67,4 +70,3 @@ export function extractLarryState(storeState: {
     selectedAgent: storeState.selectedAgent,
   };
 }
-

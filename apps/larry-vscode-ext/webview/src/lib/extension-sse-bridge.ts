@@ -25,7 +25,7 @@ export function handleForwardedSSE(
       worktreeName: string;
       threadId: string;
     }) => any;
-  }
+  },
 ) {
   const { baseUrl, event, data } = msg;
 
@@ -58,7 +58,7 @@ export function handleForwardedSSE(
           };
           console.log('Updated threads cache:', updated);
           return updated;
-        }
+        },
       );
 
       // Sync cache to editor after threads update
@@ -95,7 +95,7 @@ export function handleForwardedSSE(
         type: 'query_cache_sync',
         queryCache,
       });
-      
+
       return;
     }
   } catch (error) {

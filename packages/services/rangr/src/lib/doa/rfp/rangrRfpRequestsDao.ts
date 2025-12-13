@@ -1,6 +1,4 @@
-import type {
-  RangrRequestsDao,
-} from '@codestrap/developer-foundations-types';
+import type { RangrRequestsDao } from '@codestrap/developer-foundations-types';
 import { getRangrClient } from '../../rangrClient';
 import { submitRangrRfp } from './delegates/rangr/submit';
 

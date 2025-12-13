@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { Vickie } from '@codestrap/developer-foundations-agents-vickie-bennie';
 
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest) {
           channel: channelId,
           text: `💡 <@${userId}> used \`${command} ${text}\``,
         }),
-      }
+      },
     );
 
     const initialPostData = await initialPostRes.json();

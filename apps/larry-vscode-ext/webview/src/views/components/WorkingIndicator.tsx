@@ -86,7 +86,9 @@ export default function WorkStatusLoader({
                 : 'work-status-loader__status--enter'
             }`}
           >
-            <span className={disablePulse ? '' : 'shimmer-loading'}>{displayStatus}</span>
+            <span className={disablePulse ? '' : 'shimmer-loading'}>
+              {displayStatus}
+            </span>
           </div>
         )}
       </div>

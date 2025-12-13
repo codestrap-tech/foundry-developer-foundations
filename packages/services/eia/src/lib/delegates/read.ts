@@ -1,4 +1,4 @@
-import {
+import type {
   EIAResponse,
   GasScenarioResult,
 } from '@codestrap/developer-foundations-types';
@@ -33,7 +33,7 @@ export async function getCaGasTracker(
   scenarioPrices: number[] = [5, 6, 7, 8],
   caGallonsYear = 13.4e9,
   caGdp = 4.1e12,
-  caShareUsGdp = 0.14
+  caShareUsGdp = 0.14,
 ): Promise<GasScenarioResult[]> {
   const { date, price: baselinePrice } = await fetchCaGasPriceFromEIA();
 

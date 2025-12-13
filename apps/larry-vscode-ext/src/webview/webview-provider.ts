@@ -31,16 +31,16 @@ export function generateCSP(webview: vscode.Webview, nonce: string): string {
  */
 function generateWebviewHTML(
   webview: vscode.Webview,
-  extensionUri: vscode.Uri
+  extensionUri: vscode.Uri,
 ): string {
   const scriptUri = webview.asWebviewUri(
-    vscode.Uri.joinPath(extensionUri, 'media', 'webview.js')
+    vscode.Uri.joinPath(extensionUri, 'media', 'webview.js'),
   );
   const styleUri = webview.asWebviewUri(
-    vscode.Uri.joinPath(extensionUri, 'media', 'webview.css')
+    vscode.Uri.joinPath(extensionUri, 'media', 'webview.css'),
   );
   const overridesUri = webview.asWebviewUri(
-    vscode.Uri.joinPath(extensionUri, 'media', 'overrides.css')
+    vscode.Uri.joinPath(extensionUri, 'media', 'overrides.css'),
   );
 
   const nonce = String(Date.now());
@@ -74,7 +74,7 @@ function generateWebviewHTML(
  */
 export function createWebviewProvider(
   context: vscode.ExtensionContext,
-  state: ExtensionState
+  state: ExtensionState,
 ): vscode.WebviewViewProvider {
   return {
     resolveWebviewView(view: vscode.WebviewView) {
@@ -94,7 +94,7 @@ export function createWebviewProvider(
       // Set webview HTML content
       view.webview.html = generateWebviewHTML(
         view.webview,
-        context.extensionUri
+        context.extensionUri,
       );
 
       // Set up message handler
@@ -104,7 +104,7 @@ export function createWebviewProvider(
 
       // Initialize worktree detection after short delay
       console.log(
-        '🚀 Starting initial config loading and worktree detection...'
+        '🚀 Starting initial config loading and worktree detection...',
       );
       setTimeout(async () => {
         try {
@@ -122,7 +122,7 @@ export function createWebviewProvider(
  * Call this when workspace folders change
  */
 export async function notifyWorktreeChangeFromProvider(
-  state: ExtensionState
+  state: ExtensionState,
 ): Promise<void> {
   try {
     await notifyWorktreeChange(state);

@@ -1,11 +1,11 @@
-import {
+import type {
   Context,
   CreateGoogleSlidesOutput,
   GoogleSlideCreationInput,
   MachineEvent,
   OfficeServiceV3,
-  TYPES,
 } from '@codestrap/developer-foundations-types';
+import { TYPES } from '@codestrap/developer-foundations-types';
 import { getOpenAIResponse } from '../codeAssist/delegates/openai/getOpenAIResponse';
 import { default as BasicTemplateSchema } from './schemas/slides/1CRmkGVV0XASTVhNDFEXZPS_A_8ONU6ojO72nzBJBrSQ';
 import { container } from '@codestrap/developer-foundations-di';
@@ -13,7 +13,7 @@ import { container } from '@codestrap/developer-foundations-di';
 export async function generateSlides(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<CreateGoogleSlidesOutput> {
   const templateJson = await getOpenAIResponse(
     'You are a helpful AI assistant that exrtracts templateId values for Gogole Sheets templates from user queries.',
@@ -40,7 +40,7 @@ export async function generateSlides(
         required: ['templateId'],
       },
       strict: true,
-    }
+    },
   );
 
   if (!templateJson) {
@@ -82,7 +82,7 @@ export async function generateSlides(
       name: 'DeckSchema',
       schema,
       strict: true,
-    }
+    },
   );
 
   if (!slideJson) {
@@ -92,7 +92,7 @@ export async function generateSlides(
   const slides = JSON.parse(slideJson) as GoogleSlideCreationInput;
 
   const officeSerivce = await container.getAsync<OfficeServiceV3>(
-    TYPES.OfficeService
+    TYPES.OfficeService,
   );
   // createGoogleSlides accepts and array of decks to generate,
   // but we only generate one at a time here.

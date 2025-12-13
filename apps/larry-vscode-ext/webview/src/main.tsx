@@ -8,6 +8,7 @@ import { LarryStateSync } from './views/LarryStateSync';
 import { queryClient } from './lib/query';
 import { ExtensionStoreProvider } from './store/store';
 
+// eslint-disable-next-line react-refresh/only-export-components
 function Root() {
   const content = (
     <ExtensionStoreProvider>
@@ -17,9 +18,7 @@ function Root() {
     </ExtensionStoreProvider>
   ) as any;
   return (
-    <QueryClientProvider client={queryClient}>
-      {content}
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{content}</QueryClientProvider>
   );
 }
 

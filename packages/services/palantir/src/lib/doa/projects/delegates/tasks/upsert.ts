@@ -1,4 +1,5 @@
-import { FoundryClient, Tickets } from '@codestrap/developer-foundations-types';
+import type { Tickets } from '@codestrap/developer-foundations-types';
+import { FoundryClient } from '@codestrap/developer-foundations-types';
 
 export async function upsertTicket(
   token: string,
@@ -11,7 +12,7 @@ export async function upsertTicket(
   severity = 'Low',
   status = 'Open',
   points?: number,
-  assignees?: string
+  assignees?: string,
 ): Promise<Tickets> {
   console.log(`upsertTicket machineId: ${id}`);
 

@@ -1,10 +1,10 @@
 // types/summarizeCalendars.ts
-import { calendar_v3 } from 'googleapis';
+import type { calendar_v3 } from 'googleapis';
 import {
   toZonedISOString,
   toUTCFromWallClockLocal,
 } from '@codestrap/developer-foundations-utils';
-import {
+import type {
   CalendarSummary,
   EventSummary,
   ListCalendarArgs,
@@ -19,7 +19,8 @@ function extractMeetingLink(evt: calendar_v3.Schema$Event): string | undefined {
   // 3P links in description or location
   const text = `${evt.summary ?? ''} ${evt.description ?? ''} ${evt.location ?? ''}`;
   const regex =
-    /(https?:\/\/[^\s]*?(zoom\.us|teams\.microsoft\.com|meet\.google\.com|gotomeet\.|webex\.com)[^\s]*)/i;
+    // eslint-disable-next-line regexp/no-unused-capturing-group
+    /(https?:\/\/\S*?(zoom\.us|teams\.microsoft\.com|meet\.google\.com|gotomeet\.|webex\.com)\S*)/i;
   const m = text.match(regex);
   return m ? m[1] : undefined;
 }
@@ -29,7 +30,7 @@ async function fetchCalendar(
   email: string,
   timeMin: string,
   timeMax: string,
-  tz: string
+  tz: string,
 ): Promise<CalendarSummary> {
   const events: EventSummary[] = [];
   let pageTok: string | undefined;
@@ -60,7 +61,9 @@ async function fetchCalendar(
         start: toZonedISOString(startUTC, tz),
         end: toZonedISOString(endUTC, tz),
         durationMinutes: Math.round(dur),
-        participants: (evt.attendees ?? []).map((a) => a.email!).filter(Boolean),
+        participants: (evt.attendees ?? [])
+          .map((a) => a.email!)
+          .filter(Boolean),
         meetingLink: extractMeetingLink(evt),
       });
     });
@@ -72,19 +75,29 @@ async function fetchCalendar(
 }
 
 export async function summarizeCalendars(
-  args: ListCalendarArgs
+  args: ListCalendarArgs,
 ): Promise<Summaries> {
   const { calendar, emails, timezone, windowStartLocal, windowEndLocal } = args;
 
   // Convert local wall-clock bounds to UTC instants using your utils.
-  const timeMin = toUTCFromWallClockLocal(windowStartLocal, timezone).toISOString();
-  const timeMax = toUTCFromWallClockLocal(windowEndLocal, timezone).toISOString();
+  const timeMin = toUTCFromWallClockLocal(
+    windowStartLocal,
+    timezone,
+  ).toISOString();
+  const timeMax = toUTCFromWallClockLocal(
+    windowEndLocal,
+    timezone,
+  ).toISOString();
 
-  console.log(`summarizeCalendars fetchCalendar for timeMin ${timeMin} timeMax ${timeMax}`);
+  console.log(
+    `summarizeCalendars fetchCalendar for timeMin ${timeMin} timeMax ${timeMax}`,
+  );
 
   // Kick off all fetches in parallel
   const settled = await Promise.allSettled(
-    emails.map((email) => fetchCalendar(calendar, email, timeMin, timeMax, timezone))
+    emails.map((email) =>
+      fetchCalendar(calendar, email, timeMin, timeMax, timezone),
+    ),
   );
 
   // Split successes / failures
@@ -95,7 +108,9 @@ export async function summarizeCalendars(
     if (result.status === 'fulfilled') {
       calendars.push(result.value);
     } else {
-      failures.push(`${emails[idx]}: ${result.reason?.message ?? 'unknown error'}`);
+      failures.push(
+        `${emails[idx]}: ${result.reason?.message ?? 'unknown error'}`,
+      );
     }
   });
 

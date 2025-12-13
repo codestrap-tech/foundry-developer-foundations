@@ -4,7 +4,7 @@ export async function googleCodingSpecSearcher(
   dateRestrict?: string,
   siteSearch?: string,
   siteSearchFilter?: string,
-  searchEngineId?: string
+  searchEngineId?: string,
 ): Promise<string> {
   const system = `
 You are an search engine expert in Google Workspace REST APIs and Googleapis library.
@@ -156,12 +156,12 @@ ${userInput}
   };
   const urlCitations: UrlCitation[] = annotations.filter(
     (a: UrlCitation) =>
-      (a?.type ?? '').toLowerCase() === 'url_citation' && a?.url
+      (a?.type ?? '').toLowerCase() === 'url_citation' && a?.url,
   );
 
   // Dedupe by URL
   const deduped = Array.from(
-    new Map(urlCitations.map((c) => [c.url!, c])).values()
+    new Map(urlCitations.map((c) => [c.url!, c])).values(),
   );
 
   // Build "Sources" markdown

@@ -90,7 +90,7 @@ export async function getCurrentWorktreeId(): Promise<string> {
         const gitDir = gitContent.toString().trim();
         console.log('Git dir content:', gitDir);
 
-        const worktreeMatch = gitDir.match(/worktrees\/([^\/]+)/);
+        const worktreeMatch = gitDir.match(/worktrees\/([^/]+)/);
         if (worktreeMatch) {
           return worktreeMatch[1]; // Return the actual worktree name
         } else {
@@ -139,7 +139,7 @@ export async function listLocalWorktrees(): Promise<WorktreeInfo[]> {
     branch refs/heads/larry/create-sending-email-function-gsf
     */
     const worktreeBlocks = stdout.split('\n\n').filter((block) => block.trim());
-    
+
     const worktrees = worktreeBlocks
       .map((block) => {
         const lines = block.split('\n');
@@ -149,7 +149,7 @@ export async function listLocalWorktrees(): Promise<WorktreeInfo[]> {
         if (!worktreeLine) return null;
 
         const path = worktreeLine.replace('worktree ', '').trim();
-        
+
         let branch = 'detached';
         if (branchLine) {
           const branchRef = branchLine.replace('branch ', '').trim();
@@ -181,25 +181,25 @@ export async function listLocalWorktrees(): Promise<WorktreeInfo[]> {
 
 /**
  * Creates a new git worktree
- * 
+ *
  * @param workspaceFolder - The main workspace folder
  * @param worktreeName - Name for the new worktree
  * @returns The created worktree path
  */
 export async function createWorktree(
   workspaceFolder: vscode.WorkspaceFolder,
-  worktreeName: string
+  worktreeName: string,
 ): Promise<string> {
   const worktreePath = vscode.Uri.joinPath(
     workspaceFolder.uri,
     '.larry',
     'worktrees',
-    worktreeName
+    worktreeName,
   );
 
   // Create the .larry/worktrees directory if it doesn't exist
   await vscode.workspace.fs.createDirectory(
-    vscode.Uri.joinPath(workspaceFolder.uri, '.larry', 'worktrees')
+    vscode.Uri.joinPath(workspaceFolder.uri, '.larry', 'worktrees'),
   );
 
   // Create branch name in larry/ format
@@ -209,7 +209,7 @@ export async function createWorktree(
     // Get current branch name to branch from
     const { stdout: currentBranch } = await execAsync(
       'git rev-parse --abbrev-ref HEAD',
-      { cwd: workspaceFolder.uri.fsPath }
+      { cwd: workspaceFolder.uri.fsPath },
     );
     const sourceBranch = currentBranch.trim();
 
@@ -217,26 +217,32 @@ export async function createWorktree(
 
     await execAsync(
       `git worktree add "${worktreePath.fsPath}" -b ${branchName} ${sourceBranch}`,
-      { cwd: workspaceFolder.uri.fsPath }
+      { cwd: workspaceFolder.uri.fsPath },
     );
   } catch (branchError: unknown) {
-    const errorMessage = branchError instanceof Error ? branchError.message : String(branchError);
-    
+    const errorMessage =
+      branchError instanceof Error ? branchError.message : String(branchError);
+
     // If branch already exists, try to use existing branch
     if (errorMessage.includes('already exists')) {
-      console.log(`Branch ${branchName} already exists, trying to use existing branch`);
+      console.log(
+        `Branch ${branchName} already exists, trying to use existing branch`,
+      );
       try {
         await execAsync(
           `git worktree add "${worktreePath.fsPath}" ${branchName}`,
-          { cwd: workspaceFolder.uri.fsPath }
+          { cwd: workspaceFolder.uri.fsPath },
         );
       } catch (existingBranchError: unknown) {
-        const existingErrorMessage = existingBranchError instanceof Error 
-          ? existingBranchError.message 
-          : String(existingBranchError);
-          
+        const existingErrorMessage =
+          existingBranchError instanceof Error
+            ? existingBranchError.message
+            : String(existingBranchError);
+
         if (existingErrorMessage.includes('already checked out')) {
-          throw new Error(`Worktree path already exists: ${worktreePath.fsPath}`);
+          throw new Error(
+            `Worktree path already exists: ${worktreePath.fsPath}`,
+          );
         } else {
           throw existingBranchError;
         }
@@ -262,7 +268,7 @@ export async function removeWorktree(worktreeName: string): Promise<void> {
     workspaceFolder.uri,
     '.larry',
     'worktrees',
-    worktreeName
+    worktreeName,
   ).fsPath;
 
   await execAsync(`git worktree remove "${worktreePath}" --force`, {
@@ -300,4 +306,3 @@ export function transformSessionNameToBranchName(sessionName: string): string {
     .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
     .substring(0, 50); // Limit length
 }
-

@@ -128,7 +128,7 @@ export function activate(context: vscode.ExtensionContext): void {
       })
       .catch((error) => {
         vscode.window.showErrorMessage(
-          `Larry Extension: ${error.message}. Please create a larry.config.json file in your project root.`
+          `Larry Extension: ${error.message}. Please create a larry.config.json file in your project root.`,
         );
         throw error;
       });
@@ -138,7 +138,7 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider('larryHome', provider, {
         webviewOptions: { retainContextWhenHidden: true },
-      })
+      }),
     );
 
     // Register custom editor for .larry/artifact files
@@ -149,22 +149,23 @@ export function activate(context: vscode.ExtensionContext): void {
         {
           webviewOptions: { retainContextWhenHidden: true },
           supportsMultipleEditorsPerDocument: false,
-        }
-      )
+        },
+      ),
     );
 
     // Watch for workspace changes to detect worktree changes
     const workspaceWatcher = vscode.workspace.onDidChangeWorkspaceFolders(
       () => {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         notifyWorktreeChangeFromProvider(extensionState);
-      }
+      },
     );
     context.subscriptions.push(workspaceWatcher);
 
     console.log('🚀 Larry Extension activated successfully!');
     console.log(
       '📁 Workspace folders:',
-      vscode.workspace.workspaceFolders?.map((f) => f.uri.fsPath)
+      vscode.workspace.workspaceFolders?.map((f) => f.uri.fsPath),
     );
 
     // Show activation notification
@@ -172,12 +173,12 @@ export function activate(context: vscode.ExtensionContext): void {
       .showInformationMessage('Larry Coding Assistant is now active!')
       .then(
         () => console.log('✅ Activation notification shown'),
-        (error) => console.error('❌ Failed to show notification:', error)
+        (error) => console.error('❌ Failed to show notification:', error),
       );
   } catch (error) {
     console.error('❌ Critical error during extension activation:', error);
     vscode.window.showErrorMessage(
-      `Larry Extension failed to activate: ${error}`
+      `Larry Extension failed to activate: ${error}`,
     );
   }
 }

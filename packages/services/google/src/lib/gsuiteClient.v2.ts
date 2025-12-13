@@ -1,4 +1,4 @@
-import {
+import type {
   MeetingRequest,
   OfficeServiceV2,
   Summaries,
@@ -11,12 +11,18 @@ import { findOptimalMeetingTimeV2 } from './delegates/findOptimalMeetingTime.v2'
 import { deriveWindowFromTimeframe } from './delegates/deriveWindowFromTimeframe';
 import { summarizeCalendars } from './delegates/summerizeCalanders';
 import { searchDriveFiles } from './delegates/searchDriveFiles';
-import { wallClockToUTC, workingHoursUTCForDate } from '@codestrap/developer-foundations-utils';
+import {
+  wallClockToUTC,
+  workingHoursUTCForDate,
+} from '@codestrap/developer-foundations-utils';
 import { google } from 'googleapis';
-import { loadServiceAccountFromEnv, makeGoogleAuth } from './helpers/googleAuth';
+import {
+  loadServiceAccountFromEnv,
+  makeGoogleAuth,
+} from './helpers/googleAuth';
 
 export async function makeGSuiteClientV2(
-  user: string
+  user: string,
 ): Promise<OfficeServiceV2> {
   const v1Client = await makeGSuiteClient(user);
 
@@ -47,7 +53,7 @@ export async function makeGSuiteClientV2(
       return result;
     },
     getAvailableMeetingTimes: async (
-      meetingRequest: MeetingRequest
+      meetingRequest: MeetingRequest,
     ): Promise<{
       message: string;
       suggested_times: { start: string; end: string; score: number }[];
@@ -63,17 +69,26 @@ export async function makeGSuiteClientV2(
 
       if (meetingRequest.timeframe_context === 'user defined exact date/time') {
         //localDateString
-        meetingRequest.localDateString = wallClockToUTC(meetingRequest.localDateString!, timezone).toISOString();
+        meetingRequest.localDateString = wallClockToUTC(
+          meetingRequest.localDateString!,
+          timezone,
+        ).toISOString();
       }
 
       // Ensure the request carries the UTC hours we just computed
       const req = { ...meetingRequest, working_hours: workingHours };
 
-      console.log(`calling deriveWindowFromTimeframe`, { req, timezone, nowUTC: nowUTC.toISOString() });
+      console.log(`calling deriveWindowFromTimeframe`, {
+        req,
+        timezone,
+        nowUTC: nowUTC.toISOString(),
+      });
 
       const { windowStartLocal, windowEndLocal, slotStepMinutes } =
         deriveWindowFromTimeframe(req);
-      console.log(`deriveWindowFromTimeframe returned start time of ${windowStartLocal} and end time of ${windowEndLocal}`)
+      console.log(
+        `deriveWindowFromTimeframe returned start time of ${windowStartLocal} and end time of ${windowEndLocal}`,
+      );
 
       const slots = await findOptimalMeetingTimeV2({
         calendar: v1Client.getCalendarClient(),
@@ -98,7 +113,9 @@ export async function makeGSuiteClientV2(
         suggested_times,
       };
     },
-    searchDriveFiles: async (params: DriveSearchParams): Promise<DriveSearchOutput> => {
+    searchDriveFiles: async (
+      params: DriveSearchParams,
+    ): Promise<DriveSearchOutput> => {
       const result = await searchDriveFiles(driveClient, params);
 
       return {

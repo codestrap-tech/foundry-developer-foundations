@@ -1,9 +1,7 @@
 // createGoogleSlides.test.ts
 
-import { drive_v3, slides_v1 } from 'googleapis';
-import {
-  CreateGoogleSlidesInput,
-} from '@codestrap/developer-foundations-types';
+import type { drive_v3, slides_v1 } from 'googleapis';
+import type { CreateGoogleSlidesInput } from '@codestrap/developer-foundations-types';
 import { createGoogleSlidesDelegate } from './createGoogleSlides';
 
 // ------------------------------
@@ -17,7 +15,7 @@ const mockDriveClient = {
   },
   permissions: {
     create: jest.fn(),
-  }
+  },
 } as unknown as drive_v3.Drive;
 
 const mockSlidesClient = {
@@ -56,8 +54,7 @@ describe('createGoogleSlidesDelegate', () => {
         data: {
           id: 'newPresId',
           name: 'From PowerPoints to Outcomes – AI Era Enterprise Services',
-          webViewLink:
-            'https://docs.google.com/presentation/d/newPresId/edit',
+          webViewLink: 'https://docs.google.com/presentation/d/newPresId/edit',
           webContentLink:
             'https://docs.google.com/presentation/d/newPresId/export/pptx',
         },
@@ -85,11 +82,11 @@ describe('createGoogleSlidesDelegate', () => {
       });
 
       // slides.presentations.batchUpdate -> succeed
-      (mockSlidesClient.presentations.batchUpdate as jest.Mock).mockResolvedValue(
-        {
-          data: {},
-        }
-      );
+      (
+        mockSlidesClient.presentations.batchUpdate as jest.Mock
+      ).mockResolvedValue({
+        data: {},
+      });
     });
 
     it('creates one presentation and duplicates the first slide for each GoogleSlide entry', async () => {
@@ -116,9 +113,9 @@ describe('createGoogleSlidesDelegate', () => {
                   targetType: 'PLACEHOLDER',
                   placeholder: '{{TITLE}}',
                   text: 'Slide 2 Title',
-                }
+                },
               ],
-            }
+            },
           ],
         },
       ];
@@ -137,13 +134,13 @@ describe('createGoogleSlidesDelegate', () => {
       expect(success.presentationId).toBe('newPresId');
       expect(success.fileId).toBe('newPresId');
       expect(success.name).toBe(
-        'From PowerPoints to Outcomes – AI Era Enterprise Services'
+        'From PowerPoints to Outcomes – AI Era Enterprise Services',
       );
       expect(success.webViewLink).toBe(
-        'https://docs.google.com/presentation/d/newPresId/edit'
+        'https://docs.google.com/presentation/d/newPresId/edit',
       );
       expect(success.webContentLink).toBe(
-        'https://docs.google.com/presentation/d/newPresId/export/pptx'
+        'https://docs.google.com/presentation/d/newPresId/export/pptx',
       );
 
       // drive.files.copy called with normalized templateId
@@ -154,7 +151,7 @@ describe('createGoogleSlidesDelegate', () => {
           requestBody: {
             name: 'From PowerPoints to Outcomes – AI Era Enterprise Services',
           },
-        })
+        }),
       );
 
       // slides.presentations.get called for the copied deck
@@ -167,9 +164,9 @@ describe('createGoogleSlidesDelegate', () => {
       // 1) replaceAllText on base slide p1 (slideNumber 1)
       // 2) duplicateObject of p1 -> p1_1 (for slideNumber 2)
       // 3) replaceAllText on duplicated slide p1_1 (slideNumber 2 content)
-      expect(
-        mockSlidesClient.presentations.batchUpdate
-      ).toHaveBeenCalledTimes(1);
+      expect(mockSlidesClient.presentations.batchUpdate).toHaveBeenCalledTimes(
+        1,
+      );
 
       const batchArgs = (
         mockSlidesClient.presentations.batchUpdate as jest.Mock
@@ -246,9 +243,7 @@ describe('createGoogleSlidesDelegate', () => {
       // no Drive or Slides calls
       expect(mockDriveClient.files.copy).not.toHaveBeenCalled();
       expect(mockSlidesClient.presentations.get).not.toHaveBeenCalled();
-      expect(
-        mockSlidesClient.presentations.batchUpdate
-      ).not.toHaveBeenCalled();
+      expect(mockSlidesClient.presentations.batchUpdate).not.toHaveBeenCalled();
     });
   });
 
@@ -288,9 +283,7 @@ describe('createGoogleSlidesDelegate', () => {
 
       expect(mockDriveClient.files.copy).not.toHaveBeenCalled();
       expect(mockSlidesClient.presentations.get).not.toHaveBeenCalled();
-      expect(
-        mockSlidesClient.presentations.batchUpdate
-      ).not.toHaveBeenCalled();
+      expect(mockSlidesClient.presentations.batchUpdate).not.toHaveBeenCalled();
     });
 
     it('returns VALIDATION_ERROR for invalid templateId', async () => {
@@ -306,7 +299,7 @@ describe('createGoogleSlidesDelegate', () => {
                 {
                   targetType: 'PLACEHOLDER',
                   placeholder: '{{TITLE}}',
-                  text: 'Won\'t be used',
+                  text: "Won't be used",
                 },
               ],
             },
@@ -326,14 +319,12 @@ describe('createGoogleSlidesDelegate', () => {
       const failure = result.failures[0];
       expect(failure.errorCode).toBe('VALIDATION_ERROR');
       expect(failure.errorMessage).toMatch(
-        /Invalid Google Drive file ID or URL format/i
+        /Invalid Google Drive file ID or URL format/i,
       );
 
       expect(mockDriveClient.files.copy).not.toHaveBeenCalled();
       expect(mockSlidesClient.presentations.get).not.toHaveBeenCalled();
-      expect(
-        mockSlidesClient.presentations.batchUpdate
-      ).not.toHaveBeenCalled();
+      expect(mockSlidesClient.presentations.batchUpdate).not.toHaveBeenCalled();
     });
   });
 });

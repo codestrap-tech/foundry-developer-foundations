@@ -113,6 +113,7 @@ jest.mock('@codestrap/developer-foundations-utils', () => ({
 jest.mock('./functions', () => ({
   ...jest.requireActual('./functions'),
   sendEmail: jest.fn().mockImplementation(() => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { mockEmailResponse } = require('./__fixtures__/Email');
     return Promise.resolve(mockEmailResponse);
   }),
@@ -128,8 +129,12 @@ global.fetch = jest.fn().mockImplementation(() =>
         channel: 'test-channel',
         ts: '1234567890.123456',
       }),
-  })
+  }),
 ) as jest.Mock;
+
+jest.mock('prettier', () => ({
+  format: jest.fn((text: string) => Promise.resolve(text)),
+}));
 
 describe('testing orchestrator', () => {
   afterAll(() => {
@@ -150,7 +155,7 @@ describe('testing orchestrator', () => {
       solution,
       true,
       valuesToInterpolateOntoContext,
-      SupportedEngines.COMS
+      SupportedEngines.COMS,
     );
     const state = JSON.parse(result.jsonState);
 
@@ -174,16 +179,16 @@ describe('testing orchestrator', () => {
       solution,
       false,
       valuesToInterpolateOntoContext,
-      SupportedEngines.COMS
+      SupportedEngines.COMS,
     );
     const state = JSON.parse(result.jsonState);
 
     expect(state.value).toBe(
-      'scheduleMeeting|7f8824d7-bb8e-4bb3-a820-5ab9e7dc6533'
+      'scheduleMeeting|7f8824d7-bb8e-4bb3-a820-5ab9e7dc6533',
     );
     expect(state.context.stack).toHaveLength(16);
     expect(state.context.stack[0]).toBe(
-      'getAvailableMeetingTimes|ba26e192-9a5c-4c34-8a9c-c4a7a4567152'
+      'getAvailableMeetingTimes|ba26e192-9a5c-4c34-8a9c-c4a7a4567152',
     );
   });
 
@@ -201,7 +206,7 @@ describe('testing orchestrator', () => {
       solution,
       true,
       valuesToInterpolateOntoContext,
-      SupportedEngines.COMS
+      SupportedEngines.COMS,
     );
     const state = JSON.parse(result.jsonState);
     expect(state.value).toBe('success');

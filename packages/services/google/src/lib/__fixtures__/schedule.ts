@@ -1,10 +1,10 @@
 // src/__fixtures__/scheduler.ts
 
 export type FreeBusyCalendars = Record<
-    string,
-    {
-        busy: Array<{ start: string; end: string }>;
-    }
+  string,
+  {
+    busy: Array<{ start: string; end: string }>;
+  }
 >;
 
 /**
@@ -22,60 +22,58 @@ export type FreeBusyCalendars = Record<
  *    22:00–23:00Z  (15:00–16:00 PT)
  */
 export const fbSingleDayCalendars: FreeBusyCalendars = {
-    'a@corp.com': {
-        busy: [
-            { start: '2025-07-22T17:00:00Z', end: '2025-07-22T18:00:00Z' },
-            { start: '2025-07-22T21:30:00Z', end: '2025-07-22T22:00:00Z' },
-        ],
-    },
-    'b@corp.com': {
-        busy: [
-            { start: '2025-07-22T19:00:00Z', end: '2025-07-22T20:30:00Z' },
-        ],
-    },
-    'c@corp.com': {
-        busy: [
-            { start: '2025-07-22T16:30:00Z', end: '2025-07-22T17:00:00Z' },
-            { start: '2025-07-22T22:00:00Z', end: '2025-07-22T23:00:00Z' },
-        ],
-    },
+  'a@corp.com': {
+    busy: [
+      { start: '2025-07-22T17:00:00Z', end: '2025-07-22T18:00:00Z' },
+      { start: '2025-07-22T21:30:00Z', end: '2025-07-22T22:00:00Z' },
+    ],
+  },
+  'b@corp.com': {
+    busy: [{ start: '2025-07-22T19:00:00Z', end: '2025-07-22T20:30:00Z' }],
+  },
+  'c@corp.com': {
+    busy: [
+      { start: '2025-07-22T16:30:00Z', end: '2025-07-22T17:00:00Z' },
+      { start: '2025-07-22T22:00:00Z', end: '2025-07-22T23:00:00Z' },
+    ],
+  },
 };
 
 /**
  * Multi‑day (2 days) intersection case. Window PT: 2025‑07‑22 08:00 → 2025‑07‑23 17:00
  */
 export const fbMultiDayCalendars: FreeBusyCalendars = {
-    'a@corp.com': {
-        busy: [
-            // Day 1
-            { start: '2025-07-22T17:00:00Z', end: '2025-07-22T18:00:00Z' }, // 10–11 PT
-            // Day 2
-            { start: '2025-07-23T16:00:00Z', end: '2025-07-23T17:30:00Z' }, // 09–10:30 PT
-        ],
-    },
-    'b@corp.com': {
-        busy: [
-            // Day 1
-            { start: '2025-07-22T19:30:00Z', end: '2025-07-22T20:00:00Z' }, // 12:30–13:00 PT
-            // Day 2
-            { start: '2025-07-23T20:00:00Z', end: '2025-07-23T21:00:00Z' }, // 13–14 PT
-        ],
-    },
-    'c@corp.com': {
-        busy: [
-            // Day 1
-            { start: '2025-07-22T21:00:00Z', end: '2025-07-22T22:00:00Z' }, // 14–15 PT
-            // Day 2 (none)
-        ],
-    },
+  'a@corp.com': {
+    busy: [
+      // Day 1
+      { start: '2025-07-22T17:00:00Z', end: '2025-07-22T18:00:00Z' }, // 10–11 PT
+      // Day 2
+      { start: '2025-07-23T16:00:00Z', end: '2025-07-23T17:30:00Z' }, // 09–10:30 PT
+    ],
+  },
+  'b@corp.com': {
+    busy: [
+      // Day 1
+      { start: '2025-07-22T19:30:00Z', end: '2025-07-22T20:00:00Z' }, // 12:30–13:00 PT
+      // Day 2
+      { start: '2025-07-23T20:00:00Z', end: '2025-07-23T21:00:00Z' }, // 13–14 PT
+    ],
+  },
+  'c@corp.com': {
+    busy: [
+      // Day 1
+      { start: '2025-07-22T21:00:00Z', end: '2025-07-22T22:00:00Z' }, // 14–15 PT
+      // Day 2 (none)
+    ],
+  },
 };
 
 /**
  * Friday window: expect 0 slots when skipFriday=true.
  */
 export const fbFridayCalendars: FreeBusyCalendars = {
-    'a@corp.com': { busy: [] },
-    'b@corp.com': { busy: [] },
+  'a@corp.com': { busy: [] },
+  'b@corp.com': { busy: [] },
 };
 
 /**
@@ -84,6 +82,6 @@ export const fbFridayCalendars: FreeBusyCalendars = {
  * (We'll just assert we get slots and offsets are either -07:00 or -08:00).
  */
 export const fbDSTCalendars: FreeBusyCalendars = {
-    'a@corp.com': { busy: [] },
-    'b@corp.com': { busy: [] },
+  'a@corp.com': { busy: [] },
+  'b@corp.com': { busy: [] },
 };

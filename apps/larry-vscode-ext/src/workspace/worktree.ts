@@ -88,7 +88,7 @@ function buildExtendedPath(homeDir: string): string {
  */
 async function execInUserShell(
   command: string,
-  options: { cwd?: string } = {}
+  options: { cwd?: string } = {},
 ): Promise<{ stdout: string; stderr: string }> {
   // Use os.homedir() which is reliable even without env vars
   const homeDir = os.homedir();
@@ -135,7 +135,7 @@ async function execInUserShell(
 export async function setupWorktreeEnvironment(
   config: LarryConfig,
   worktreeName: string,
-  onStateUpdate: (state: string) => void
+  onStateUpdate: (state: string) => void,
 ): Promise<void> {
   try {
     onStateUpdate('setting_up_environment');
@@ -149,7 +149,7 @@ export async function setupWorktreeEnvironment(
       workspaceFolder.uri,
       '.larry',
       'worktrees',
-      worktreeName
+      worktreeName,
     ).fsPath;
 
     // Copy env file if configured
@@ -157,7 +157,7 @@ export async function setupWorktreeEnvironment(
       console.log(`Copying env file from ${config.larryEnvPath}...`);
       const sourceEnvPath = vscode.Uri.joinPath(
         workspaceFolder.uri,
-        config.larryEnvPath
+        config.larryEnvPath,
       ).fsPath;
       const targetEnvPath = path.join(worktreePath, config.larryEnvPath);
 
@@ -189,7 +189,7 @@ export async function createOrEnsureWorktree(
   worktreeName: string,
   threadId: string | undefined,
   label: string,
-  onStateUpdate: (state: string) => void
+  onStateUpdate: (state: string) => void,
 ): Promise<string> {
   try {
     let workspaceFolder = vscode.workspace.workspaceFolders?.[0];
@@ -197,7 +197,7 @@ export async function createOrEnsureWorktree(
       const activeEditor = vscode.window.activeTextEditor;
       if (activeEditor) {
         workspaceFolder = vscode.workspace.getWorkspaceFolder(
-          activeEditor.document.uri
+          activeEditor.document.uri,
         );
       }
     }
@@ -220,12 +220,12 @@ export async function createOrEnsureWorktree(
       workspaceFolder.uri,
       '.larry',
       'worktrees',
-      finalWorktreeName
+      finalWorktreeName,
     );
 
     const worktreeExists = await vscode.workspace.fs.stat(worktreePath).then(
       () => true,
-      () => false
+      () => false,
     );
 
     if (!worktreeExists) {
@@ -239,14 +239,14 @@ export async function createOrEnsureWorktree(
         try {
           await writeCurrentThreadId(finalWorktreeName, threadId);
           console.log(
-            `Worktree created: ${finalWorktreeName} with thread ID: ${threadId}`
+            `Worktree created: ${finalWorktreeName} with thread ID: ${threadId}`,
           );
         } catch (error) {
           console.error('Failed to write thread ID file:', error);
         }
       } else {
         console.log(
-          `New worktree created: ${finalWorktreeName} - thread ID will be assigned later`
+          `New worktree created: ${finalWorktreeName} - thread ID will be assigned later`,
         );
       }
     }
@@ -275,7 +275,7 @@ export async function handleOpenWorktree(
   worktreeName: string,
   threadId: string | undefined,
   label: string,
-  agentKey?: string
+  agentKey?: string,
 ): Promise<void> {
   const postMessage = (msg: Record<string, unknown>) => {
     state.view?.webview.postMessage(msg);
@@ -295,7 +295,7 @@ export async function handleOpenWorktree(
       worktreeName,
       threadId,
       label,
-      onStateUpdate
+      onStateUpdate,
     );
 
     if (!finalWorktreeName) {
@@ -305,7 +305,7 @@ export async function handleOpenWorktree(
     // Step 2: Check if container is already running
     const containerStatus = await getWorktreeContainerStatus(
       state.config.name,
-      finalWorktreeName
+      finalWorktreeName,
     );
 
     if (!containerStatus.isRunning) {
@@ -313,7 +313,7 @@ export async function handleOpenWorktree(
       await setupWorktreeEnvironment(
         state.config,
         finalWorktreeName,
-        onStateUpdate
+        onStateUpdate,
       );
 
       // Step 4: Start Docker container
@@ -332,7 +332,7 @@ export async function handleOpenWorktree(
         state,
         finalWorktreeName,
         worktreePath,
-        threadId
+        threadId,
       );
     }
 
@@ -348,6 +348,7 @@ export async function handleOpenWorktree(
       if (state.config) {
         startWorktreeSSE(state, state.config, agentKey);
       }
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       openWorktreeFolder(finalWorktreeName);
       postMessage({ type: 'update_thread_state', state: 'ready' });
     }, 3000);
@@ -376,7 +377,7 @@ export async function handleOpenWorktree(
  * Also ensures appropriate Docker container is running
  */
 export async function notifyWorktreeChange(
-  state: ExtensionState
+  state: ExtensionState,
 ): Promise<void> {
   if (!state.view || !state.config) return;
 
@@ -399,7 +400,7 @@ export async function notifyWorktreeChange(
     // Check container status and start if needed
     const containerStatus = await getWorktreeContainerStatus(
       state.config.name,
-      worktreeId
+      worktreeId,
     );
 
     if (containerStatus.containerId) {
@@ -417,7 +418,7 @@ export async function notifyWorktreeChange(
           state,
           worktreeId,
           worktreePath,
-          undefined
+          undefined,
         );
       }
     }
@@ -440,7 +441,7 @@ export async function notifyWorktreeChange(
   // Start appropriate SSE based on worktree state
   if (!inWorktree) {
     console.log(
-      '🐳 User is not in worktree - starting main Docker container...'
+      '🐳 User is not in worktree - starting main Docker container...',
     );
     await ensureMainDockerRunning(state);
     startMainSSE(state);

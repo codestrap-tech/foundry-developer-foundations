@@ -8,7 +8,9 @@ interface ActionResult {
 }
 
 export function useWorktreeActions() {
-  const [processingWorktree, setProcessingWorktree] = useState<string | null>(null);
+  const [processingWorktree, setProcessingWorktree] = useState<string | null>(
+    null,
+  );
   const [lastResult, setLastResult] = useState<ActionResult | null>(null);
 
   useEffect(() => {
@@ -65,4 +67,3 @@ export function useWorktreeActions() {
     lastResult,
   };
 }
-

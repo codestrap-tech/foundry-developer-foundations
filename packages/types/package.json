@@ -4,18 +4,19 @@
   "type": "commonjs",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
-  "publishConfig": {
-    "access": "public"
-  },
   "dependencies": {
-    "tslib": "^2.3.0",
+    "@osdk/client": "^2.2.1",
+    "@osdk/foundry.admin": "^2.22.0",
     "@palantir/compute-module": "0.2.7",
     "@sinclair/typebox": "^0.34.33",
-    "xstate": "4.37.2",
     "googleapis": "^149.0.0",
-    "@osdk/client": "^2.2.1"
+    "tslib": "^2.3.0",
+    "xstate": "4.37.2"
   },
   "devDependencies": {
     "@types/node": "^22.15.3"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

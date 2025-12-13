@@ -1,9 +1,17 @@
 import { Trace } from '@codestrap/developer-foundations.foundry-tracing-foundations';
 
-import { getState, xReasonFactory } from '@codestrap/developer-foundations-x-reason';
+import {
+  getState,
+  xReasonFactory,
+} from '@codestrap/developer-foundations-x-reason';
 import { SupportedEngines } from '@codestrap/developer-foundations-types';
 import { engineV1 as engine } from '@codestrap/developer-foundations-x-reason';
-import { dateTime, recall, requestRfp, userProfile } from '@codestrap/developer-foundations-x-reason';
+import {
+  dateTime,
+  recall,
+  requestRfp,
+  userProfile,
+} from '@codestrap/developer-foundations-x-reason';
 import {
   extractJsonFromBackticks,
   uuidv4,
@@ -55,7 +63,7 @@ export class Text2Action {
         userProfile,
       },
       undefined,
-      query
+      query,
     );
 
     return recalledInformation;
@@ -84,7 +92,7 @@ export class Text2Action {
     xReasonEngine: string = SupportedEngines.COMS,
     questionPrompt?: string,
     tokens?: number,
-    id?: string
+    id?: string,
   ): Promise<Communications> {
     const { solver } = xReasonFactory(xReasonEngine as SupportedEngines)({});
     const userProfile = await container.get<UserDao>(TYPES.UserDao)(userId);
@@ -128,7 +136,7 @@ Dorian Smiley <dsmiley@codestrap.me> - Dorian is the CTO who manages the softwar
 
     const taskList = await engine.solver.solve(
       `${query}\n\n${groudingContext}`,
-      solver
+      solver,
     );
 
     const comsDao = container.get<CommsDao>(TYPES.CommsDao);
@@ -142,10 +150,9 @@ Dorian Smiley <dsmiley@codestrap.me> - Dorian is the CTO who manages the softwar
         userId,
         questionPrompt,
         tokens,
-        id
+        id,
       );
       return communication;
-
     } catch (error) {
       console.error('Error upserting communication:', error);
       throw error;
@@ -183,7 +190,7 @@ Dorian Smiley <dsmiley@codestrap.me> - Dorian is the CTO who manages the softwar
       executionId,
       inputs,
       xreason,
-      persistMachineOnTransition
+      persistMachineOnTransition,
     );
 
     if (machine?.state) {
@@ -210,7 +217,7 @@ Dorian Smiley <dsmiley@codestrap.me> - Dorian is the CTO who manages the softwar
     }
 
     throw new Error(
-      "I'm sorry but I failed to get a response back. Can you try again? Soemtimes my AI brain gets a little flakey. But second time is usally the charm."
+      "I'm sorry but I failed to get a response back. Can you try again? Soemtimes my AI brain gets a little flakey. But second time is usally the charm.",
     );
   }
 
@@ -250,7 +257,7 @@ Dorian Smiley <dsmiley@codestrap.me> - Dorian is the CTO who manages the softwar
       forward,
       JSON.parse(inputs),
       xreason as SupportedEngines,
-      persistMachineOnTransition
+      persistMachineOnTransition,
     );
 
     const { getLog } = container.get<LoggingService>(TYPES.LoggingService);
@@ -266,7 +273,7 @@ Dorian Smiley <dsmiley@codestrap.me> - Dorian is the CTO who manages the softwar
         result.jsonState,
         getLog(solution.id) ?? '',
         '', // we have to send default values for lockOwner and lockUntil or the OSDK will shit a brick. It still can't handle optional params
-        1
+        1,
       );
 
       return machine;
@@ -280,8 +287,7 @@ Dorian Smiley <dsmiley@codestrap.me> - Dorian is the CTO who manages the softwar
       logs: getLog(solution.id) ?? '',
       machine: JSON.stringify(result.stateMachine),
       state: result.jsonState,
-    }
-
+    };
   }
 
   @Trace({
@@ -304,7 +310,7 @@ Dorian Smiley <dsmiley@codestrap.me> - Dorian is the CTO who manages the softwar
   public async sendThreadMessage(
     message: string,
     userId: string,
-    machineExecutionId: string
+    machineExecutionId: string,
   ): Promise<Threads> {
     // I changed the response of this function to void to it can be triggered as an action. Once refactored to compute modules it can return a response
     // rehydrate the machine
@@ -336,7 +342,7 @@ Dorian Smiley <dsmiley@codestrap.me> - Dorian is the CTO who manages the softwar
         userProfile: currentUserProfile,
       },
       undefined,
-      `${messageHistory}  ${message}`
+      `${messageHistory}  ${message}`,
     );
 
     // TODO: remove the bard coded context information once CodeStrap employeed slack channels are added to the contacts dataset
@@ -475,7 +481,7 @@ Dorian Smiley <dsmiley@codestrap.me> - Dorian is the CTO who manages the softwar
             status: 200,
           },
           undefined,
-          parsedResult.message
+          parsedResult.message,
         );
       });
 
@@ -502,7 +508,7 @@ Dorian Smiley <dsmiley@codestrap.me> - Dorian is the CTO who manages the softwar
     const threadResult = await threadsDao.upsert(
       appendedMessage,
       'bennie',
-      machineExecutionId
+      machineExecutionId,
     );
 
     return threadResult;

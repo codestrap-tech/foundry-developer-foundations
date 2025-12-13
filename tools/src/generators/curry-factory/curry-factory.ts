@@ -1,5 +1,5 @@
+import type { Tree } from '@nx/devkit';
 import {
-  Tree,
   updateJson,
   formatFiles,
   generateFiles,
@@ -9,11 +9,11 @@ import {
 } from '@nx/devkit';
 import * as fs from 'fs';
 import * as path from 'path';
-import { CurryFactoryGeneratorSchema } from './schema';
+import type { CurryFactoryGeneratorSchema } from './schema';
 import { GoogleGenAI } from '@google/genai';
 import * as dotenv from 'dotenv';
 dotenv.config({
-  path: path.resolve(process.cwd(), 'tools/src/generators/curry-factory/.env')
+  path: path.resolve(process.cwd(), 'tools/src/generators/curry-factory/.env'),
 });
 
 async function generateCode(user: string, system: string): Promise<string> {
@@ -52,7 +52,7 @@ ${user}`,
 
 export async function curryFactoryGenerator(
   tree: Tree,
-  options: CurryFactoryGeneratorSchema
+  options: CurryFactoryGeneratorSchema,
 ) {
   const libName = names(options.name);
   const fileName = names(options.fileName);
@@ -77,7 +77,7 @@ ${user}
 # Template
 ${template}
 `,
-    system
+    system,
   );
 
   // Read Nx project configuration
@@ -87,7 +87,7 @@ ${template}
   // Compute output path for generated factory
   const outputFile = joinPathFragments(
     projectRoot,
-    `src/lib/${fileName.fileName}.factory.ts`
+    `src/lib/${fileName.fileName}.factory.ts`,
   );
 
   // Ensure directory exists

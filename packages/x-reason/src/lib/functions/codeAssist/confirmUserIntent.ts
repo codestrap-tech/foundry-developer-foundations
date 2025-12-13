@@ -1,22 +1,25 @@
-import {
+import type {
   Completion,
   Context,
   MachineEvent,
   ThreadsDao,
   UserIntent,
-  VersionControlService,
 } from '@codestrap/developer-foundations-types';
+import { VersionControlService } from '@codestrap/developer-foundations-types';
 import { container } from '@codestrap/developer-foundations-di';
 import { TYPES } from '@codestrap/developer-foundations-types';
 import * as path from 'path';
 import * as fs from 'fs';
 import { googleSpecGenerator, openAiSpecGenerator } from './delegates';
-import { saveFileToGithub, writeFileIfNotFoundLocally } from './delegates/github';
+import {
+  saveFileToGithub,
+  writeFileIfNotFoundLocally,
+} from './delegates/github';
 
 export async function confirmUserIntent(
   context: Context,
   event?: MachineEvent,
-  task?: string
+  task?: string,
 ): Promise<Completion> {
   let messages;
   const threadsDao = container.get<ThreadsDao>(TYPES.ThreadsDao);
@@ -35,7 +38,8 @@ export async function confirmUserIntent(
       .reverse()
       .find((item) => item.includes('confirmUserIntent')) || '';
 
-  const { userResponse, file } = (context[confirmUserIntentId] as UserIntent) || {};
+  const { userResponse, file } =
+    (context[confirmUserIntentId] as UserIntent) || {};
 
   const parsedMessages = JSON.parse(messages?.messages || '[]') as {
     user?: string;
@@ -52,8 +56,12 @@ export async function confirmUserIntent(
   }
 
   // load the README associated with the codepath/agent/machine execution
-  const readmePath = path.resolve(process.env.BASE_FILE_STORAGE || process.cwd(), `readme-${context.machineExecutionId}.md`);
-  if (readmePath && !fs.existsSync(readmePath)) throw new Error(`README file does not exist: ${readmePath}`);
+  const readmePath = path.resolve(
+    process.env.BASE_FILE_STORAGE || process.cwd(),
+    `readme-${context.machineExecutionId}.md`,
+  );
+  if (readmePath && !fs.existsSync(readmePath))
+    throw new Error(`README file does not exist: ${readmePath}`);
   const readme = await fs.promises.readFile(readmePath, 'utf8');
 
   const system = `
@@ -352,7 +360,11 @@ ie - [ ] Option.
 `;
 
   // TODO inject this
-  const { answer, tokenomics } = await googleSpecGenerator(user, system, readme);
+  const { answer, tokenomics } = await googleSpecGenerator(
+    user,
+    system,
+    readme,
+  );
 
   if (userResponse) {
     // reset the user response so they can respond again!
@@ -367,11 +379,14 @@ ie - [ ] Option.
   await threadsDao.upsert(
     JSON.stringify(parsedMessages),
     'cli-tool',
-    context.machineExecutionId!
+    context.machineExecutionId!,
   );
 
   const fileName = `spec-${context.machineExecutionId}.md`;
-  const abs = path.resolve(process.env.BASE_FILE_STORAGE || process.cwd(), fileName);
+  const abs = path.resolve(
+    process.env.BASE_FILE_STORAGE || process.cwd(),
+    fileName,
+  );
   await fs.promises.writeFile(abs, answer, 'utf8');
 
   await saveFileToGithub(abs, answer);

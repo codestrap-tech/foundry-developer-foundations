@@ -1,8 +1,13 @@
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
-import { Tree, readProjectConfiguration } from '@nx/devkit';
+import type { Tree } from '@nx/devkit';
+import { readProjectConfiguration } from '@nx/devkit';
 
 import { serviceLibGenerator } from './service-lib';
-import { ServiceLibGeneratorSchema } from './schema';
+import type { ServiceLibGeneratorSchema } from './schema';
+
+jest.mock('prettier', () => ({
+  format: jest.fn((text: string) => Promise.resolve(text)),
+}));
 
 describe('service-lib generator', () => {
   let tree: Tree;
@@ -41,22 +46,22 @@ describe('service-lib generator', () => {
     expect(config.targets?.build?.options?.outputPath).toBe(`dist/${root}`);
     expect(config.targets?.build?.options?.main).toBe(`${root}/src/index.ts`);
     expect(config.targets?.build?.options?.tsConfig).toBe(
-      `${root}/tsconfig.lib.json`
+      `${root}/tsconfig.lib.json`,
     );
     expect(config.targets?.build?.options?.assets).toEqual([`${root}/*.md`]);
     expect(config.targets?.build?.options?.packageJson).toBe(
-      `${root}/package.json`
+      `${root}/package.json`,
     );
 
     // nx-release-publish
     expect(config.targets?.['nx-release-publish']?.options?.packageRoot).toBe(
-      'dist/{projectRoot}'
+      'dist/{projectRoot}',
     );
 
     // test target
     expect(config.targets?.test?.executor).toBe('@nx/jest:jest');
     expect(config.targets?.test?.options?.jestConfig).toBe(
-      `${root}/jest.config.ts`
+      `${root}/jest.config.ts`,
     );
     expect(config.targets?.test?.outputs).toEqual([
       '{workspaceRoot}/coverage/{projectRoot}',
@@ -82,25 +87,28 @@ describe('service-lib generator', () => {
 
     // content checks: eslint uses JSONC parser
     const eslintCfg = tree.read(`${root}/eslint.config.mjs`, 'utf-8')!;
-    expect(eslintCfg.trim())
-      .toBe(`import baseConfig from '../../../eslint.config.mjs';
+    expect(eslintCfg.trim()).toMatchInlineSnapshot(`
+      "// @ts-check
+      import baseConfig from '../../../eslint.config.mjs';
 
-export default [
-  ...baseConfig,
-  {
-    files: ['**/*.json'],
-    rules: {
-      '@nx/dependency-checks': [
-        'error',
+      /** @type {import('eslint').Linter.Config[]} */
+      export default [
+        ...baseConfig,
         {
-          ignoredFiles: ['{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}'],
+          files: ['**/*.json'],
+          rules: {
+            '@nx/dependency-checks': [
+              'error',
+              {
+                ignoredFiles: ['{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}'],
+              },
+            ],
+          },
+          languageOptions: {
+            parser: await import('jsonc-eslint-parser'),
+          },
         },
-      ],
-    },
-    languageOptions: {
-      parser: await import('jsonc-eslint-parser'),
-    },
-  },
-];`);
+      ];"
+    `);
   });
 });

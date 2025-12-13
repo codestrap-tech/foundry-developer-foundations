@@ -4,7 +4,7 @@
 export async function readConflictResolutionRules(
   userEmail: string,
   token: string,
-  url: string
+  url: string,
 ): Promise<string[]> {
   const commonRules = [
     'Prioritize external meetings over internal meetings',

@@ -1,11 +1,13 @@
 {
+  "private": true,
   "name": "@codestrap/larry-config",
   "version": "0.0.1",
-  "private": true,
   "type": "commonjs",
   "main": "./src/index.js",
   "types": "./src/index.d.ts",
   "dependencies": {
+    "@codestrap/developer-foundations-types": "0.0.1",
+    "ramda": "^0.30.1",
     "tslib": "^2.3.0"
   }
 }

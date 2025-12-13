@@ -1,13 +1,13 @@
 import { makeGSuiteClientV3 } from './gsuiteClient.v3';
 import { makeGSuiteClientV2 } from './gsuiteClient.v2';
-import {
+import type {
   CalendarSummary,
   CreateGoogleSlidesInput,
   OfficeServiceV2,
   Summaries,
 } from '@codestrap/developer-foundations-types';
 import { faker } from '@faker-js/faker';
-import { calendar_v3 } from 'googleapis';
+import type { calendar_v3 } from 'googleapis';
 import { createGoogleSlidesDelegate } from './delegates/createGoogleSlides';
 
 // Mock the v2 client
@@ -100,7 +100,7 @@ describe('makeGSuiteClientV3', () => {
             }),
           ]),
         }),
-      ])
+      ]),
     );
   });
 
@@ -121,8 +121,8 @@ describe('makeGSuiteClientV3', () => {
                 targetType: 'PLACEHOLDER',
                 placeholder: '{{TITLE}}',
                 text: 'Hello Slides',
-              }
-            ]
+              },
+            ],
           },
         ],
       },
